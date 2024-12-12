@@ -1,6 +1,7 @@
 #pragma once
-#include "def.h"
 #define POLA_DLL
+#include "def.h"
+
 /*
 *
 * Update Time: 2024-12-04

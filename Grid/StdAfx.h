@@ -75,3 +75,9 @@
 #include "BasicTools.h"
 #include "StyleTools.h"
 #include "AddToModelSpace.h"
+
+#ifdef POLA_DLL
+#define POLADLL __declspec(dllexport)
+#else
+#define POLADLL __declspec(dllimport)
+#endif // POLA_DLL

@@ -8,18 +8,20 @@ private:
 	double line_length;
 	double axis_angle;
 	
-	Grid()
+
+
+public:
+	Grid(double radius, double length, double angle)
+		:circle_radius(radius), line_length(length), axis_angle(angle)
 	{
 	}
 	~Grid()
 	{
 	}
 
-public:
-
 	static AcDbObjectId CreateVerticalAxis(double radius, double length, double angle);
 	static AcDbObjectId CreateHorizonAxis(double radius, double length, double angle);
-
+	 AcDbObjectId T();
 	static bool IsBlockExist(TCHAR* block_name);
 	static AcDbObjectId GetBlockId(TCHAR* block_name);
 

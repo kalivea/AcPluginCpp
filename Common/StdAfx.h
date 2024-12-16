@@ -72,9 +72,11 @@
                         #pragma pack(pop)
 
     //-----------------------------------------------------------------------------
-#include "DrawEntity.h"
-#include "EditEntity.h"
-#include "AddToModelSpace.h"
+#define POLA_DLL_COMMON
+#include "CommonDef.h"
 
 #include "BasicTools.h"
 #include "StyleTools.h"
+#include "AddToModelSpace.h"
+#include "DrawEntity.h"
+#include "EditEntity.h"

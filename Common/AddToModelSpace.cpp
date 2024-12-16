@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "AddToModelSpace.h"
 
 AcDbObjectId AddToModelSpace::AddEntityToModelSpace(AcDbEntity* entity_pointer)

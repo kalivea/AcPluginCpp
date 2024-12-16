@@ -1,15 +1,11 @@
 #pragma once
-#define POLA_DLL
-#include "def.h"
-class POLADLL Grid
+#include "StdAfx.h"
+class POLADLL_GRID_API Grid
 {
 private:
 	double circle_radius;
 	double line_length;
 	double axis_angle;
-	
-
-
 public:
 	Grid(double radius, double length, double angle)
 		:circle_radius(radius), line_length(length), axis_angle(angle)
@@ -19,9 +15,9 @@ public:
 	{
 	}
 
-	static AcDbObjectId CreateVerticalAxis(double radius, double length, double angle);
-	static AcDbObjectId CreateHorizonAxis(double radius, double length, double angle);
-	 AcDbObjectId T();
+	AcDbObjectId CreateVerticalAxis();
+	AcDbObjectId CreateHorizonAxis();
+
 	static bool IsBlockExist(TCHAR* block_name);
 	static AcDbObjectId GetBlockId(TCHAR* block_name);
 

@@ -64,7 +64,8 @@
     <Link>
     </Link>
     <Link>
-      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)Tools\x64\Release\PolaTools.lib;$(SolutionDir)Common\x64\Release\PolaCommon.lib;$(SolutionDir)Grid\x64\Release\PolaGrid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PolaTools.lib;PolaCommon.lib;PolaGrid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)Tools\x64\Release\;$(SolutionDir)Grid\x64\Release\;$(SolutionDir)Common\x64\Release\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

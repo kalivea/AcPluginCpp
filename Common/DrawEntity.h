@@ -1,13 +1,12 @@
 #pragma once
-#include "def.h"
-#define POLA_DLL
 /*
 * Update Time: 2024-12-04
 * This is a tool for drawing basic graphics in CAD.
 * It can draw commonly used primitives, including straight lines, polylines, arcs, circles, etc.
 *
 */
-class POLADLL DrawEntity
+
+class POLADLL_COMMON_API DrawEntity
 {
 public:
 	static AcDbObjectId DrawLine(const AcGePoint3d& start_point, const AcGePoint3d& end_point);

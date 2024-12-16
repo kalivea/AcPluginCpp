@@ -1,8 +1,7 @@
 #pragma once
-#include "def.h"
-#define POLA_DLL
+#include "StdAfx.h"
 
-class POLADLL StyleTools
+class POLADLL_TOOLS_API StyleTools
 {
 public:
 	static AcDbObjectId InitTextStyle();

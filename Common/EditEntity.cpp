@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "EditEntity.h"
 
 void EditEntity::SetColor(const AcDbObjectId& entity_id, const unsigned char& color_index)

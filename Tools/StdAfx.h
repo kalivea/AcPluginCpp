@@ -73,3 +73,5 @@
 
     //-----------------------------------------------------------------------------
 #include <corecrt_math_defines.h>	        //math defines
+#define POLA_DLL_TOOLS
+#include "TooldDef.h"

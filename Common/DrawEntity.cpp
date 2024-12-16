@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "DrawEntity.h"
 
 AcDbObjectId DrawEntity::DrawLine(const AcGePoint3d& start_point, const AcGePoint3d& end_point)

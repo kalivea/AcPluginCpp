@@ -1,6 +1,5 @@
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "BasicTools.h"
-
 
 double BasicTools::ConvertAngle(const double& angle, char* target_angle_type)
 {

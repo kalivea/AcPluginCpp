@@ -46,6 +46,7 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="Autodesk.arx-2024.props" />
   </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
   <PropertyGroup Label="Configuration">
     <PlatformToolset Condition="'$(ArxSDKPlatform)'=='v143'">v143</PlatformToolset>
   </PropertyGroup>
@@ -64,8 +65,13 @@
     <Link>
     </Link>
     <Link>
-      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)Tools\x64\Release\PolaTools.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PolaTools.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)Tools\x64\Release\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkLibraryDependencies>
+      <UseLibraryDependencyInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</UseLibraryDependencyInputs>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -84,6 +90,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AddToModelSpace.h" />
+    <ClInclude Include="CommonDef.h" />
     <ClInclude Include="DrawEntity.h" />
     <ClInclude Include="EditEntity.h" />
     <ClInclude Include="Resource.h" />

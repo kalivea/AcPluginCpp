@@ -79,10 +79,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BasicTools.h" />
-    <ClInclude Include="def.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="StdAfx.h" />
     <ClInclude Include="StyleTools.h" />
+    <ClInclude Include="TooldDef.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Tools.rc" />

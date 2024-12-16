@@ -1,75 +1,7 @@
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "Grid.h"
 
-AcDbObjectId Grid::CreateVerticalAxis(double radius, double length, double angle)
-{
-	AcDbBlockTable* block_table = nullptr;
-	acdbHostApplicationServices()->workingDatabase()->getBlockTable(block_table, OpenMode::kForWrite);
-	AcDbBlockTableRecord* block_table_record = new AcDbBlockTableRecord();
-
-	block_table_record->setName(_T("grid_v"));
-
-	AcDbObjectId grid_vertical_id = AcDbObjectId::kNull;
-	block_table->add(grid_vertical_id, block_table_record);
-
-	AcDbCircle* grid_vertical_circle = new AcDbCircle(AcGePoint3d::kOrigin, AcGeVector3d::kZAxis, radius);
-	AcDbLine* grid_vertical_line = new AcDbLine(
-		AcGePoint3d(AcGePoint3d::kOrigin.x, AcGePoint3d::kOrigin.y + grid_vertical_circle->radius(), 0),
-		AcGePoint3d(AcGePoint3d::kOrigin.x, AcGePoint3d::kOrigin.y + grid_vertical_circle->radius() + length, 0));
-
-	AcDbAttributeDefinition* grid_vertical_attribute = new AcDbAttributeDefinition(AcGePoint3d::kOrigin, _T("index_num"), _T("ID"), _T("Input axis id"), StyleTools::GetTextStyleId(_T("grid_text")));
-	grid_vertical_attribute->setHeight(750);
-	grid_vertical_attribute->setHorizontalMode(AcDb::kTextMid);
-
-	AcDbObjectId circel_id, line_id, attribute_id;
-	block_table_record->appendAcDbEntity(circel_id, grid_vertical_circle);
-	block_table_record->appendAcDbEntity(line_id, grid_vertical_line);
-	block_table_record->appendAcDbEntity(attribute_id, grid_vertical_attribute);
-
-	grid_vertical_circle->close();
-	grid_vertical_line->close();
-	grid_vertical_attribute->close();
-	block_table_record->close();
-	block_table->close();
-
-	return grid_vertical_id;
-}
-
-AcDbObjectId Grid::CreateHorizonAxis(double radius, double length, double angle)
-{
-	AcDbBlockTable* block_table = nullptr;
-	acdbHostApplicationServices()->workingDatabase()->getBlockTable(block_table, OpenMode::kForWrite);
-	AcDbBlockTableRecord* block_table_record = new AcDbBlockTableRecord();
-
-	block_table_record->setName(_T("grid_h"));
-
-	AcDbObjectId gride_vertical_id = AcDbObjectId::kNull;
-	block_table->add(gride_vertical_id, block_table_record);
-
-	AcDbCircle* grid_vertical_circle = new AcDbCircle(AcGePoint3d::kOrigin, AcGeVector3d::kZAxis, radius);
-	AcDbLine* gride_vertical_line = new AcDbLine(
-		AcGePoint3d(AcGePoint3d::kOrigin.x + grid_vertical_circle->radius(), AcGePoint3d::kOrigin.y, 0),
-		AcGePoint3d(AcGePoint3d::kOrigin.x + grid_vertical_circle->radius() + length, AcGePoint3d::kOrigin.y, 0));
-
-	AcDbAttributeDefinition* gride_vertical_attribute = new AcDbAttributeDefinition(AcGePoint3d::kOrigin, _T("index_num"), _T("ID"), _T("Input axis id"), StyleTools::GetTextStyleId(_T("grid_text")));
-	gride_vertical_attribute->setHeight(750);
-	gride_vertical_attribute->setHorizontalMode(AcDb::kTextMid);
-
-	AcDbObjectId circel_id, line_id, attribute_id;
-	block_table_record->appendAcDbEntity(circel_id, grid_vertical_circle);
-	block_table_record->appendAcDbEntity(line_id, gride_vertical_line);
-	block_table_record->appendAcDbEntity(attribute_id, gride_vertical_attribute);
-
-	grid_vertical_circle->close();
-	gride_vertical_line->close();
-	gride_vertical_attribute->close();
-	block_table_record->close();
-	block_table->close();
-
-	return gride_vertical_id;
-}
-
-AcDbObjectId Grid::T()
+AcDbObjectId Grid::CreateVerticalAxis()
 {
 	AcDbBlockTable* block_table = nullptr;
 	acdbHostApplicationServices()->workingDatabase()->getBlockTable(block_table, OpenMode::kForWrite);
@@ -101,6 +33,40 @@ AcDbObjectId Grid::T()
 	block_table->close();
 
 	return grid_vertical_id;
+}
+
+AcDbObjectId Grid::CreateHorizonAxis()
+{
+	AcDbBlockTable* block_table = nullptr;
+	acdbHostApplicationServices()->workingDatabase()->getBlockTable(block_table, OpenMode::kForWrite);
+	AcDbBlockTableRecord* block_table_record = new AcDbBlockTableRecord();
+
+	block_table_record->setName(_T("grid_h"));
+
+	AcDbObjectId gride_vertical_id = AcDbObjectId::kNull;
+	block_table->add(gride_vertical_id, block_table_record);
+
+	AcDbCircle* grid_vertical_circle = new AcDbCircle(AcGePoint3d::kOrigin, AcGeVector3d::kZAxis, this->circle_radius);
+	AcDbLine* gride_vertical_line = new AcDbLine(
+		AcGePoint3d(AcGePoint3d::kOrigin.x + grid_vertical_circle->radius(), AcGePoint3d::kOrigin.y, 0),
+		AcGePoint3d(AcGePoint3d::kOrigin.x + grid_vertical_circle->radius() + line_length, AcGePoint3d::kOrigin.y, 0));
+
+	AcDbAttributeDefinition* gride_vertical_attribute = new AcDbAttributeDefinition(AcGePoint3d::kOrigin, _T("index_num"), _T("ID"), _T("Input axis id"), StyleTools::GetTextStyleId(_T("grid_text")));
+	gride_vertical_attribute->setHeight(750);
+	gride_vertical_attribute->setHorizontalMode(AcDb::kTextMid);
+
+	AcDbObjectId circel_id, line_id, attribute_id;
+	block_table_record->appendAcDbEntity(circel_id, grid_vertical_circle);
+	block_table_record->appendAcDbEntity(line_id, gride_vertical_line);
+	block_table_record->appendAcDbEntity(attribute_id, gride_vertical_attribute);
+
+	grid_vertical_circle->close();
+	gride_vertical_line->close();
+	gride_vertical_attribute->close();
+	block_table_record->close();
+	block_table->close();
+
+	return gride_vertical_id;
 }
 
 bool Grid::IsBlockExist(TCHAR* block_name)

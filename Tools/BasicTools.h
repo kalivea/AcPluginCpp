@@ -1,7 +1,5 @@
 #pragma once
-#define POLA_DLL
-#include "def.h"
-
+#include "StdAfx.h"
 /*
 *
 * Update Time: 2024-12-04
@@ -9,10 +7,9 @@
 * Including mathematical tools and common graphic tools commonly used in the CAD drawing process.
 *
 */
-class POLADLL BasicTools
+class POLADLL_TOOLS_API BasicTools
 {
 public:
-
 	// math tools: Angle tools
 	static double ConvertAngle(const double& angele, char* target_angle_type);
 	static double GetAngleToXaxis(const AcGePoint3d& start_point, const AcGePoint3d& end_point, char* target_angle_type);

@@ -1,13 +1,11 @@
 #pragma once
-#include "def.h"
-#define POLA_DLL
 /*
 * Update Time: 2024-12-04
 * This is a collection of tools that can edit CAD entity(s).
 * It can scale, move, copy, etc CAD entiy(s).
 * 
 */
-class POLADLL EditEntity
+class POLADLL_COMMON_API EditEntity
 {
 public:
 	// property edit

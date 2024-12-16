@@ -1,6 +1,5 @@
 #pragma once
-#include "def.h"
-#define POLA_DLL
+#include "StdAfx.h"
 /*
 *
 * Update Time: 2024-12-04
@@ -8,7 +7,7 @@
 * It can post CAD drawable entity to modelspace.
 *
 */
-class POLADLL AddToModelSpace
+class POLADLL_COMMON_API AddToModelSpace
 {
 public:
 	static AcDbObjectId AddEntityToModelSpace(AcDbEntity* entity_pointer);

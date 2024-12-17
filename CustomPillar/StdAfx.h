@@ -25,7 +25,7 @@
 //-      but are changed infrequently
 //-----------------------------------------------------------------------------
 #pragma once
-#define PILLARENTITY_MODULE
+#define CUSTOMPILLAR_MODULE
 
 /*#ifndef
 #define _ALLOW_RTCc_IN_STL
@@ -69,6 +69,9 @@
     #include "dbxHeaders.h"
     #include "AcExtensionModule.h" //- Needed for AutoCAD MFC extension even if not present in the RealDWG SDK
     
+#include "PolaCustomPillar.h"
+
+#include "StyleTools.h"
                         #pragma pack(pop)
 
     

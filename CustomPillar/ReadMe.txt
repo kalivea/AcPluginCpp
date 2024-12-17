@@ -1,5 +1,5 @@
 
-ArxAppWizard has created this PillarEntity application for you.
+ArxAppWizard has created this CustomPillar application for you.
   You can get regular updates for the Wizards at http://www.autodesk.com/developautocad
   and report issues at: oarxwiz-feedback@autodesk.com
 
@@ -20,7 +20,7 @@ In Visual Studio 2022, the .props editor is in -> View -> Other Windows -> Prope
 -----------------------------------------------------------------------------
 StdAfx.h, StdAfx.cpp
     These files are used to build a precompiled header (PCH) file
-    named PillarEntity.pch and a precompiled types file named StdAfx.obj.
+    named CustomPillar.pch and a precompiled types file named StdAfx.obj.
 
 	StdAfx.h either includes arxHeaders.h or dbxHeaders.h which includes all the ObjectARX or 
 	RealDWG headers, uses #pragma to import the required .lib file and exports mandatory symbols.

@@ -17,8 +17,12 @@ public:
 	static AcDbObjectId CreateLayerStyle(const TCHAR* layer_name);
 	static AcDbObjectId GetLayerId(const TCHAR* layer_name);
 
+	static AcDbObjectId LoadLineType(const TCHAR* line_type, const TCHAR* line_type_file);
+	static AcDbObjectId GetLineStyleId(const TCHAR* line_type);
+
 	static bool IsLayerExist(const TCHAR* layer_name);
 	static bool IsDimensionStyleExist(const TCHAR* dimension_style);
 	static bool IsTextStyleExist(const TCHAR* text_style_name);
+	static bool IsLineTypeExist(const TCHAR* line_type);
 };
 

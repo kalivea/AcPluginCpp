@@ -163,10 +163,3 @@ AcGePoint3dArray BasicTools::DistanceToPointArrayY(AcGePoint3d first_point, doub
 	}
 	return temp_array;
 }
-
-
-
-
-
-
-

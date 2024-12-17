@@ -20,43 +20,43 @@
 //
 
 //-----------------------------------------------------------------------------
-//----- PolaPillar.cpp : Implementation of PolaPillar
+//----- PolaCustomPillar.cpp : Implementation of CPolaCustomPillar
 //-----------------------------------------------------------------------------
 #include "StdAfx.h"
-#include "PolaPillar.h"
+#include "PolaCustomPillar.h"
 
 //-----------------------------------------------------------------------------
-Adesk::UInt32 PolaPillar::kCurrentVersionNumber =1 ;
+Adesk::UInt32 CPolaCustomPillar::kCurrentVersionNumber =1 ;
 
 //-----------------------------------------------------------------------------
 ACRX_DXF_DEFINE_MEMBERS (
-	PolaPillar, AcDbEntity,
+	CPolaCustomPillar, AcDbEntity,
 	AcDb::kDHL_CURRENT, AcDb::kMReleaseCurrent, 
-	AcDbProxyEntity::kNoOperation, POLAPILLAR,
-POLAPILLARENTITYAPP
+	AcDbProxyEntity::kNoOperation, POLACUSTOMPILLAR,
+POLACUSTOMPILLARAPP
 |Product Desc:     A description for your object
 |Company:          Your company name
 |WEB Address:      Your company WEB site address
 )
 
 //-----------------------------------------------------------------------------
-PolaPillar::PolaPillar () : AcDbEntity () {
+CPolaCustomPillar::CPolaCustomPillar () : AcDbEntity () {
 }
 
-PolaPillar::~PolaPillar () {
+CPolaCustomPillar::~CPolaCustomPillar () {
 }
 
 //-----------------------------------------------------------------------------
 //----- AcDbObject protocols
 //- Dwg Filing protocol
-Acad::ErrorStatus PolaPillar::dwgOutFields (AcDbDwgFiler *pFiler) const {
+Acad::ErrorStatus CPolaCustomPillar::dwgOutFields (AcDbDwgFiler *pFiler) const {
 	assertReadEnabled () ;
 	//----- Save parent class information first.
 	Acad::ErrorStatus es =AcDbEntity::dwgOutFields (pFiler) ;
 	if ( es != Acad::eOk )
 		return (es) ;
 	//----- Object version number needs to be saved first
-	if ( (es =pFiler->writeUInt32 (PolaPillar::kCurrentVersionNumber)) != Acad::eOk )
+	if ( (es =pFiler->writeUInt32 (CPolaCustomPillar::kCurrentVersionNumber)) != Acad::eOk )
 		return (es) ;
 	//----- Output params
 	//.....
@@ -64,7 +64,7 @@ Acad::ErrorStatus PolaPillar::dwgOutFields (AcDbDwgFiler *pFiler) const {
 	return (pFiler->filerStatus ()) ;
 }
 
-Acad::ErrorStatus PolaPillar::dwgInFields (AcDbDwgFiler *pFiler) {
+Acad::ErrorStatus CPolaCustomPillar::dwgInFields (AcDbDwgFiler *pFiler) {
 	assertWriteEnabled () ;
 	//----- Read parent class information first.
 	Acad::ErrorStatus es =AcDbEntity::dwgInFields (pFiler) ;
@@ -74,11 +74,11 @@ Acad::ErrorStatus PolaPillar::dwgInFields (AcDbDwgFiler *pFiler) {
 	Adesk::UInt32 version =0 ;
 	if ( (es =pFiler->readUInt32 (&version)) != Acad::eOk )
 		return (es) ;
-	if ( version > PolaPillar::kCurrentVersionNumber )
+	if ( version > CPolaCustomPillar::kCurrentVersionNumber )
 		return (Acad::eMakeMeProxy) ;
 	//- Uncomment the 2 following lines if your current object implementation cannot
 	//- support previous version of that object.
-	//if ( version < PolaPillar::kCurrentVersionNumber )
+	//if ( version < CPolaCustomPillar::kCurrentVersionNumber )
 	//	return (Acad::eMakeMeProxy) ;
 	//----- Read params
 	//.....
@@ -86,90 +86,21 @@ Acad::ErrorStatus PolaPillar::dwgInFields (AcDbDwgFiler *pFiler) {
 	return (pFiler->filerStatus ()) ;
 }
 
-//- Dxf Filing protocol
-Acad::ErrorStatus PolaPillar::dxfOutFields (AcDbDxfFiler *pFiler) const {
-	assertReadEnabled () ;
-	//----- Save parent class information first.
-	Acad::ErrorStatus es =AcDbEntity::dxfOutFields (pFiler) ;
-	if ( es != Acad::eOk )
-		return (es) ;
-	es =pFiler->writeItem (AcDb::kDxfSubclass, _RXST("PolaPillar")) ;
-	if ( es != Acad::eOk )
-		return (es) ;
-	//----- Object version number needs to be saved first
-	if ( (es =pFiler->writeUInt32 (kDxfInt32, PolaPillar::kCurrentVersionNumber)) != Acad::eOk )
-		return (es) ;
-	//----- Output params
-	//.....
-
-	return (pFiler->filerStatus ()) ;
-}
-
-Acad::ErrorStatus PolaPillar::dxfInFields (AcDbDxfFiler *pFiler) {
-	assertWriteEnabled () ;
-	//----- Read parent class information first.
-	Acad::ErrorStatus es =AcDbEntity::dxfInFields (pFiler) ;
-	if ( es != Acad::eOk || !pFiler->atSubclassData (_RXST("PolaPillar")) )
-		return (pFiler->filerStatus ()) ;
-	//----- Object version number needs to be read first
-	struct resbuf rb ;
-	pFiler->readItem (&rb) ;
-	if ( rb.restype != AcDb::kDxfInt32 ) {
-		pFiler->pushBackItem () ;
-		pFiler->setError (Acad::eInvalidDxfCode, _RXST("\nError: expected group code %d (version #)"), AcDb::kDxfInt32) ;
-		return (pFiler->filerStatus ()) ;
-	}
-	Adesk::UInt32 version =(Adesk::UInt32)rb.resval.rlong ;
-	if ( version > PolaPillar::kCurrentVersionNumber )
-		return (Acad::eMakeMeProxy) ;
-	//- Uncomment the 2 following lines if your current object implementation cannot
-	//- support previous version of that object.
-	//if ( version < PolaPillar::kCurrentVersionNumber )
-	//	return (Acad::eMakeMeProxy) ;
-	//----- Read params in non order dependant manner
-	while ( es == Acad::eOk && (es =pFiler->readResBuf (&rb)) == Acad::eOk ) {
-		switch ( rb.restype ) {
-			//----- Read params by looking at their DXF code (example below)
-			//case AcDb::kDxfXCoord:
-			//	if ( version == 1 )
-			//		cen3d =asPnt3d (rb.resval.rpoint) ;
-			//	else 
-			//		cen2d =asPnt2d (rb.resval.rpoint) ;
-			//	break ;
-			//.....
-
-			default:
-				//----- An unrecognized group. Push it back so that the subclass can read it again.
-				pFiler->pushBackItem () ;
-				es =Acad::eEndOfFile ;
-				break ;
-		}
-	}
-	//----- At this point the es variable must contain eEndOfFile
-	//----- - either from readResBuf() or from pushback. If not,
-	//----- it indicates that an error happened and we should
-	//----- return immediately.
-	if ( es != Acad::eEndOfFile )
-		return (Acad::eInvalidResBuf) ;
-
-	return (pFiler->filerStatus ()) ;
-}
-
 //-----------------------------------------------------------------------------
 //----- AcDbEntity protocols
-Adesk::Boolean PolaPillar::subWorldDraw (AcGiWorldDraw *mode) {
+Adesk::Boolean CPolaCustomPillar::subWorldDraw (AcGiWorldDraw *mode) {
 	assertReadEnabled () ;
 	return (AcDbEntity::subWorldDraw (mode)) ;
 }
 
 
-Adesk::UInt32 PolaPillar::subSetAttributes (AcGiDrawableTraits *traits) {
+Adesk::UInt32 CPolaCustomPillar::subSetAttributes (AcGiDrawableTraits *traits) {
 	assertReadEnabled () ;
 	return (AcDbEntity::subSetAttributes (traits)) ;
 }
 
 	//- Osnap points protocol
-Acad::ErrorStatus PolaPillar::subGetOsnapPoints (
+Acad::ErrorStatus CPolaCustomPillar::subGetOsnapPoints (
 	AcDb::OsnapMode osnapMode,
 	Adesk::GsMarker gsSelectionMark,
 	const AcGePoint3d &pickPoint,
@@ -182,7 +113,7 @@ Acad::ErrorStatus PolaPillar::subGetOsnapPoints (
 	return (AcDbEntity::subGetOsnapPoints (osnapMode, gsSelectionMark, pickPoint, lastPoint, viewXform, snapPoints, geomIds)) ;
 }
 
-Acad::ErrorStatus PolaPillar::subGetOsnapPoints (
+Acad::ErrorStatus CPolaCustomPillar::subGetOsnapPoints (
 	AcDb::OsnapMode osnapMode,
 	Adesk::GsMarker gsSelectionMark,
 	const AcGePoint3d &pickPoint,
@@ -197,7 +128,7 @@ Acad::ErrorStatus PolaPillar::subGetOsnapPoints (
 }
 
 //- Grip points protocol
-Acad::ErrorStatus PolaPillar::subGetGripPoints (
+Acad::ErrorStatus CPolaCustomPillar::subGetGripPoints (
 	AcGePoint3dArray &gripPoints, AcDbIntArray &osnapModes, AcDbIntArray &geomIds
 ) const {
 	assertReadEnabled () ;
@@ -207,7 +138,7 @@ Acad::ErrorStatus PolaPillar::subGetGripPoints (
 	return (AcDbEntity::subGetGripPoints (gripPoints, osnapModes, geomIds)) ;
 }
 
-Acad::ErrorStatus PolaPillar::subMoveGripPointsAt (const AcDbIntArray &indices, const AcGeVector3d &offset) {
+Acad::ErrorStatus CPolaCustomPillar::subMoveGripPointsAt (const AcDbIntArray &indices, const AcGeVector3d &offset) {
 	assertWriteEnabled () ;
 	//----- This method is never called unless you return eNotImplemented 
 	//----- from the new moveGripPointsAt() method below (which is the default implementation)
@@ -215,7 +146,7 @@ Acad::ErrorStatus PolaPillar::subMoveGripPointsAt (const AcDbIntArray &indices, 
 	return (AcDbEntity::subMoveGripPointsAt (indices, offset)) ;
 }
 
-Acad::ErrorStatus PolaPillar::subGetGripPoints (
+Acad::ErrorStatus CPolaCustomPillar::subGetGripPoints (
 	AcDbGripDataPtrArray &grips, const double curViewUnitSize, const int gripSize, 
 	const AcGeVector3d &curViewDir, const int bitflags
 ) const {
@@ -227,7 +158,7 @@ Acad::ErrorStatus PolaPillar::subGetGripPoints (
 	return (AcDbEntity::subGetGripPoints (grips, curViewUnitSize, gripSize, curViewDir, bitflags)) ;
 }
 
-Acad::ErrorStatus PolaPillar::subMoveGripPointsAt (
+Acad::ErrorStatus CPolaCustomPillar::subMoveGripPointsAt (
 	const AcDbVoidPtrArray &gripAppData, const AcGeVector3d &offset,
 	const int bitflags
 ) {

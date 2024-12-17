@@ -30,18 +30,21 @@
 
 //-----------------------------------------------------------------------------
 //----- ObjectARX EntryPoint
-class CPillarEntityApp : public AcRxDbxApp {
+class CCustomPillarApp : public AcRxDbxApp {
 
 public:
-	CPillarEntityApp () : AcRxDbxApp () {}
+	CCustomPillarApp () : AcRxDbxApp () {}
 
 	virtual AcRx::AppRetCode On_kInitAppMsg (void *pkt) {
 		// TODO: Load dependencies here
-		
+
 		// You *must* call On_kInitAppMsg here
 		AcRx::AppRetCode retCode =AcRxDbxApp::On_kInitAppMsg (pkt) ;
 		
 		// TODO: Add your initialization code here
+		
+		CPolaCustomPillar::rxInit();							// init and add this custom entity to AcRxClass tree.
+		acrxBuildClassHierarchy();
 
 		return (retCode) ;
 	}
@@ -54,6 +57,8 @@ public:
 
 		// TODO: Unload dependencies here
 
+		deleteAcRxClass(CPolaCustomPillar::desc());				// unload custom entity from AcRxClass tree.
+
 		return (retCode) ;
 	}
 
@@ -63,5 +68,5 @@ public:
 } ;
 
 //-----------------------------------------------------------------------------
-IMPLEMENT_ARX_ENTRYPOINT(CPillarEntityApp)
+IMPLEMENT_ARX_ENTRYPOINT(CCustomPillarApp)
 

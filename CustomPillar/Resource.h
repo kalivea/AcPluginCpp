@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by PillarEntity.rc
+// Used by CustomPillar.rc
 //
 #define IDS_PROJNAME 100
 

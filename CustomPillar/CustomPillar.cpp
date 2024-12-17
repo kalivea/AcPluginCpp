@@ -20,7 +20,7 @@
 //
 
 //-----------------------------------------------------------------------------
-//- PillarEntity.cpp : Initialization functions
+//- CustomPillar.cpp : Initialization functions
 //-----------------------------------------------------------------------------
 #include "StdAfx.h"
 #include "resource.h"
@@ -28,7 +28,7 @@
 
 //-----------------------------------------------------------------------------
 //- Define the sole extension module object.
-AC_IMPLEMENT_EXTENSION_MODULE(PillarEntityDLL)
+AC_IMPLEMENT_EXTENSION_MODULE(CustomPillarDLL)
 //- Now you can use the CAcModuleResourceOverride class in
 //- your application to switch to the correct resource instance.
 //- Please see the ObjectARX Documentation for more details
@@ -42,9 +42,9 @@ BOOL WINAPI DllMain (HINSTANCE hInstance, DWORD dwReason, LPVOID lpReserved) {
 
 	if ( dwReason == DLL_PROCESS_ATTACH ) {
         _hdllInstance =hInstance ;
-		PillarEntityDLL.AttachInstance (hInstance) ;
+		CustomPillarDLL.AttachInstance (hInstance) ;
 	} else if ( dwReason == DLL_PROCESS_DETACH ) {
-		PillarEntityDLL.DetachInstance () ;
+		CustomPillarDLL.DetachInstance () ;
 	}
 	return (TRUE) ;
 }

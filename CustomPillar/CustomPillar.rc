@@ -60,12 +60,12 @@ BEGIN
 		BLOCK "040904B0"
 		BEGIN
 			VALUE "CompanyName", "\0"
-			VALUE "FileDescription", "PillarEntity ObjectDBX application\0"
+			VALUE "FileDescription", "CustomPillar ObjectDBX application\0"
 			VALUE "FileVersion", "1, 0, 0, 1\0"
-			VALUE "InternalName", "PillarEntity\0"
+			VALUE "InternalName", "CustomPillar\0"
 			VALUE "LegalCopyright", "Copyright © 2012\0"
-			VALUE "OriginalFilename", "PolaPillarEntity.dbx\0"
-			VALUE "ProductName", "PillarEntity Application\0"
+			VALUE "OriginalFilename", "PolaCustomPillar.dbx\0"
+			VALUE "ProductName", "CustomPillar Application\0"
 			VALUE "ProductVersion", "1, 0, 0, 1\0"
 		END
 	END
@@ -84,7 +84,7 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-	IDS_PROJNAME					"PillarEntity"
+	IDS_PROJNAME					"CustomPillar"
 END
 
 

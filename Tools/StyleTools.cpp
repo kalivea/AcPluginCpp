@@ -27,7 +27,7 @@ AcDbObjectId StyleTools::InitDimStyle()						//TODO
 	acdbHostApplicationServices()->workingDatabase()->getDimStyleTable(dim_style_table, AcDb::kForWrite);
 	AcDbDimStyleTableRecord* dim_style_table_record;
 	dim_style_table_record = new AcDbDimStyleTableRecord();
-	
+
 	dim_style_table_record->setName(_T("pt_100_350"));
 	dim_style_table_record->setDimtxsty(StyleTools::GetTextStyleId(_T("dim_text")));
 	dim_style_table_record->setDimtxt(350);
@@ -41,12 +41,12 @@ AcDbObjectId StyleTools::InitDimStyle()						//TODO
 	dim_style_table_record->setDimtad(2);
 	dim_style_table_record->setDimlfac(1);
 	dim_style_table_record->setDimdec(0);
-	dim_style_table_record->setDimtih(0);		
+	dim_style_table_record->setDimtih(0);
 
 
 	dim_style_table->add(dim_style_table_record);
 	default_dim_style_id = dim_style_table_record->objectId();
-	
+
 	dim_style_table_record->close();
 	dim_style_table->close();
 	return default_dim_style_id;
@@ -150,6 +150,34 @@ AcDbObjectId StyleTools::GetLayerId(const TCHAR* layer_name)
 	}
 }
 
+AcDbObjectId StyleTools::LoadLineType(const TCHAR* line_type, const TCHAR* line_type_file)
+{
+	acdbHostApplicationServices()->workingDatabase()->loadLineTypeFile(line_type, line_type_file);
+	AcDbLinetypeTable* line_type_table = nullptr;
+	acdbHostApplicationServices()->workingDatabase()->getLinetypeTable(line_type_table, OpenMode::kForRead);
+	AcDbObjectId line_type_id = AcDbObjectId::kNull;
+	line_type_table->getAt(line_type, line_type_id);
+	return line_type_id;
+}
+
+AcDbObjectId StyleTools::GetLineStyleId(const TCHAR* line_type)
+{
+	AcDbLinetypeTable* line_type_table = nullptr;
+	AcDbObjectId line_type_id = AcDbObjectId::kNull;
+	if (IsLineTypeExist(line_type))
+	{
+		acdbHostApplicationServices()->workingDatabase()->getLinetypeTable(line_type_table, OpenMode::kForRead);
+		line_type_table->getAt(line_type, line_type_id);
+		line_type_table->close();
+		return line_type_id;
+	}
+	else
+	{
+		line_type_table->close();
+		return line_type_id;
+	}
+}
+
 bool StyleTools::IsLayerExist(const TCHAR* layer_name)
 {
 	AcDbLayerTable* layer_table = nullptr;
@@ -195,6 +223,22 @@ bool StyleTools::IsTextStyleExist(const TCHAR* text_style_name)
 	else
 	{
 		text_style_table->close();
+		return false;
+	}
+}
+
+bool StyleTools::IsLineTypeExist(const TCHAR* line_type)
+{
+	AcDbLinetypeTable* line_type_table = nullptr;
+	acdbHostApplicationServices()->workingDatabase()->getLinetypeTable(line_type_table, OpenMode::kForRead);
+	if (line_type_table->has(line_type))
+	{
+		line_type_table->close();
+		return true;
+	}
+	else
+	{
+		line_type_table->close();
 		return false;
 	}
 }

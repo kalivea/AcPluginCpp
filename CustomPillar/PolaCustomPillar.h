@@ -20,11 +20,11 @@
 //
 
 //-----------------------------------------------------------------------------
-//----- PolaPillar.h : Declaration of the PolaPillar
+//----- PolaCustomPillar.h : Declaration of the CPolaCustomPillar
 //-----------------------------------------------------------------------------
 #pragma once
 
-#ifdef PILLARENTITY_MODULE
+#ifdef CUSTOMPILLAR_MODULE
 #define DLLIMPEXP __declspec(dllexport)
 #else
 //----- Note: we don't use __declspec(dllimport) here, because of the
@@ -48,26 +48,22 @@
 #include "dbmain.h"
 
 //-----------------------------------------------------------------------------
-class DLLIMPEXP PolaPillar : public AcDbEntity {
+class DLLIMPEXP CPolaCustomPillar : public AcDbEntity {
 
 public:
-	ACRX_DECLARE_MEMBERS(PolaPillar) ;
+	ACRX_DECLARE_MEMBERS(CPolaCustomPillar) ;
 
 protected:
 	static Adesk::UInt32 kCurrentVersionNumber ;
 
 public:
-	PolaPillar () ;
-	virtual ~PolaPillar () ;
+	CPolaCustomPillar () ;
+	virtual ~CPolaCustomPillar () ;
 
 	//----- AcDbObject protocols
 	//- Dwg Filing protocol
 	virtual Acad::ErrorStatus dwgOutFields (AcDbDwgFiler *pFiler) const ;
 	virtual Acad::ErrorStatus dwgInFields (AcDbDwgFiler *pFiler) ;
-
-	//- Dxf Filing protocol
-	virtual Acad::ErrorStatus dxfOutFields (AcDbDxfFiler *pFiler) const ;
-	virtual Acad::ErrorStatus dxfInFields (AcDbDxfFiler *pFiler) ;
 
 	//----- AcDbEntity protocols
 	//- Graphics protocol
@@ -102,9 +98,14 @@ public:
 		AcDbGripDataPtrArray &grips, const double curViewUnitSize, const int gripSize, 
 		const AcGeVector3d &curViewDir, const int bitflags) const ;
 	virtual Acad::ErrorStatus subMoveGripPointsAt (const AcDbVoidPtrArray &gripAppData, const AcGeVector3d &offset, const int bitflags) ;
+	//-----------------------------------------------------------------------------
+	// custom define pillar part             ------Pola
+private:
+	AcGePoint3d center_point;			// center point: Used to define the insertion point of the entity in the drawing file.
+	AcGeVector3d direction_vector;		// direction vercor: The angle between the center point and the x-axis, used to define the positive direction of the entity.
 
 } ;
 
-#ifdef PILLARENTITY_MODULE
-ACDB_REGISTER_OBJECT_ENTRY_AUTO(PolaPillar)
+#ifdef CUSTOMPILLAR_MODULE
+ACDB_REGISTER_OBJECT_ENTRY_AUTO(CPolaCustomPillar)
 #endif

@@ -11,7 +11,7 @@ AcDbObjectId DrawEntity::DrawLine(const AcGePoint3d& start_point, const double& 
 {
 	double temp_angle;
 	if (angle_type == "DEG")
-		temp_angle = BasicTools::ConvertAngle(angle, "RAD");
+		temp_angle = BasicTools::ConvertAngle(angle, 0);
 	else if (angle_type == "RAD")
 		temp_angle = angle;
 	else
@@ -63,8 +63,8 @@ AcDbObjectId DrawEntity::DrawArc(const AcGePoint3d& start_point, const AcGePoint
 
 	arc_pointer->setCenter(calc_arc.center());
 	arc_pointer->setRadius(calc_arc.radius());
-	arc_pointer->setStartAngle(BasicTools::GetAngleToXaxis(center_to_start, "RAD"));
-	arc_pointer->setEndAngle(BasicTools::GetAngleToXaxis(center_to_end, "RAD"));
+	arc_pointer->setStartAngle(BasicTools::GetAngleToXaxis(center_to_start, 1));
+	arc_pointer->setEndAngle(BasicTools::GetAngleToXaxis(center_to_end, 1));
 
 	return AddToModelSpace::AddEntityToModelSpace(arc_pointer);
 }
@@ -73,7 +73,7 @@ AcDbObjectId DrawEntity::DrawArc(const AcGePoint3d& center_point, const AcGePoin
 {
 	double temp_angle;
 	if (angle_type == "DEG")
-		temp_angle = BasicTools::ConvertAngle(angle, "RAD");
+		temp_angle = BasicTools::ConvertAngle(angle, 0);
 	else if (angle_type == "RAD")
 		temp_angle = angle;
 	else
@@ -85,7 +85,7 @@ AcDbObjectId DrawEntity::DrawArc(const AcGePoint3d& center_point, const AcGePoin
 	arc_pointer->setRadius(BasicTools::GetDistanceBetweenTwoPoint(center_point, start_point));
 
 	AcGeVector3d center_to_start = BasicTools::GetVectorBetweenTwoPoint(center_point, start_point);
-	arc_pointer->setStartAngle(BasicTools::GetAngleToXaxis(center_to_start, "RAD"));
+	arc_pointer->setStartAngle(BasicTools::GetAngleToXaxis(center_to_start, 1));
 	arc_pointer->setEndAngle(arc_pointer->startAngle() + temp_angle);
 
 	return AddToModelSpace::AddEntityToModelSpace(arc_pointer);

@@ -51,60 +51,93 @@
 class DLLIMPEXP CPolaCustomPillar : public AcDbEntity {
 
 public:
-	ACRX_DECLARE_MEMBERS(CPolaCustomPillar) ;
+	ACRX_DECLARE_MEMBERS(CPolaCustomPillar);
 
 protected:
-	static Adesk::UInt32 kCurrentVersionNumber ;
+	static Adesk::UInt32 kCurrentVersionNumber;
 
 public:
-	CPolaCustomPillar () ;
-	virtual ~CPolaCustomPillar () ;
+	CPolaCustomPillar();
+	virtual ~CPolaCustomPillar();
 
 	//----- AcDbObject protocols
 	//- Dwg Filing protocol
-	virtual Acad::ErrorStatus dwgOutFields (AcDbDwgFiler *pFiler) const ;
-	virtual Acad::ErrorStatus dwgInFields (AcDbDwgFiler *pFiler) ;
+	virtual Acad::ErrorStatus dwgOutFields(AcDbDwgFiler* pFiler) const;
+	virtual Acad::ErrorStatus dwgInFields(AcDbDwgFiler* pFiler);
 
 	//----- AcDbEntity protocols
 	//- Graphics protocol
 protected:
-	virtual Adesk::Boolean subWorldDraw (AcGiWorldDraw *mode) ;
-	virtual Adesk::UInt32 subSetAttributes (AcGiDrawableTraits *traits) ;
+	virtual Adesk::Boolean subWorldDraw(AcGiWorldDraw* mode);
+	virtual Adesk::UInt32 subSetAttributes(AcGiDrawableTraits* traits);
 
 	//- Osnap points protocol
 public:
-	virtual Acad::ErrorStatus subGetOsnapPoints (
+	virtual Acad::ErrorStatus subGetOsnapPoints(
 		AcDb::OsnapMode osnapMode,
 		Adesk::GsMarker gsSelectionMark,
-		const AcGePoint3d &pickPoint,
-		const AcGePoint3d &lastPoint,
-		const AcGeMatrix3d &viewXform,
-		AcGePoint3dArray &snapPoints,
-		AcDbIntArray &geomIds) const ;
-	virtual Acad::ErrorStatus subGetOsnapPoints (
+		const AcGePoint3d& pickPoint,
+		const AcGePoint3d& lastPoint,
+		const AcGeMatrix3d& viewXform,
+		AcGePoint3dArray& snapPoints,
+		AcDbIntArray& geomIds) const;
+	virtual Acad::ErrorStatus subGetOsnapPoints(
 		AcDb::OsnapMode osnapMode,
 		Adesk::GsMarker gsSelectionMark,
-		const AcGePoint3d &pickPoint,
-		const AcGePoint3d &lastPoint,
-		const AcGeMatrix3d &viewXform,
-		AcGePoint3dArray &snapPoints,
-		AcDbIntArray &geomIds,
-		const AcGeMatrix3d &insertionMat) const ;
+		const AcGePoint3d& pickPoint,
+		const AcGePoint3d& lastPoint,
+		const AcGeMatrix3d& viewXform,
+		AcGePoint3dArray& snapPoints,
+		AcDbIntArray& geomIds,
+		const AcGeMatrix3d& insertionMat) const;
 
 	//- Grip points protocol
-	virtual Acad::ErrorStatus subGetGripPoints (AcGePoint3dArray &gripPoints, AcDbIntArray &osnapModes, AcDbIntArray &geomIds) const ;
-	virtual Acad::ErrorStatus subMoveGripPointsAt (const AcDbIntArray &indices, const AcGeVector3d &offset) ;
-	virtual Acad::ErrorStatus subGetGripPoints (
-		AcDbGripDataPtrArray &grips, const double curViewUnitSize, const int gripSize, 
-		const AcGeVector3d &curViewDir, const int bitflags) const ;
-	virtual Acad::ErrorStatus subMoveGripPointsAt (const AcDbVoidPtrArray &gripAppData, const AcGeVector3d &offset, const int bitflags) ;
+	virtual Acad::ErrorStatus subGetGripPoints(AcGePoint3dArray& gripPoints, AcDbIntArray& osnapModes, AcDbIntArray& geomIds) const;
+	virtual Acad::ErrorStatus subMoveGripPointsAt(const AcDbIntArray& indices, const AcGeVector3d& offset);
+	virtual Acad::ErrorStatus subGetGripPoints(
+		AcDbGripDataPtrArray& grips, const double curViewUnitSize, const int gripSize,
+		const AcGeVector3d& curViewDir, const int bitflags) const;
+	virtual Acad::ErrorStatus subMoveGripPointsAt(const AcDbVoidPtrArray& gripAppData, const AcGeVector3d& offset, const int bitflags);
 	//-----------------------------------------------------------------------------
 	// custom define pillar part             ------Pola
 private:
-	AcGePoint3d center_point;			// center point: Used to define the insertion point of the entity in the drawing file.
-	AcGeVector3d direction_vector;		// direction vercor: The angle between the center point and the x-axis, used to define the positive direction of the entity.
+	//					save to XData
+	AcGePoint3d center_point_;					// center point: Used to define the insertion point of the entity in the drawing file.
+	AcGeVector3d direction_vector_;				// direction vercor: The angle between the center point and the x-axis, used to define the positive direction of the entity.
+	double pillar_d_, pillar_h_;					// Diameter of the entity: If it is a rectangular pillar, d and h represent the length and width.
+												//						   If it is a circular pillar, d = h, represent the diameter of the circle.
+	bool viewable_;								// viewalbe: Used to control the entity line type. true mean continuous; false mean dashed.
+	Adesk::Int32 pillar_property_;				// pillar property: (int) 0 mean concrete; (int) 1 mean concrete-filled steel tube pillar.
+	Adesk::Int32 pillar_serial_number_;			// pillar serial number.
+	Adesk::Int32 pillar_type_;					// pillar type: (int) 0 mean round pillar; (int) 1 mean rectangular pillar.
 
-} ;
+	//	               auxiliary data
+	AcGePoint3dArray vertex_;
+
+public:
+	//					set function
+	void setCenterPoint(AcGePoint3d center);
+	void setDirectionVector(AcGeVector3d dir_vec = AcGeVector3d::kXAxis);
+	void setDiameter(double d, double h);
+	void setViewable(bool view);
+	void setPillarProperty(Adesk::Int32 prop);
+	void setSN(Adesk::Int32 sn);
+	void setPillarType(Adesk::Int32 type);
+
+	//					get function
+	AcGePoint3d getCenterPoint() const;
+	AcGeVector3d getDirectionVector() const;
+	void getDiameter(double& d, double& h) const;
+	bool getViewable() const;
+	Adesk::Int32 getPillarProperty() const;
+	Adesk::Int32 getPillarSn() const;
+	Adesk::Int32 getPillarType() const;
+
+	//				   auxiliary data generation function
+	void CalculateVertex();
+
+	void UpdateEntity();
+};
 
 #ifdef CUSTOMPILLAR_MODULE
 ACDB_REGISTER_OBJECT_ENTRY_AUTO(CPolaCustomPillar)

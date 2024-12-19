@@ -1,11 +1,11 @@
 #include "StdAfx.h"
 #include "BasicTools.h"
 
-double BasicTools::ConvertAngle(const double& angle, char* target_angle_type)
+double BasicTools::ConvertAngle(const double& angle, const int target_angle_type)
 {
-	if (target_angle_type == "RAD")
+	if (target_angle_type == 1)
 		return angle * (M_PI / 180.0);
-	else if (target_angle_type == "DEG")
+	else if (target_angle_type == 0)
 		return angle * (180.0 / M_PI);
 	else
 		throw _T("Wrong angle type. Only \"DEG\",\"RAD\" can be use!~");
@@ -31,29 +31,29 @@ bool BasicTools::IsCollinearPoint(const AcGePoint3d& point1, const AcGePoint3d& 
 	}
 }
 
-double BasicTools::GetAngleToXaxis(const AcGePoint3d& start_point, const AcGePoint3d& end_point, char* target_angle_type)
+double BasicTools::GetAngleToXaxis(const AcGePoint3d& start_point, const AcGePoint3d& end_point, const int target_angle_type)
 {
 	AcGeVector3d i(1.0, 0.0, 0.0);
 	AcGeVector3d vector = GetVectorBetweenTwoPoint(start_point, end_point);
 
 	double angle = vector.y >= 0 ? vector.angleTo(i) : -vector.angleTo(i);
 
-	if (target_angle_type == "DEG")
-		return BasicTools::ConvertAngle(angle, "DEG");
-	else if (target_angle_type == "RAD")
+	if (target_angle_type == 0)
+		return BasicTools::ConvertAngle(angle, 0);
+	else if (target_angle_type == 1)
 		return angle;
 	else
 		throw "Wrong angle type. Only \"DEG\",\"RAD\" can be use!~";
 }
 
-double BasicTools::GetAngleToXaxis(const AcGeVector3d& vector, char* target_angle_type)
+double BasicTools::GetAngleToXaxis(const AcGeVector3d& vector, const int target_angle_type)
 {
 	AcGeVector3d i(1.0, 0.0, 0.0);
 	double angle = vector.y >= 0 ? vector.angleTo(i) : -vector.angleTo(i);
 
-	if (target_angle_type == "DEG")
-		return BasicTools::ConvertAngle(angle, "DEG");
-	else if (target_angle_type == "RAD")
+	if (target_angle_type == 0)
+		return BasicTools::ConvertAngle(angle, 0);
+	else if (target_angle_type == 1)
 		return angle;
 	else
 		throw "Wrong angle type. Only \"DEG\",\"RAD\" can be use!~";
@@ -64,15 +64,15 @@ double BasicTools::GetDistanceBetweenTwoPoint(const AcGePoint3d& start_point, co
 	return sqrt((pow(end_point.x - start_point.x, 2)) + (pow(end_point.y - start_point.y, 2)) + (pow(end_point.z - start_point.z, 2)));
 }
 
-double BasicTools::GetAngleByThreePoint(const AcGePoint3d& start_point1, const AcGePoint3d& common_end_point, const AcGePoint3d& start_point2, char* target_angle_type)
+double BasicTools::GetAngleByThreePoint(const AcGePoint3d& start_point1, const AcGePoint3d& common_end_point, const AcGePoint3d& start_point2, const int target_angle_type)
 {
 	AcGeVector3d startPoint1ToEndPoint = BasicTools::GetVectorBetweenTwoPoint(common_end_point, start_point1);
 	AcGeVector3d startPoint2ToEndPoint = BasicTools::GetVectorBetweenTwoPoint(common_end_point, start_point2);
 	double angle = startPoint1ToEndPoint.angleTo(startPoint2ToEndPoint);
 
-	if (target_angle_type == "DEG")
-		return BasicTools::ConvertAngle(angle, "DEG");
-	else if (target_angle_type == "RAD")
+	if (target_angle_type == 0)
+		return BasicTools::ConvertAngle(angle, 0);
+	else if (target_angle_type == 1)
 		return angle;
 	else
 		throw "Wrong angle type. Only \"DEG\",\"RAD\" can be use!~";
@@ -124,7 +124,7 @@ double BasicTools::Min(const double& num1, const double& num2)
 AcGePoint3d BasicTools::OffsetMidPoint(const AcGePoint3d& start_point, const AcGePoint3d& end_point, const double& distance)
 {
 	AcGeVector3d vector1 = BasicTools::GetVectorBetweenTwoPoint(start_point, end_point);
-	double angle = BasicTools::GetAngleToXaxis(vector1, "RAD");
+	double angle = BasicTools::GetAngleToXaxis(vector1, 0);
 	AcGePoint3d offseted_start_point(start_point.x - distance * (sin(angle)), start_point.y + distance * (cos(angle)), 0);
 	AcGePoint3d offseted_end_point(end_point.x - distance * (sin(angle)), end_point.y + distance * (cos(angle)), 0);
 	return BasicTools::GetMidPoint(offseted_start_point, offseted_end_point);

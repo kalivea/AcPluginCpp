@@ -157,6 +157,8 @@ AcDbObjectId StyleTools::LoadLineType(const TCHAR* line_type, const TCHAR* line_
 	acdbHostApplicationServices()->workingDatabase()->getLinetypeTable(line_type_table, OpenMode::kForRead);
 	AcDbObjectId line_type_id = AcDbObjectId::kNull;
 	line_type_table->getAt(line_type, line_type_id);
+
+	line_type_table->close();
 	return line_type_id;
 }
 

@@ -12,10 +12,10 @@ AcDbObjectId Grid::CreateVerticalAxis()
 	AcDbObjectId grid_vertical_id = AcDbObjectId::kNull;
 	block_table->add(grid_vertical_id, block_table_record);
 
-	AcDbCircle* grid_vertical_circle = new AcDbCircle(AcGePoint3d::kOrigin, AcGeVector3d::kZAxis, this->circle_radius);
+	AcDbCircle* grid_vertical_circle = new AcDbCircle(AcGePoint3d::kOrigin, AcGeVector3d::kZAxis, circle_radius_);
 	AcDbLine* grid_vertical_line = new AcDbLine(
 		AcGePoint3d(AcGePoint3d::kOrigin.x, AcGePoint3d::kOrigin.y + grid_vertical_circle->radius(), 0),
-		AcGePoint3d(AcGePoint3d::kOrigin.x, AcGePoint3d::kOrigin.y + grid_vertical_circle->radius() + line_length, 0));
+		AcGePoint3d(AcGePoint3d::kOrigin.x, AcGePoint3d::kOrigin.y + grid_vertical_circle->radius() + line_length_, 0));
 
 	AcDbAttributeDefinition* grid_vertical_attribute = new AcDbAttributeDefinition(AcGePoint3d::kOrigin, _T("index_num"), _T("ID"), _T("Input axis id"), StyleTools::GetTextStyleId(_T("grid_text")));
 	grid_vertical_attribute->setHeight(750);
@@ -46,10 +46,10 @@ AcDbObjectId Grid::CreateHorizonAxis()
 	AcDbObjectId gride_vertical_id = AcDbObjectId::kNull;
 	block_table->add(gride_vertical_id, block_table_record);
 
-	AcDbCircle* grid_vertical_circle = new AcDbCircle(AcGePoint3d::kOrigin, AcGeVector3d::kZAxis, this->circle_radius);
+	AcDbCircle* grid_vertical_circle = new AcDbCircle(AcGePoint3d::kOrigin, AcGeVector3d::kZAxis, circle_radius_);
 	AcDbLine* gride_vertical_line = new AcDbLine(
 		AcGePoint3d(AcGePoint3d::kOrigin.x + grid_vertical_circle->radius(), AcGePoint3d::kOrigin.y, 0),
-		AcGePoint3d(AcGePoint3d::kOrigin.x + grid_vertical_circle->radius() + line_length, AcGePoint3d::kOrigin.y, 0));
+		AcGePoint3d(AcGePoint3d::kOrigin.x + grid_vertical_circle->radius() + line_length_, AcGePoint3d::kOrigin.y, 0));
 
 	AcDbAttributeDefinition* gride_vertical_attribute = new AcDbAttributeDefinition(AcGePoint3d::kOrigin, _T("index_num"), _T("ID"), _T("Input axis id"), StyleTools::GetTextStyleId(_T("grid_text")));
 	gride_vertical_attribute->setHeight(750);

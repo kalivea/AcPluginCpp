@@ -3,12 +3,12 @@
 class POLADLL_GRID_API Grid
 {
 private:
-	double circle_radius;
-	double line_length;
-	double axis_angle;
+	double circle_radius_;
+	double line_length_;
+	double axis_angle_;
 public:
 	Grid(double radius, double length, double angle)
-		:circle_radius(radius), line_length(length), axis_angle(angle)
+		:circle_radius_(radius), line_length_(length), axis_angle_(angle)
 	{
 	}
 	~Grid()

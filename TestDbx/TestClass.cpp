@@ -44,26 +44,46 @@ void TestClass::Test()
 	//}
 #pragma endregion
 #pragma region Line Type Test
-	AcGePoint3d s_p(0, 0, 0);
-	AcGePoint3d e_p(1000, 1000, 0);
-	AcDbObjectId l_id = DrawEntity::DrawLine(s_p, e_p);
+	//AcGePoint3d s_p(0, 0, 0);
+	//AcGePoint3d e_p(1000, 1000, 0);
+	//AcDbObjectId l_id = DrawEntity::DrawLine(s_p, e_p);
 
-	AcGePoint3d s_p2(1000, 1000, 0);
-	AcGePoint3d e_p2(2000, 2000, 0);
-	AcDbObjectId l_id2 = DrawEntity::DrawLine(s_p2, e_p2);
-	StyleTools::LoadLineType(_T("ACAD_ISO02W100"), _T("acad.lin"));
+	//AcGePoint3d s_p2(1000, 1000, 0);
+	//AcGePoint3d e_p2(2000, 2000, 0);
+	//AcDbObjectId l_id2 = DrawEntity::DrawLine(s_p2, e_p2);
+	//StyleTools::LoadLineType(_T("ACAD_ISO02W100"), _T("acad.lin"));
 
-	AcDbEntity* l_ent = nullptr;
-	acdbOpenAcDbEntity(l_ent, l_id, OpenMode::kForWrite);
-	l_ent->setLinetype(_T("ACAD_ISO02W100"));
-	l_ent->setColorIndex(1);
-	l_ent->close();
+	//AcDbEntity* l_ent = nullptr;
+	//acdbOpenAcDbEntity(l_ent, l_id, OpenMode::kForWrite);
+	//l_ent->setLinetype(_T("ACAD_ISO02W100"));
+	//l_ent->setColorIndex(1);
+	//l_ent->close();
 
-	AcDbEntity* l_ent2 = nullptr;
-	acdbOpenAcDbEntity(l_ent2, l_id2, OpenMode::kForWrite);
-	l_ent2->setLinetype(StyleTools::GetLineStyleId(_T("ACAD_ISO02W100")));
-	l_ent2->setColorIndex(2);
-	l_ent2->close();
+	//AcDbEntity* l_ent2 = nullptr;
+	//acdbOpenAcDbEntity(l_ent2, l_id2, OpenMode::kForWrite);
+	//l_ent2->setLinetype(StyleTools::GetLineStyleId(_T("ACAD_ISO02W100")));
+	//l_ent2->setColorIndex(2);
+	//l_ent2->close();
+
+/*AcGePoint3d vertex_array[4];
+	AcGePoint3d center_point(0, 0, 0);
+	AcGeVector3d dir(sqrt(3), 1, 0);
+	AcGePoint2dArray _2d;
+	AcGePoint2dArray _2d1;
+	double pillar_d = 800;
+	double pillar_h = 1000;*/
+
+#pragma endregion
+#pragma region DBX TEST
+	CPolaCustomPillar* pillar_pointer = new CPolaCustomPillar();
+
+	pillar_pointer->setCenterPoint(AcGePoint3d(1000, 1000, 0));
+	pillar_pointer->setPillarType(1);
+	pillar_pointer->setDiameter(500, 800);
+
+	pillar_pointer->CalculateVertex();
+
+	AddToModelSpace::AddEntityToModelSpace(pillar_pointer);
 #pragma endregion
 
 

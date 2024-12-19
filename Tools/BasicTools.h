@@ -11,10 +11,10 @@ class POLADLL_TOOLS_API BasicTools
 {
 public:
 	// math tools: Angle tools
-	static double ConvertAngle(const double& angele, char* target_angle_type);
-	static double GetAngleToXaxis(const AcGePoint3d& start_point, const AcGePoint3d& end_point, char* target_angle_type);
-	static double GetAngleToXaxis(const AcGeVector3d& vector, char* target_angle_type);
-	static double GetAngleByThreePoint(const AcGePoint3d& start_point1, const AcGePoint3d& common_end_point, const AcGePoint3d& start_point2, char* target_angle_type);
+	static double ConvertAngle(const double& angle, const int target_angle_type);
+	static double GetAngleToXaxis(const AcGePoint3d& start_point, const AcGePoint3d& end_point, const int target_angle_type);
+	static double GetAngleToXaxis(const AcGeVector3d& vector, const int target_angle_type);
+	static double GetAngleByThreePoint(const AcGePoint3d& start_point1, const AcGePoint3d& common_end_point, const AcGePoint3d& start_point2, const int target_angle_type);
 
 	// math tools: Geometry
 	static AcGePoint3d GetMidPoint(const AcGePoint3d& start_point, const AcGePoint3d& end_point);

@@ -88,7 +88,7 @@ void EditEntity::RotateEntity(const AcDbObjectId& entity_id, const AcGePoint3d& 
 	}
 	double temp_angle;
 	if (angle_type == "DEG")
-		temp_angle = BasicTools::ConvertAngle(angle, "RAD");
+		temp_angle = BasicTools::ConvertAngle(angle, 1);
 	else if (angle_type == "RAD")
 		temp_angle = angle;
 	else

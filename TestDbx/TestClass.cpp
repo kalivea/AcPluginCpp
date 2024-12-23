@@ -75,10 +75,18 @@ void TestClass::Test()
 
 #pragma endregion
 #pragma region DBX TEST
+
+	StyleTools::LoadLineType(_T("DASHED"), _T("acad.lin"));
+
 	CPolaCustomPillar* pillar_pointer = new CPolaCustomPillar();
 
-	pillar_pointer->setCenterPoint(AcGePoint3d(1000, 1000, 0));
+	pillar_pointer->setCenterPoint(AcGePoint3d(100, 100, 0));
+	
 	pillar_pointer->setPillarType(1);
+	pillar_pointer->setPillarProperty(1);
+	pillar_pointer->setSn(2);
+	
+	pillar_pointer->setViewable(false);
 	pillar_pointer->setDiameter(500, 800);
 
 	pillar_pointer->CalculateVertex();

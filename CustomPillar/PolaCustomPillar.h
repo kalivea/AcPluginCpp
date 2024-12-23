@@ -58,6 +58,7 @@ protected:
 
 public:
 	CPolaCustomPillar();
+	CPolaCustomPillar(const CPolaCustomPillar& pillar_template);
 	virtual ~CPolaCustomPillar();
 
 	//----- AcDbObject protocols
@@ -104,15 +105,15 @@ private:
 	//					save to XData
 	AcGePoint3d center_point_;					// center point: Used to define the insertion point of the entity in the drawing file.
 	AcGeVector3d direction_vector_;				// direction vercor: The angle between the center point and the x-axis, used to define the positive direction of the entity.
-	double pillar_d_, pillar_h_;					// Diameter of the entity: If it is a rectangular pillar, d and h represent the length and width.
-												//						   If it is a circular pillar, d = h, represent the diameter of the circle.
+	double pillar_d_, pillar_h_;				// Diameter of the entity: If it is a rectangular pillar, d and h represent the length and width.
+	//						   If it is a circular pillar, d = h, represent the diameter of the circle.
 	bool viewable_;								// viewalbe: Used to control the entity line type. true mean continuous; false mean dashed.
 	Adesk::Int32 pillar_property_;				// pillar property: (int) 0 mean concrete; (int) 1 mean concrete-filled steel tube pillar.
 	Adesk::Int32 pillar_serial_number_;			// pillar serial number.
 	Adesk::Int32 pillar_type_;					// pillar type: (int) 0 mean round pillar; (int) 1 mean rectangular pillar.
 
 	//	               auxiliary data
-	AcGePoint3dArray vertex_;
+	AcGePoint3dArray vertex_;					//vertex: store rectangular pillar vertex.
 
 public:
 	//					set function
@@ -121,7 +122,7 @@ public:
 	void setDiameter(double d, double h);
 	void setViewable(bool view);
 	void setPillarProperty(Adesk::Int32 prop);
-	void setSN(Adesk::Int32 sn);
+	void setSn(Adesk::Int32 sn);
 	void setPillarType(Adesk::Int32 type);
 
 	//					get function
@@ -135,8 +136,16 @@ public:
 
 	//				   auxiliary data generation function
 	void CalculateVertex();
+	void UpdateEntity();			// TODO
 
-	void UpdateEntity();
+	//                  move transform
+	virtual Acad::ErrorStatus subTransformBy(const AcGeMatrix3d& transform_matrix);
+	//virtual Acad::ErrorStatus subGetTransformedCopy(AcGeMatrix3d transform_atrix, AcDbEntity* entity);
+
+	//					init pillar and value check
+	static bool checkValue(const CPolaCustomPillar* pillar);
+	static void BatchInsert(CPolaCustomPillar& pillar, AcGePoint3dArray insert_point_array);
+
 };
 
 #ifdef CUSTOMPILLAR_MODULE

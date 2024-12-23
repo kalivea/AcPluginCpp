@@ -25,4 +25,3 @@ public:
 	static bool IsTextStyleExist(const TCHAR* text_style_name);
 	static bool IsLineTypeExist(const TCHAR* line_type);
 };
-

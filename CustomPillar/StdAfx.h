@@ -73,6 +73,7 @@
 
 #include "StyleTools.h"
 #include "BasicTools.h"
+#include "AddToModelSpace.h"
                         #pragma pack(pop)
 
     

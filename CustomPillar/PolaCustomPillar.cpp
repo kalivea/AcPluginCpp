@@ -166,12 +166,12 @@ Adesk::Boolean CPolaCustomPillar::subWorldDraw(AcGiWorldDraw * mode) {
 	{
 		if (viewable_)
 		{
-			mode->geometry().circle(center_point_, pillar_d_, AcGeVector3d::kZAxis);
+			mode->geometry().circle(center_point_, pillar_d_ * 0.5, AcGeVector3d::kZAxis);
 		}
 		else
 		{
 			mode->subEntityTraits().setLineType(StyleTools::GetLineStyleId(_T("DASHED")));
-			mode->geometry().circle(center_point_, pillar_d_, AcGeVector3d::kZAxis);
+			mode->geometry().circle(center_point_, pillar_d_ * 0.5, AcGeVector3d::kZAxis);
 		}
 	}
 	else if (pillar_type_ == 1)
@@ -200,9 +200,15 @@ Adesk::Boolean CPolaCustomPillar::subWorldDraw(AcGiWorldDraw * mode) {
 				mode->subEntityTraits().setLineType(StyleTools::GetLineStyleId(_T("DASHED")));
 				mode->subEntityTraits().setLineTypeScale(100);
 
-				vertex_.append(vertex_.at(0));
-				mode->geometry().polyline(vertex_.length(), vertex_.asArrayPtr());
-				vertex_.removeLast();
+				AcDbPolyline* pl = new AcDbPolyline();
+				for (int i = 0; i < vertex_.length(); i++)
+				{
+					pl->addVertexAt(i, BasicTools::Point3dToPoint2d(vertex_.at(i)));
+				}
+				pl->setDatabaseDefaults();
+				pl->setClosed(true);
+				pl->worldDraw(mode);
+				delete pl;
 
 				AcDbLine(vertex_.at(0), vertex_.at(2)).worldDraw(mode);
 				AcDbLine(vertex_.at(1), vertex_.at(3)).worldDraw(mode);
@@ -234,6 +240,8 @@ Acad::ErrorStatus CPolaCustomPillar::subGetOsnapPoints(
 	{
 		AcDbCircle* contour_circle = new AcDbCircle();
 		contour_circle->setCenter(center_point_);
+		contour_circle->setRadius(pillar_d_ * 0.5);
+
 		error_status = contour_circle->getOsnapPoints(osnapMode, gsSelectionMark, pickPoint, lastPoint, viewXform, snapPoints, geomIds);
 		delete contour_circle;
 	}
@@ -271,6 +279,7 @@ Acad::ErrorStatus CPolaCustomPillar::subGetOsnapPoints(
 	{
 		AcDbCircle* contour_circle = new AcDbCircle();
 		contour_circle->setCenter(center_point_);
+		contour_circle->setRadius(pillar_d_ * 0.5);
 		error_status = contour_circle->getOsnapPoints(osnapMode, gsSelectionMark, pickPoint, lastPoint, viewXform, snapPoints, geomIds, insertionMat);
 		delete contour_circle;
 	}
@@ -299,12 +308,22 @@ Acad::ErrorStatus CPolaCustomPillar::subGetGripPoints(
 	assertReadEnabled();
 	//----- This method is never called unless you return eNotImplemented 
 	//----- from the new getGripPoints() method below (which is the default implementation)
-	for (int i = 0; i < vertex_.length(); i++)
+	if (pillar_type_ == 0)
 	{
-		gripPoints.append(vertex_.at(i));
+		gripPoints.append(center_point_);
 	}
-	gripPoints.append(center_point_);
-
+	else if (pillar_type_ == 1)
+	{
+		for (int i = 0; i < vertex_.length(); i++)
+		{
+			gripPoints.append(vertex_.at(i));
+		}
+		gripPoints.append(center_point_);
+	}
+	else
+	{
+		throw;
+	}
 	return Acad::eOk;
 }
 
@@ -520,6 +539,11 @@ void CPolaCustomPillar::BatchInsert(CPolaCustomPillar & pillar_template, AcGePoi
 		for (int i = 0; i < insert_point_array.length(); i++)
 		{
 			CPolaCustomPillar* pillar = new CPolaCustomPillar(pillar_template);
+			pillar->vertex_.removeAll();
+			//pillar->checkValue(pillar);
+			pillar->setCenterPoint(insert_point_array.at(i));
+			pillar->CalculateVertex();
+			AddToModelSpace::AddEntityToModelSpace(pillar);
 		}
 	}
 }

@@ -83,6 +83,7 @@ void TestClass::Test()
 	pillar->setPillarType(1);
 	pillar->setViewable(true);
 	pillar->setDirectionVector();
+	pillar->setPillarProperty(0);
 
 	for (int i = 0; i < 5; i++)
 	{

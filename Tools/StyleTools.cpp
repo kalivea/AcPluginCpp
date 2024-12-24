@@ -8,7 +8,7 @@ AcDbObjectId StyleTools::InitTextStyle()
 	AcDbTextStyleTableRecord* text_style_table_record = new AcDbTextStyleTableRecord();
 	text_style_table_record->setName(_T("pt_txt"));
 	text_style_table_record->setFileName(_T("tssdeng.shx"));
-	text_style_table_record->setXScale(0.7);
+	text_style_table_record->setXScale(0.75);
 	text_style_table->add(text_style_table_record);
 
 	AcDbObjectId default_text_style_id = AcDbObjectId::kNull;

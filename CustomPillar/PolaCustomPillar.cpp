@@ -96,7 +96,7 @@ Acad::ErrorStatus CPolaCustomPillar::dwgOutFields(AcDbDwgFiler * pFiler) const {
 
 	for (int i = 0; i < 4; i++)
 	{
-		es = pFiler->writeItem(vertex_[i]);
+		es = pFiler->writeItem(vertex_.at(i));
 		if (es != Acad::eOk)
 			return es;
 	}
@@ -146,12 +146,12 @@ Acad::ErrorStatus CPolaCustomPillar::dwgInFields(AcDbDwgFiler * pFiler) {
 	es = pFiler->readItem(&pillar_serial_number_);
 	if (es != Acad::eOk)
 		return es;
-
+	vertex_.removeAll();
 	CalculateVertex();
 
 	for (int i = 0; i < 4; i++)
 	{
-		es = pFiler->readItem(&vertex_[i]);
+		es = pFiler->readItem(&vertex_.at(i));
 		if (es != Acad::eOk)
 			return es;
 	}
@@ -214,6 +214,14 @@ Adesk::Boolean CPolaCustomPillar::subWorldDraw(AcGiWorldDraw * mode) {
 				AcDbLine(vertex_.at(1), vertex_.at(3)).worldDraw(mode);
 			}
 		}
+		else
+		{
+			throw;
+		}
+	}
+	else
+	{
+		throw;
 	}
 	return (AcDbEntity::subWorldDraw(mode));
 }
@@ -534,16 +542,51 @@ bool CPolaCustomPillar::checkValue(const CPolaCustomPillar * pillar)
 
 void CPolaCustomPillar::BatchInsert(CPolaCustomPillar & pillar_template, AcGePoint3dArray insert_point_array)
 {
-	if (!insert_point_array.isEmpty())
+	if (pillar_template.getPillarType() == 0)
 	{
-		for (int i = 0; i < insert_point_array.length(); i++)
+		if (pillar_template.checkValue(&pillar_template))
 		{
-			CPolaCustomPillar* pillar = new CPolaCustomPillar(pillar_template);
-			pillar->vertex_.removeAll();
-			//pillar->checkValue(pillar);
-			pillar->setCenterPoint(insert_point_array.at(i));
-			pillar->CalculateVertex();
-			AddToModelSpace::AddEntityToModelSpace(pillar);
+			for (int i = 0; i < insert_point_array.length(); i++)
+			{
+				CPolaCustomPillar* pillar = new CPolaCustomPillar(pillar_template);
+				pillar->vertex_.removeAll();
+				pillar->setCenterPoint(insert_point_array.at(i));
+				AddToModelSpace::AddEntityToModelSpace(pillar);
+			}
 		}
+		else
+		{
+			throw;
+		}
+	}
+	else if (pillar_template.getPillarType() == 1)
+	{
+		if (!insert_point_array.isEmpty())
+		{
+			for (int i = 0; i < insert_point_array.length(); i++)
+			{
+				CPolaCustomPillar* pillar = new CPolaCustomPillar(pillar_template);
+				pillar->vertex_.removeAll();
+				if (checkValue(pillar))
+				{
+					pillar->setCenterPoint(insert_point_array.at(i));
+					pillar->CalculateVertex();
+					AddToModelSpace::AddEntityToModelSpace(pillar);
+				}
+				else
+				{
+					throw;
+				}
+
+			}
+		}
+		else
+		{
+			throw;
+		}
+	}
+	else
+	{
+		throw;
 	}
 }

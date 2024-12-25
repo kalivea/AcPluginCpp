@@ -30,6 +30,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CustomPillar", "CustomPilla
 		{F87873B0-2B5D-4D52-8FD5-BE1CDC50B2E3} = {F87873B0-2B5D-4D52-8FD5-BE1CDC50B2E3}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Ui", "Ui\Ui.vcxproj", "{027D55E1-871F-4690-A60B-5C29F38EF590}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -56,6 +58,10 @@ Global
 		{D8296FCB-90E3-43C7-8A76-118466D5F3D8}.Debug|x64.Build.0 = Debug|x64
 		{D8296FCB-90E3-43C7-8A76-118466D5F3D8}.Release|x64.ActiveCfg = Release|x64
 		{D8296FCB-90E3-43C7-8A76-118466D5F3D8}.Release|x64.Build.0 = Release|x64
+		{027D55E1-871F-4690-A60B-5C29F38EF590}.Debug|x64.ActiveCfg = Debug|x64
+		{027D55E1-871F-4690-A60B-5C29F38EF590}.Debug|x64.Build.0 = Debug|x64
+		{027D55E1-871F-4690-A60B-5C29F38EF590}.Release|x64.ActiveCfg = Release|x64
+		{027D55E1-871F-4690-A60B-5C29F38EF590}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

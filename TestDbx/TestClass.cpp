@@ -109,6 +109,6 @@ void TestClass::Test()
 	//CPolaCustomPillar::BatchInsert(*pillar2, insert_point);
 #pragma endregion
 #pragma region MFC Test
-	pillar
+
 #pragma endregion
 }

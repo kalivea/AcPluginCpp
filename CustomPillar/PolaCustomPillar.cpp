@@ -93,14 +93,15 @@ Acad::ErrorStatus CPolaCustomPillar::dwgOutFields(AcDbDwgFiler * pFiler) const {
 	es = pFiler->writeItem(pillar_serial_number_);
 	if (es != Acad::eOk)
 		return es;
-
-	for (int i = 0; i < 4; i++)
+	if (pillar_type_ == 1)
 	{
-		es = pFiler->writeItem(vertex_.at(i));
-		if (es != Acad::eOk)
-			return es;
+		for (int i = 0; i < 4; i++)
+		{
+			es = pFiler->writeItem(vertex_.at(i));
+			if (es != Acad::eOk)
+				return es;
+		}
 	}
-
 	return (pFiler->filerStatus());
 }
 
@@ -146,14 +147,16 @@ Acad::ErrorStatus CPolaCustomPillar::dwgInFields(AcDbDwgFiler * pFiler) {
 	es = pFiler->readItem(&pillar_serial_number_);
 	if (es != Acad::eOk)
 		return es;
-	vertex_.removeAll();
-	CalculateVertex();
-
-	for (int i = 0; i < 4; i++)
+	if (pillar_type_ == 1)
 	{
-		es = pFiler->readItem(&vertex_.at(i));
-		if (es != Acad::eOk)
-			return es;
+		vertex_.removeAll();
+		CalculateVertex();
+		for (int i = 0; i < 4; i++)
+		{
+			es = pFiler->readItem(&vertex_.at(i));
+			if (es != Acad::eOk)
+				return es;
+		}
 	}
 	return (pFiler->filerStatus());
 }
@@ -513,13 +516,23 @@ void CPolaCustomPillar::UpdateEntity()
 
 Acad::ErrorStatus CPolaCustomPillar::subTransformBy(const AcGeMatrix3d & transform_matrix)
 {
-	for (int i = 0; i < vertex_.length(); i++)
+	if (getPillarType() == 0)
 	{
-		vertex_.at(i).transformBy(transform_matrix);
+		center_point_.transformBy(transform_matrix);
 	}
-	center_point_.transformBy(transform_matrix);
-	direction_vector_ = direction_vector_.transformBy(transform_matrix);
-
+	else if (getPillarType() == 1)
+	{
+		for (int i = 0; i < vertex_.length(); i++)
+		{
+			vertex_.at(i).transformBy(transform_matrix);
+		}
+		center_point_.transformBy(transform_matrix);
+		direction_vector_ = direction_vector_.transformBy(transform_matrix);
+	}
+	else
+	{
+		throw;
+	}
 	return Acad::eOk;
 }
 

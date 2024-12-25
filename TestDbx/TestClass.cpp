@@ -80,15 +80,16 @@ void TestClass::Test()
 	AcGePoint3dArray insert_point;
 	CPolaCustomPillar* pillar = new CPolaCustomPillar();
 	pillar->setDiameter(350, 500);
-	pillar->setPillarType(1);
+	pillar->setPillarType(0);
 	pillar->setViewable(true);
 	pillar->setDirectionVector();
 	pillar->setPillarProperty(0);
-
+	pillar->setSn(1);
 	for (int i = 0; i < 5; i++)
 	{
 		insert_point.append(AcGePoint3d(i * 7500, 1000, 0));
 	}
 
 	CPolaCustomPillar::BatchInsert(*pillar, insert_point);
+
 }

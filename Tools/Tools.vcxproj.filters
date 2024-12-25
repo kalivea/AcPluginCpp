@@ -44,7 +44,7 @@
     <ClInclude Include="BasicTools.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TooldDef.h">
+    <ClInclude Include="ToolsDef.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -82,7 +82,7 @@
     <ClInclude Include="Resource.h" />
     <ClInclude Include="StdAfx.h" />
     <ClInclude Include="StyleTools.h" />
-    <ClInclude Include="TooldDef.h" />
+    <ClInclude Include="ToolsDef.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Tools.rc" />

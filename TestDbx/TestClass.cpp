@@ -78,6 +78,7 @@ void TestClass::Test()
 
 	StyleTools::LoadLineType(_T("DASHED"), _T("acad.lin"));
 	AcGePoint3dArray insert_point;
+	//-----------------------------------------------------------------
 	CPolaCustomPillar* pillar = new CPolaCustomPillar();
 	pillar->setDiameter(350, 500);
 	pillar->setPillarType(0);
@@ -85,11 +86,25 @@ void TestClass::Test()
 	pillar->setDirectionVector();
 	pillar->setPillarProperty(0);
 	pillar->setSn(1);
+	insert_point.removeAll();
 	for (int i = 0; i < 5; i++)
 	{
-		insert_point.append(AcGePoint3d(i * 7500, 1000, 0));
+		insert_point.append(AcGePoint3d(i * 2500, 1000, 0));
 	}
-
 	CPolaCustomPillar::BatchInsert(*pillar, insert_point);
+	//------------------------------------------------------------------
+	CPolaCustomPillar* pillar2 = new CPolaCustomPillar();
+	pillar2->setDiameter(350, 500);
+	pillar2->setPillarType(1);
+	pillar2->setViewable(true);
+	pillar2->setDirectionVector(AcGeVector3d(1, 1, 0));
+	pillar2->setPillarProperty(0);
+	pillar2->setSn(1);
+	insert_point.removeAll();
+	for (int i = 0; i < 5; i++)
+	{
 
+		insert_point.append(AcGePoint3d(i * 2500, 0, 0));
+	}
+	CPolaCustomPillar::BatchInsert(*pillar2, insert_point);
 }

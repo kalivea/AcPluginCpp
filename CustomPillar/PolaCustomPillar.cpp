@@ -325,11 +325,11 @@ Acad::ErrorStatus CPolaCustomPillar::subGetGripPoints(
 	}
 	else if (pillar_type_ == 1)
 	{
+		gripPoints.append(center_point_);
 		for (int i = 0; i < vertex_.length(); i++)
 		{
 			gripPoints.append(vertex_.at(i));
-		}
-		gripPoints.append(center_point_);
+		}	
 	}
 	else
 	{

@@ -17,7 +17,7 @@ void TestUi::Test()
 
 	if (ui.DoModal() != IDOK)
 	{
-		return;dialod
+		return;
 	}
 
 	StyleTools::LoadLineType(_T("DASHED"), _T("acad.lin"));

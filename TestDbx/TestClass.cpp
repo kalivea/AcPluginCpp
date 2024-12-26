@@ -76,37 +76,37 @@ void TestClass::Test()
 #pragma endregion
 #pragma region DBX TEST
 
-	//StyleTools::LoadLineType(_T("DASHED"), _T("acad.lin"));
-	//AcGePoint3dArray insert_point;
-	////-----------------------------------------------------------------
-	//CPolaCustomPillar* pillar = new CPolaCustomPillar();
-	//pillar->setDiameter(350, 500);
-	//pillar->setPillarType(0);
-	//pillar->setViewable(true);
-	//pillar->setDirectionVector();
-	//pillar->setPillarProperty(0);
-	//pillar->setSn(1);
-	//insert_point.removeAll();
-	//for (int i = 0; i < 5; i++)
-	//{
-	//	insert_point.append(AcGePoint3d(i * 2500, 1000, 0));
-	//}
-	//CPolaCustomPillar::BatchInsert(*pillar, insert_point);
-	////------------------------------------------------------------------
-	//CPolaCustomPillar* pillar2 = new CPolaCustomPillar();
-	//pillar2->setDiameter(350, 500);
-	//pillar2->setPillarType(1);
-	//pillar2->setViewable(true);
-	//pillar2->setDirectionVector(AcGeVector3d(1, 1, 0));
-	//pillar2->setPillarProperty(0);
-	//pillar2->setSn(1);
-	//insert_point.removeAll();
-	//for (int i = 0; i < 5; i++)
-	//{
+	StyleTools::LoadLineType(_T("DASHED"), _T("acad.lin"));
+	AcGePoint3dArray insert_point;
+	//-----------------------------------------------------------------
+	CPolaCustomPillar* pillar = new CPolaCustomPillar();
+	pillar->setDiameter(350, 500);
+	pillar->setPillarType(0);
+	pillar->setViewable(true);
+	pillar->setDirectionVector();
+	pillar->setPillarProperty(0);
+	pillar->setSn(1);
+	insert_point.removeAll();
+	for (int i = 0; i < 5; i++)
+	{
+		insert_point.append(AcGePoint3d(i * 2500, 1000, 0));
+	}
+	CPolaCustomPillar::BatchInsert(*pillar, insert_point);
+	//------------------------------------------------------------------
+	CPolaCustomPillar* pillar2 = new CPolaCustomPillar();
+	pillar2->setDiameter(350, 500);
+	pillar2->setPillarType(1);
+	pillar2->setViewable(true);
+	pillar2->setDirectionVector(AcGeVector3d(1, 1, 0));
+	pillar2->setPillarProperty(0);
+	pillar2->setSn(1);
+	insert_point.removeAll();
+	for (int i = 0; i < 5; i++)
+	{
 
-	//	insert_point.append(AcGePoint3d(i * 2500, 0, 0));
-	//}
-	//CPolaCustomPillar::BatchInsert(*pillar2, insert_point);
+		insert_point.append(AcGePoint3d(i * 2500, 0, 0));
+	}
+	CPolaCustomPillar::BatchInsert(*pillar2, insert_point);
 #pragma endregion
 #pragma region MFC Test
 

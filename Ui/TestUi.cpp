@@ -13,11 +13,24 @@ void TestUi::TestClassUnload()
 
 void TestUi::Test()
 {
-	acutPrintf(_T("Ui"));
 	CPolaCustomUi ui;
-	ui.DoModal();
-	if (ui.DoModal() == IDOK)
+
+	if (ui.DoModal() != IDOK)
 	{
-		return;
+		return;dialod
 	}
+
+	StyleTools::LoadLineType(_T("DASHED"), _T("acad.lin"));
+	AcGePoint3dArray insert_point;
+	//-----------------------------------------------------------------
+	CPolaCustomPillar* pillar = new CPolaCustomPillar();
+	pillar->setDiameter(ui.b, ui.h);
+	pillar->setPillarType(ui.shape);
+	pillar->setViewable(ui.viewable);
+	pillar->setDirectionVector();
+	pillar->setPillarProperty(0);
+	pillar->setSn(1);
+	pillar->setCenterPoint(AcGePoint3d(ui.x, ui.y, 0));
+	pillar->CalculateVertex();
+	AddToModelSpace::AddEntityToModelSpace(pillar);
 }

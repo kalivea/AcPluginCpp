@@ -27,24 +27,52 @@
 #include "PolaCustomUi.h"
 
 //-----------------------------------------------------------------------------
-IMPLEMENT_DYNAMIC (CPolaCustomUi, CAdUiBaseDialog)
+IMPLEMENT_DYNAMIC(CPolaCustomUi, CAdUiBaseDialog)
 
 BEGIN_MESSAGE_MAP(CPolaCustomUi, CAdUiBaseDialog)
 	ON_MESSAGE(WM_ACAD_KEEPFOCUS, OnAcadKeepFocus)
+	ON_BN_CLICKED(IDOK, &CPolaCustomUi::OnBnClickedOk)
 END_MESSAGE_MAP()
 
 //-----------------------------------------------------------------------------
-CPolaCustomUi::CPolaCustomUi (CWnd *pParent /*=NULL*/, HINSTANCE hInstance /*=NULL*/) : CAdUiBaseDialog (CPolaCustomUi::IDD, pParent, hInstance) {
+CPolaCustomUi::CPolaCustomUi(CWnd* pParent /*=NULL*/, HINSTANCE hInstance /*=NULL*/) : CAdUiBaseDialog(CPolaCustomUi::IDD, pParent, hInstance) {
 }
 
 //-----------------------------------------------------------------------------
-void CPolaCustomUi::DoDataExchange (CDataExchange *pDX) {
-	CAdUiBaseDialog::DoDataExchange (pDX) ;
+void CPolaCustomUi::DoDataExchange(CDataExchange* pDX) {
+	CAdUiBaseDialog::DoDataExchange(pDX);
+	DDX_Control(pDX, IDC_EDIT1, Edit_b);
+	DDX_Control(pDX, IDC_EDIT2, Edit_h);
+	DDX_Control(pDX, IDC_EDIT3, Edit_viewable);
+	DDX_Control(pDX, IDC_EDIT4, Edit_shape);
+	DDX_Control(pDX, IDC_EDIT5, Edit_x);
+	DDX_Control(pDX, IDC_EDIT6, Edit_y);
 }
 
 //-----------------------------------------------------------------------------
 //----- Needed for modeless dialogs to keep focus.
 //----- Return FALSE to not keep the focus, return TRUE to keep the focus
-LRESULT CPolaCustomUi::OnAcadKeepFocus (WPARAM, LPARAM) {
-	return (TRUE) ;
+LRESULT CPolaCustomUi::OnAcadKeepFocus(WPARAM, LPARAM) {
+	return (TRUE);
+}
+
+void CPolaCustomUi::OnBnClickedOk()
+{
+	CString temp;
+	Edit_b.GetWindowTextW(temp);
+	b = _wtof(temp);
+	Edit_h.GetWindowTextW(temp);
+	h = _wtof(temp);
+
+	Edit_viewable.GetWindowTextW(temp);
+	viewable = _wtoi(temp);
+
+	Edit_shape.GetWindowTextW(temp);
+	shape = _wtoi(temp);
+	Edit_x.GetWindowTextW(temp);
+	x = _wtof(temp);
+	Edit_y.GetWindowTextW(temp);
+	y = _wtoi(temp);
+	// TODO: Add your control notification handler code here
+	CDialog::OnOK();
 }

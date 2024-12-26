@@ -42,4 +42,21 @@ protected:
 	afx_msg LRESULT OnAcadKeepFocus (WPARAM, LPARAM) ;
 
 	DECLARE_MESSAGE_MAP()
+public:
+	afx_msg void OnBnClickedOk();
+
+
+	CAcUiEdit Edit_b;
+	CAcUiEdit Edit_h;
+	CAcUiEdit Edit_viewable;
+	CAcUiEdit Edit_shape;
+	CAcUiEdit Edit_x;
+	CAcUiEdit Edit_y;
+
+	double b;
+	double h;
+	int viewable;
+	int shape;
+	double x;
+	double y;
 } ;

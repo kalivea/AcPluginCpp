@@ -78,6 +78,8 @@
 
 #include "TestUi.h"
 #include "PolaCustomUi.h"
+#include "PolaCustomPillar.h"
+#include "AddToModelSpace.h"
     //- Declare it as an extern here so that it becomes available in all modules
     extern AcApDataManager<CDocData> DocVars;
 

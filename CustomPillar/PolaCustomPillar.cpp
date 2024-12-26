@@ -603,3 +603,10 @@ void CPolaCustomPillar::BatchInsert(CPolaCustomPillar & pillar_template, AcGePoi
 		throw;
 	}
 }
+
+void CPolaCustomPillar::SingleInsert(CPolaCustomPillar& pillar_template, AcGePoint3d insert_point)
+{
+	AcGePoint3dArray tmp_array;
+	tmp_array.append(insert_point);
+	BatchInsert(pillar_template, tmp_array);
+}

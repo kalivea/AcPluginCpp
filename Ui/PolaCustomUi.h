@@ -39,12 +39,11 @@ public:
 
 protected:
 	virtual void DoDataExchange (CDataExchange *pDX) ;
-	afx_msg LRESULT OnAcadKeepFocus (WPARAM, LPARAM) ;
 
+	afx_msg LRESULT OnAcadKeepFocus (WPARAM, LPARAM) ;
 	DECLARE_MESSAGE_MAP()
 public:
 	afx_msg void OnBnClickedOk();
-
 
 	CAcUiEdit Edit_b;
 	CAcUiEdit Edit_h;
@@ -59,4 +58,6 @@ public:
 	int shape;
 	double x;
 	double y;
+
+	void PreviewPillar();
 } ;

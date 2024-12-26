@@ -76,3 +76,10 @@ void CPolaCustomUi::OnBnClickedOk()
 	// TODO: Add your control notification handler code here
 	CDialog::OnOK();
 }
+
+void CPolaCustomUi::PreviewPillar()
+{
+	CDC* dc = new CDC();
+	HDC hdc = ::GetDC(GetDlgItem(IDC_STATIC)->m_hWnd);
+}
+

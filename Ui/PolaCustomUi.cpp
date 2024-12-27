@@ -32,6 +32,9 @@ IMPLEMENT_DYNAMIC(CPolaCustomUi, CAdUiBaseDialog)
 BEGIN_MESSAGE_MAP(CPolaCustomUi, CAdUiBaseDialog)
 	ON_MESSAGE(WM_ACAD_KEEPFOCUS, OnAcadKeepFocus)
 	ON_BN_CLICKED(IDOK, &CPolaCustomUi::OnBnClickedOk)
+
+	ON_WM_PAINT()
+	ON_BN_CLICKED(IDC_BUTTON1, &CPolaCustomUi::OnBnClickedButton1)
 END_MESSAGE_MAP()
 
 //-----------------------------------------------------------------------------
@@ -47,6 +50,7 @@ void CPolaCustomUi::DoDataExchange(CDataExchange* pDX) {
 	DDX_Control(pDX, IDC_EDIT4, Edit_shape);
 	DDX_Control(pDX, IDC_EDIT5, Edit_x);
 	DDX_Control(pDX, IDC_EDIT6, Edit_y);
+
 }
 
 //-----------------------------------------------------------------------------
@@ -77,9 +81,35 @@ void CPolaCustomUi::OnBnClickedOk()
 	CDialog::OnOK();
 }
 
-void CPolaCustomUi::PreviewPillar()
+
+void CPolaCustomUi::OnPaint()
 {
-	CDC* dc = new CDC();
-	HDC hdc = ::GetDC(GetDlgItem(IDC_STATIC)->m_hWnd);
+	CPaintDC dc(this); // device context for painting
+	// TODO: Add your message handler code here
+	// Do not call CAdUiBaseDialog::OnPaint() for painting messages
+	dc.MoveTo(10, 10);
+	dc.LineTo(50, 25);
+	CDC* pdc = GetDlgItem(IDC_STATIC_PIC)->GetDC();
+	CDC mem_dc;
+	mem_dc.CreateCompatibleDC(pdc);
+	CRect rect;
+	GetDlgItem(IDC_STATIC_PIC)->GetClientRect(&rect);
+	CBitmap bit_map;
+	bit_map.CreateCompatibleBitmap(&mem_dc, rect.Width(), rect.Height());
+	mem_dc.SelectObject(&bit_map);
+	mem_dc.FillSolidRect(0, 0, rect.Width(), rect.Height(), RGB(255, 255, 255));
+	CPen pen(PS_SOLID, 2, RGB(0, 0, 0));
+	mem_dc.SelectObject(&pen);
+	mem_dc.MoveTo(0, 0);
+	mem_dc.LineTo(100, 100);
+	pdc->BitBlt(0, 0, rect.Width(), rect.Height(), &mem_dc, 0, 0, SRCCOPY);
+
 }
 
+
+void CPolaCustomUi::OnBnClickedButton1()
+{
+	Invalidate();
+	UpdateWindow();
+	// TODO: Add your control notification handler code here
+}

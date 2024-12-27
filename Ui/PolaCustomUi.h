@@ -59,5 +59,6 @@ public:
 	double x;
 	double y;
 
-	void PreviewPillar();
+	afx_msg void OnPaint();
+	afx_msg void OnBnClickedButton1();
 } ;

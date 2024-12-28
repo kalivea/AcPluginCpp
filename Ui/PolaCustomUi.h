@@ -30,17 +30,17 @@
 
 //-----------------------------------------------------------------------------
 class CPolaCustomUi : public CAdUiBaseDialog {
-	DECLARE_DYNAMIC (CPolaCustomUi)
+	DECLARE_DYNAMIC(CPolaCustomUi)
 
 public:
-	CPolaCustomUi (CWnd *pParent =NULL, HINSTANCE hInstance =NULL) ;
+	CPolaCustomUi(CWnd* pParent = NULL, HINSTANCE hInstance = NULL);
 
-	enum { IDD = IDD_POLACUSTOMUI} ;
+	enum { IDD = IDD_POLACUSTOMUI };
 
 protected:
-	virtual void DoDataExchange (CDataExchange *pDX) ;
+	virtual void DoDataExchange(CDataExchange* pDX);
 
-	afx_msg LRESULT OnAcadKeepFocus (WPARAM, LPARAM) ;
+	afx_msg LRESULT OnAcadKeepFocus(WPARAM, LPARAM);
 	DECLARE_MESSAGE_MAP()
 public:
 	afx_msg void OnBnClickedOk();
@@ -61,4 +61,5 @@ public:
 
 	afx_msg void OnPaint();
 	afx_msg void OnBnClickedButton1();
-} ;
+	void ScalePattern(CRect& rect, CPoint vertex_point[4]);
+};

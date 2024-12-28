@@ -62,6 +62,81 @@ LRESULT CPolaCustomUi::OnAcadKeepFocus(WPARAM, LPARAM) {
 
 void CPolaCustomUi::OnBnClickedOk()
 {
+
+	// TODO: Add your control notification handler code here
+	CDialog::OnOK();
+}
+
+
+void CPolaCustomUi::OnPaint()
+{
+	CPaintDC dc(this); // device context for painting
+	// TODO: Add your message handler code here
+	// Do not call CAdUiBaseDialog::OnPaint() for painting messages
+
+	CDC* pdc = GetDlgItem(IDC_STATIC_PIC)->GetDC();
+	CDC mem_dc;
+	mem_dc.CreateCompatibleDC(pdc);
+	CRect rect;
+	GetDlgItem(IDC_STATIC_PIC)->GetClientRect(&rect);
+	CBitmap bit_map;
+	bit_map.CreateCompatibleBitmap(&mem_dc, rect.Width(), rect.Height());
+	mem_dc.SelectObject(&bit_map);
+	mem_dc.FillSolidRect(0, 0, rect.Width(), rect.Height(), RGB(255, 255, 255));
+	CPen pen1(PS_SOLID, 2, RGB(0, 0, 0));
+	CPen pen2(PS_DASH, 1, RGB(0, 0, 0));
+	CPoint vertex_point[4];
+
+	if (shape == 1)
+	{
+		if (viewable == 0)
+		{
+			mem_dc.SelectObject(&pen2);
+			ScalePattern(rect, vertex_point);
+			mem_dc.Rectangle(vertex_point[0].x, vertex_point[0].y, vertex_point[2].x, vertex_point[2].y);
+
+			mem_dc.MoveTo(vertex_point[0].x, vertex_point[0].y);
+			mem_dc.LineTo(vertex_point[2].x, vertex_point[2].y);
+
+			mem_dc.MoveTo(vertex_point[1].x, vertex_point[1].y);
+			mem_dc.LineTo(vertex_point[3].x, vertex_point[3].y);
+		}
+		else if ((viewable == 1))
+		{
+			mem_dc.SelectObject(&pen1);
+			ScalePattern(rect, vertex_point);
+			mem_dc.Rectangle(vertex_point[0].x, vertex_point[0].y, vertex_point[2].x, vertex_point[2].y);
+			mem_dc.SelectObject(&pen2);
+
+			mem_dc.MoveTo(vertex_point[0].x, vertex_point[0].y);
+			mem_dc.LineTo(vertex_point[2].x, vertex_point[2].y);
+
+			mem_dc.MoveTo(vertex_point[1].x, vertex_point[1].y);
+			mem_dc.LineTo(vertex_point[3].x, vertex_point[3].y);
+		}
+	}
+	else if (shape == 0)
+	{
+		if (viewable == 0)
+		{
+			mem_dc.SelectObject(&pen2);
+			ScalePattern(rect, vertex_point);
+			mem_dc.Ellipse(vertex_point[0].x, vertex_point[0].y, vertex_point[1].x, vertex_point[1].y);
+		}
+		else if ((viewable == 1))
+		{
+			mem_dc.SelectObject(&pen1);
+			ScalePattern(rect, vertex_point);
+			mem_dc.Ellipse(vertex_point[0].x, vertex_point[0].y, vertex_point[1].x, vertex_point[1].y);
+		}
+	}
+	pdc->BitBlt(0, 0, rect.Width(), rect.Height(), &mem_dc, 0, 0, SRCCOPY);
+
+}
+
+
+void CPolaCustomUi::OnBnClickedButton1()
+{
 	CString temp;
 	Edit_b.GetWindowTextW(temp);
 	b = _wtof(temp);
@@ -77,39 +152,60 @@ void CPolaCustomUi::OnBnClickedOk()
 	x = _wtof(temp);
 	Edit_y.GetWindowTextW(temp);
 	y = _wtoi(temp);
-	// TODO: Add your control notification handler code here
-	CDialog::OnOK();
-}
 
-
-void CPolaCustomUi::OnPaint()
-{
-	CPaintDC dc(this); // device context for painting
-	// TODO: Add your message handler code here
-	// Do not call CAdUiBaseDialog::OnPaint() for painting messages
-	dc.MoveTo(10, 10);
-	dc.LineTo(50, 25);
-	CDC* pdc = GetDlgItem(IDC_STATIC_PIC)->GetDC();
-	CDC mem_dc;
-	mem_dc.CreateCompatibleDC(pdc);
-	CRect rect;
-	GetDlgItem(IDC_STATIC_PIC)->GetClientRect(&rect);
-	CBitmap bit_map;
-	bit_map.CreateCompatibleBitmap(&mem_dc, rect.Width(), rect.Height());
-	mem_dc.SelectObject(&bit_map);
-	mem_dc.FillSolidRect(0, 0, rect.Width(), rect.Height(), RGB(255, 255, 255));
-	CPen pen(PS_SOLID, 2, RGB(0, 0, 0));
-	mem_dc.SelectObject(&pen);
-	mem_dc.MoveTo(0, 0);
-	mem_dc.LineTo(100, 100);
-	pdc->BitBlt(0, 0, rect.Width(), rect.Height(), &mem_dc, 0, 0, SRCCOPY);
-
-}
-
-
-void CPolaCustomUi::OnBnClickedButton1()
-{
 	Invalidate();
 	UpdateWindow();
 	// TODO: Add your control notification handler code here
 }
+
+void CPolaCustomUi::ScalePattern(CRect& rect, CPoint vertex_point[4])
+{
+	int tb = int(0.6 * rect.Width());
+	int th = int(0.6 * rect.Height());
+
+	double b_scale = b / tb;
+	double h_scale = h / th;
+
+	int center_x = rect.Width() / 2;
+	int center_y = rect.Height() / 2;
+	if (shape == 1)
+	{
+		if (b_scale > 1 || h_scale > 1)
+		{
+			int tscale = int(BasicTools::Max(b_scale, h_scale));
+
+			vertex_point[0].SetPoint(center_x - int(0.5 * (b / tscale)), center_y + int(0.5 * (h / tscale)));
+			vertex_point[1].SetPoint(center_x - int(0.5 * (b / tscale)), center_y - int(0.5 * (h / tscale)));
+			vertex_point[2].SetPoint(center_x + int(0.5 * (b / tscale)), center_y - int(0.5 * (h / tscale)));
+			vertex_point[3].SetPoint(center_x + int(0.5 * (b / tscale)), center_y + int(0.5 * (h / tscale)));
+		}
+		else
+		{
+			int tscale = (tb / b) > (th / h) ? int(tb / b) : int(th / h);
+
+			vertex_point[0].SetPoint(center_x - int(0.5 * (b * tscale)), center_y + int(0.5 * (h * tscale)));
+			vertex_point[1].SetPoint(center_x - int(0.5 * (b * tscale)), center_y - int(0.5 * (h * tscale)));
+			vertex_point[2].SetPoint(center_x + int(0.5 * (b * tscale)), center_y - int(0.5 * (h * tscale)));
+			vertex_point[3].SetPoint(center_x + int(0.5 * (b * tscale)), center_y + int(0.5 * (h * tscale)));
+		}
+	}
+	else if (shape == 0)
+	{
+
+		if (b_scale > 1 || h_scale > 1)
+		{
+			int tscale = int(BasicTools::Max(b_scale, h_scale));
+
+			vertex_point[0].SetPoint(center_x - int((b * 0.5 / tscale)), center_y + int((b * 0.5 / tscale)));
+			vertex_point[1].SetPoint(center_x + int((b * 0.5 / tscale)), center_y + int((b * 0.5 / tscale)));
+		}
+		else
+		{
+			int tscale = (tb / b) > (th / h) ? int(tb / b) : int(th / h);
+
+			vertex_point[0].SetPoint(center_x - int((b * 0.5 * tscale)), center_y + int((b * 0.5 * tscale)));
+			vertex_point[1].SetPoint(center_x + int((b * 0.5 * tscale)), center_y + int((b * 0.5 * tscale)));
+		}
+	}
+}
+

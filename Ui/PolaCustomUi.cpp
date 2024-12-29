@@ -196,14 +196,14 @@ void CPolaCustomUi::ScalePattern(CRect& rect, CPoint vertex_point[4])
 		{
 			int tscale = int(BasicTools::Max(b_scale, h_scale));
 
-			vertex_point[0].SetPoint(center_x - int((b * 0.5 / tscale)), center_y + int((b * 0.5 / tscale)));
+			vertex_point[0].SetPoint(center_x - int((b * 0.5 / tscale)), center_y - int((b * 0.5 / tscale)));
 			vertex_point[1].SetPoint(center_x + int((b * 0.5 / tscale)), center_y + int((b * 0.5 / tscale)));
 		}
 		else
 		{
 			int tscale = (tb / b) > (th / h) ? int(tb / b) : int(th / h);
 
-			vertex_point[0].SetPoint(center_x - int((b * 0.5 * tscale)), center_y + int((b * 0.5 * tscale)));
+			vertex_point[0].SetPoint(center_x - int((b * 0.5 * tscale)), center_y - int((b * 0.5 * tscale)));
 			vertex_point[1].SetPoint(center_x + int((b * 0.5 * tscale)), center_y + int((b * 0.5 * tscale)));
 		}
 	}

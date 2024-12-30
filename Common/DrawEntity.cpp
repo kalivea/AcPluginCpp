@@ -238,3 +238,34 @@ void DrawEntity::DrawFrame(char* frame_size, const AcGePoint3d& insert_point, co
 	}
 }
 
+AcDbObjectId DrawEntity::AddLeader(AcGePoint3d insert_point, AcGePoint3d point_on_leader, AcGePoint3d text_point, TCHAR* leader_text)
+{
+	AcDbBlockTable* block_table = nullptr;
+	acdbHostApplicationServices()->workingDatabase()->getBlockTable(block_table, OpenMode::kForRead);
+	AcDbBlockTableRecord* block_table_record = nullptr;
+	block_table->getAt(ACDB_MODEL_SPACE, block_table_record, OpenMode::kForWrite);
+	
+	AcDbLeader* leader = new AcDbLeader();
+	AcDbObjectId leader_id = AcDbObjectId::kNull;
+	leader->appendVertex(insert_point);
+	leader->appendVertex(point_on_leader);
+	leader->appendVertex(text_point);
+	block_table_record->appendAcDbEntity(leader_id, leader);
+
+	AcDbMText* mtext = new AcDbMText();
+	AcDbObjectId mtext_id = AcDbObjectId::kNull;
+	mtext->setContents(leader_text);
+	mtext->setLocation(text_point);
+	block_table_record->appendAcDbEntity(mtext_id, mtext);
+	
+	leader->attachAnnotation(mtext_id);
+	leader->evaluateLeader();
+	
+	mtext->close();
+	leader->close();
+	block_table_record->close();
+	block_table->close();
+
+	return AcDbObjectId();
+}
+

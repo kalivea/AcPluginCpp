@@ -109,12 +109,16 @@ void TestClass::Test()
 	//CPolaCustomPillar::BatchInsert(*pillar2, insert_point);
 #pragma endregion
 #pragma region MFC Test
+	//AcGePoint3d p1(0, 0, 0);
+	//AcGePoint3d p2(100, 100, 0);
+	//AcGePoint3d p3(200, 300, 0);
+	//if (BasicTools::IsCollinearPoint(p1, p2, p3))
+	//	acutPrintf(_T("is"));
+	//else
+	//	acutPrintf(_T("!is"));
 	AcGePoint3d p1(0, 0, 0);
 	AcGePoint3d p2(100, 100, 0);
 	AcGePoint3d p3(200, 300, 0);
-	if (BasicTools::IsCollinearPoint(p1, p2, p3))
-		acutPrintf(_T("is"));
-	else
-		acutPrintf(_T("!is"));
+	DrawEntity::AddLeader(p1, p2, p3, _T("Test"));
 #pragma endregion
 }

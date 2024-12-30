@@ -32,4 +32,5 @@ public:
 	static AcDbObjectId RotatedDimension();		//TODO
 
 	static void DrawFrame(char* frame_size, const AcGePoint3d& insert_point, const double& scale);
+	static AcDbObjectId AddLeader(AcGePoint3d insert_point, AcGePoint3d point_on_leader, AcGePoint3d text_point, TCHAR* leader_text);
 };

@@ -13,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (United States) resources
+// 英语(美国) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -106,9 +106,9 @@ BEGIN
     LTEXT           "y",IDC_STATIC,65,101,8,14
     EDITTEXT        IDC_EDIT6,76,99,32,12,ES_AUTOHSCROLL
     LTEXT           "x",IDC_STATIC,14,100,8,13
-    CONTROL         "",IDC_STATIC_PIC,"Static",SS_BLACKFRAME | SS_CENTERIMAGE | WS_BORDER,178,14,105,142,WS_EX_CLIENTEDGE | WS_EX_STATICEDGE
+    CONTROL         "",IDC_STATIC_PIC,"Static",SS_BLACKFRAME | SS_CENTERIMAGE | WS_BORDER,158,14,125,142,WS_EX_CLIENTEDGE | WS_EX_STATICEDGE
     PUSHBUTTON      "preview",IDC_BUTTON1,13,155,57,18
-    LTEXT           "After entering the length and width, click the preview button to display the preview image.",IDC_STATIC,13,121,142,33
+    LTEXT           "After entering the length and width, click the preview button to display the preview image.",IDC_STATIC,13,121,139,33
 END
 
 
@@ -152,7 +152,7 @@ BEGIN
     IDS_PROJNAME            "Ui"
 END
 
-#endif    // English (United States) resources
+#endif    // 英语(美国) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

@@ -52,6 +52,14 @@ AcDbObjectId StyleTools::InitDimStyle()						//TODO
 	return default_dim_style_id;
 }
 
+AcDbObjectId StyleTools::InitLeaderStyle()
+{
+	AcDbObjectId default_leader_id = AcDbObjectId::kNull;
+	
+
+	return AcDbObjectId();
+}
+
 
 AcDbObjectId StyleTools::CreateTextStyle(const TCHAR* text_style_name, const TCHAR* big_font_file_name, const TCHAR* text_file_name, const double& x_scale)
 {

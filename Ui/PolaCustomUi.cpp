@@ -35,6 +35,7 @@ BEGIN_MESSAGE_MAP(CPolaCustomUi, CAdUiBaseDialog)
 
 	ON_WM_PAINT()
 	ON_BN_CLICKED(IDC_BUTTON1, &CPolaCustomUi::OnBnClickedButton1)
+
 END_MESSAGE_MAP()
 
 //-----------------------------------------------------------------------------
@@ -83,7 +84,7 @@ void CPolaCustomUi::OnPaint()
 	bit_map.CreateCompatibleBitmap(&mem_dc, rect.Width(), rect.Height());
 	mem_dc.SelectObject(&bit_map);
 	mem_dc.FillSolidRect(0, 0, rect.Width(), rect.Height(), RGB(255, 255, 255));
-	
+
 	CPen pen1(PS_SOLID, 2, RGB(0, 0, 0));
 	CPen pen2(PS_DASH, 1, RGB(0, 0, 0));
 	CPoint vertex_point[4];
@@ -192,16 +193,16 @@ void CPolaCustomUi::ScalePattern(CRect& rect, CPoint vertex_point[4])
 	else if (shape == 0)
 	{
 
-		if (b_scale > 1 || h_scale > 1)
+		if (b_scale > 1)
 		{
-			int tscale = int(BasicTools::Max(b_scale, h_scale));
+			int tscale = int(b_scale);
 
 			vertex_point[0].SetPoint(center_x - int((b * 0.5 / tscale)), center_y - int((b * 0.5 / tscale)));
 			vertex_point[1].SetPoint(center_x + int((b * 0.5 / tscale)), center_y + int((b * 0.5 / tscale)));
 		}
 		else
 		{
-			int tscale = (tb / b) > (th / h) ? int(tb / b) : int(th / h);
+			int tscale = int(tb / b);
 
 			vertex_point[0].SetPoint(center_x - int((b * 0.5 * tscale)), center_y - int((b * 0.5 * tscale)));
 			vertex_point[1].SetPoint(center_x + int((b * 0.5 * tscale)), center_y + int((b * 0.5 * tscale)));

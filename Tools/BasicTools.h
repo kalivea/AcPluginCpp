@@ -30,12 +30,11 @@ public:
 	//math tools: Line Tools
 	static bool IsIntersectLine(const AcGeLine3d& line_1, const AcGeLine3d& line_2, AcGePoint3d& out_intersect_point);
 
-
 	// math tools: Numerical tools
 	static double Max(const double& num1, const double& num2);
 	static double Min(const double& num1, const double& num2);
 
 	// grid tools
-	static AcGePoint3dArray DistanceToPointArrayX(AcGePoint3d first_point, double distance[], int cnt);
-	static AcGePoint3dArray DistanceToPointArrayY(AcGePoint3d first_point, double distance[], int cnt);
+	static AcGePoint3dArray DistanceToPointArrayX(const AcGePoint3d& first_point, const double distance[], const int cnt);
+	static AcGePoint3dArray DistanceToPointArrayY(const AcGePoint3d& first_point, const double distance[], const int cnt);
 };

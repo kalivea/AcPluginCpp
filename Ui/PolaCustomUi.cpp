@@ -83,6 +83,7 @@ void CPolaCustomUi::OnPaint()
 	bit_map.CreateCompatibleBitmap(&mem_dc, rect.Width(), rect.Height());
 	mem_dc.SelectObject(&bit_map);
 	mem_dc.FillSolidRect(0, 0, rect.Width(), rect.Height(), RGB(255, 255, 255));
+	
 	CPen pen1(PS_SOLID, 2, RGB(0, 0, 0));
 	CPen pen2(PS_DASH, 1, RGB(0, 0, 0));
 	CPoint vertex_point[4];
@@ -133,7 +134,6 @@ void CPolaCustomUi::OnPaint()
 	pdc->BitBlt(0, 0, rect.Width(), rect.Height(), &mem_dc, 0, 0, SRCCOPY);
 
 }
-
 
 void CPolaCustomUi::OnBnClickedButton1()
 {

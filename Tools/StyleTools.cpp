@@ -52,6 +52,37 @@ AcDbObjectId StyleTools::InitDimStyle()						//TODO
 	return default_dim_style_id;
 }
 
+AcDbObjectId StyleTools::InitLeaderStyle()
+{
+	AcDbObjectId default_dim_style_id = AcDbObjectId::kNull;
+	AcDbDimStyleTable* dim_style_table;
+	acdbHostApplicationServices()->workingDatabase()->getDimStyleTable(dim_style_table, AcDb::kForWrite);
+	AcDbDimStyleTableRecord* dim_style_table_record;
+	dim_style_table_record = new AcDbDimStyleTableRecord();
+
+	dim_style_table_record->setName(_T("leader_350"));
+	dim_style_table_record->setDimtxsty(StyleTools::GetTextStyleId(_T("leader_text")));
+	dim_style_table_record->setDimtxt(350);
+	dim_style_table_record->setDimblk(_T("_ARCHTICK"));
+	dim_style_table_record->setDimdle(0);
+	dim_style_table_record->setDimdli(0);
+	dim_style_table_record->setDimexe(100);
+	dim_style_table_record->setDimexo(150);
+	dim_style_table_record->setDimfxlenOn(false);
+	dim_style_table_record->setDimasz(150);
+	dim_style_table_record->setDimtad(1);
+	dim_style_table_record->setDimlfac(1);
+	dim_style_table_record->setDimdec(0);
+	dim_style_table_record->setDimtih(0);
+
+	dim_style_table->add(dim_style_table_record);
+	default_dim_style_id = dim_style_table_record->objectId();
+
+	dim_style_table_record->close();
+	dim_style_table->close();
+	return default_dim_style_id;
+}
+
 AcDbObjectId StyleTools::CreateTextStyle(const TCHAR* text_style_name, const TCHAR* big_font_file_name, const TCHAR* text_file_name, const double& x_scale)
 {
 	AcDbObjectId default_text_style_id = AcDbObjectId::kNull;

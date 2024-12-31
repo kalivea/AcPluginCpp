@@ -244,24 +244,30 @@ AcDbObjectId DrawEntity::AddLeader(AcGePoint3d insert_point, AcGePoint3d point_o
 	acdbHostApplicationServices()->workingDatabase()->getBlockTable(block_table, OpenMode::kForRead);
 	AcDbBlockTableRecord* block_table_record = nullptr;
 	block_table->getAt(ACDB_MODEL_SPACE, block_table_record, OpenMode::kForWrite);
-	
-	AcDbLeader* leader = new AcDbLeader();
-	AcDbObjectId leader_id = AcDbObjectId::kNull;
-	leader->appendVertex(insert_point);
-	leader->appendVertex(point_on_leader);
-	leader->appendVertex(text_point);
-	block_table_record->appendAcDbEntity(leader_id, leader);
 
 	AcDbMText* mtext = new AcDbMText();
 	AcDbObjectId mtext_id = AcDbObjectId::kNull;
 	mtext->setContents(leader_text);
 	mtext->setLocation(text_point);
+	mtext->setTextStyle(StyleTools::GetTextStyleId(_T("leader_text")));
+	mtext->setTextHeight(350);
+	mtext->setAttachment(AcDbMText::kMiddleCenter);
+
 	block_table_record->appendAcDbEntity(mtext_id, mtext);
-	
+	mtext->close();
+
+	AcDbLeader* leader = new AcDbLeader();
+	AcDbObjectId leader_id = AcDbObjectId::kNull;
+	leader->appendVertex(insert_point);
+
+	leader->appendVertex(text_point);
+	leader->appendVertex(point_on_leader);
+	leader->setDimensionStyle(StyleTools::GetDimensionStyleId(_T("leader_350")));
+
+	block_table_record->appendAcDbEntity(leader_id, leader);
+
 	leader->attachAnnotation(mtext_id);
 	leader->evaluateLeader();
-	
-	mtext->close();
 	leader->close();
 	block_table_record->close();
 	block_table->close();

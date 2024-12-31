@@ -117,8 +117,11 @@ void TestClass::Test()
 	//else
 	//	acutPrintf(_T("!is"));
 	AcGePoint3d p1(0, 0, 0);
-	AcGePoint3d p2(100, 100, 0);
-	AcGePoint3d p3(200, 300, 0);
-	DrawEntity::AddLeader(p1, p2, p3, _T("Test"));
+	AcGePoint3d p2(800, 800, 0);
+
+	StyleTools::CreateTextStyle(_T("leader_text"), _T("hztxt.shx"), _T("gbenor.shx"));
+	StyleTools::CreateTextStyle(_T("dim_text"), _T("hztxt.shx"), _T("gbenor.shx"));
+	StyleTools::InitLeaderStyle();
+	DrawEntity::AddLeader(p1, p2, p2, _T("Test\n350*350"));
 #pragma endregion
 }

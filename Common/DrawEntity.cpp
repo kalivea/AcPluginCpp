@@ -255,21 +255,8 @@ AcDbObjectId DrawEntity::AddLeader(AcGePoint3d insert_point, AcGePoint3d point_o
 
 	block_table_record->appendAcDbEntity(mtext_id, mtext);
 	mtext->close();
-	
-	AcDbLeader* leader = new AcDbLeader();
 	AcDbMLeader* mleader = new AcDbMLeader();
-	AcDbObjectId leader_id = AcDbObjectId::kNull;
-	leader->appendVertex(insert_point);
-
-	leader->appendVertex(text_point);
-	leader->appendVertex(point_on_leader);
-	leader->setDimensionStyle(StyleTools::GetDimensionStyleId(_T("leader_350")));
-
-	block_table_record->appendAcDbEntity(leader_id, leader);
-
-	leader->attachAnnotation(mtext_id);
-	leader->evaluateLeader();
-	leader->close();
+	mleader->setFirstVertex(0, insert_point);
 	block_table_record->close();
 	block_table->close();
 

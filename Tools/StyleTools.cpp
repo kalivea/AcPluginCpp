@@ -73,7 +73,7 @@ AcDbObjectId StyleTools::InitLeaderStyle()
 	dim_style_table_record->setDimtad(1);
 	dim_style_table_record->setDimlfac(1);
 	dim_style_table_record->setDimdec(0);
-	dim_style_table_record->setDimtih(0);
+	dim_style_table_record->setDimtih(1);
 
 	dim_style_table->add(dim_style_table_record);
 	default_dim_style_id = dim_style_table_record->objectId();

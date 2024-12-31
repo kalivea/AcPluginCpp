@@ -74,5 +74,6 @@
     //-----------------------------------------------------------------------------
 #include <corecrt_math_defines.h>	        //math defines
 #include "acedads.h" 
+#include "dbmleader.h"
 #define POLA_DLL_TOOLS
 #include "ToolsDef.h"

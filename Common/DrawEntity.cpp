@@ -255,8 +255,9 @@ AcDbObjectId DrawEntity::AddLeader(AcGePoint3d insert_point, AcGePoint3d point_o
 
 	block_table_record->appendAcDbEntity(mtext_id, mtext);
 	mtext->close();
-
+	
 	AcDbLeader* leader = new AcDbLeader();
+	AcDbMLeader* mleader = new AcDbMLeader();
 	AcDbObjectId leader_id = AcDbObjectId::kNull;
 	leader->appendVertex(insert_point);
 

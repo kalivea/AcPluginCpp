@@ -238,7 +238,7 @@ void DrawEntity::DrawFrame(char* frame_size, const AcGePoint3d& insert_point, co
 	}
 }
 
-AcDbObjectId DrawEntity::AddLeader(AcGePoint3d insert_point, AcGePoint3d point_on_leader, AcGePoint3d text_point, TCHAR* leader_text)
+AcDbObjectId DrawEntity::AddMLeader(AcGePoint3d insert_point, AcGePoint3d point_on_leader, AcGePoint3d text_point, TCHAR* leader_text)
 {
 	AcDbBlockTable* block_table = nullptr;
 	acdbHostApplicationServices()->workingDatabase()->getBlockTable(block_table, OpenMode::kForRead);
@@ -250,13 +250,26 @@ AcDbObjectId DrawEntity::AddLeader(AcGePoint3d insert_point, AcGePoint3d point_o
 	mtext->setContents(leader_text);
 	mtext->setLocation(text_point);
 	mtext->setTextStyle(StyleTools::GetTextStyleId(_T("leader_text")));
-	mtext->setTextHeight(350);
 	mtext->setAttachment(AcDbMText::kMiddleCenter);
-
 	block_table_record->appendAcDbEntity(mtext_id, mtext);
 	mtext->close();
+	acdbOpenObject(mtext, mtext_id, OpenMode::kForWrite);
+
 	AcDbMLeader* mleader = new AcDbMLeader();
-	mleader->setFirstVertex(0, insert_point);
+	AcDbObjectId mleader_id = AcDbObjectId::kNull;
+	TestTools::ShowES(mleader->setFirstVertex(1, insert_point), _T("add first vertex"));
+
+	mleader->setLastVertex(1, point_on_leader);
+	mleader->setDoglegDirection(1, AcGeVector3d(1, 0, 0));
+	mleader->setDoglegLength(100);
+	mleader->setMText(mtext);
+	mleader->setTextAttachmentType(AcDbMLeaderStyle::kAttachmentBottomOfTopLine);
+	mleader->setTextHeight(350);
+
+	mtext->close();
+	block_table_record->appendAcDbEntity(mleader_id, mleader);
+	mleader->close();
+
 	block_table_record->close();
 	block_table->close();
 

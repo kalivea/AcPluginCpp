@@ -240,39 +240,29 @@ void DrawEntity::DrawFrame(char* frame_size, const AcGePoint3d& insert_point, co
 
 AcDbObjectId DrawEntity::AddMLeader(AcGePoint3d insert_point, AcGePoint3d point_on_leader, AcGePoint3d text_point, TCHAR* leader_text)
 {
-	AcDbBlockTable* block_table = nullptr;
-	acdbHostApplicationServices()->workingDatabase()->getBlockTable(block_table, OpenMode::kForRead);
-	AcDbBlockTableRecord* block_table_record = nullptr;
-	block_table->getAt(ACDB_MODEL_SPACE, block_table_record, OpenMode::kForWrite);
-
 	AcDbMText* mtext = new AcDbMText();
-	AcDbObjectId mtext_id = AcDbObjectId::kNull;
+
 	mtext->setContents(leader_text);
-	mtext->setLocation(text_point);
-	mtext->setTextStyle(StyleTools::GetTextStyleId(_T("leader_text")));
-	mtext->setAttachment(AcDbMText::kMiddleCenter);
-	block_table_record->appendAcDbEntity(mtext_id, mtext);
-	mtext->close();
-	acdbOpenObject(mtext, mtext_id, OpenMode::kForWrite);
+	mtext->setAttachment(AcDbMText::kTopLeft);
 
+	int leader_index;
+	
 	AcDbMLeader* mleader = new AcDbMLeader();
-	AcDbObjectId mleader_id = AcDbObjectId::kNull;
-	TestTools::ShowES(mleader->setFirstVertex(1, insert_point), _T("add first vertex"));
+	
+	mleader->addLeader(leader_index);
+	mleader->setFirstVertex(leader_index, insert_point);
+	mleader->setLastVertex(leader_index, point_on_leader);
 
-	mleader->setLastVertex(1, point_on_leader);
-	mleader->setDoglegDirection(1, AcGeVector3d(1, 0, 0));
-	mleader->setDoglegLength(100);
+	mleader->addLeaderLine(point_on_leader, leader_index);
 	mleader->setMText(mtext);
-	mleader->setTextAttachmentType(AcDbMLeaderStyle::kAttachmentBottomOfTopLine);
 	mleader->setTextHeight(350);
-
+	mleader->setDoglegDirection(leader_index, AcGeVector3d(-1, 0, 0));
+	mleader->setDoglegLength(8);
+	mleader->setTextStyleId(StyleTools::GetTextStyleId(_T("leader_text")));
+	mleader->setTextAttachmentType(AcDbMLeaderStyle::kAttachmentBottomOfTopLine);
+	
 	mtext->close();
-	block_table_record->appendAcDbEntity(mleader_id, mleader);
-	mleader->close();
 
-	block_table_record->close();
-	block_table->close();
-
-	return AcDbObjectId();
+	return AddToModelSpace::AddEntityToModelSpace(mleader);
 }
 

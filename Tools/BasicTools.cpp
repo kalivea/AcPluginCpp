@@ -259,3 +259,36 @@ AcGePoint3dArray BasicTools::DistanceToPointArrayY(const AcGePoint3d& first_poin
 	}
 	return temp_array;
 }
+
+bool BasicTools::IsBlockExist(TCHAR* block_name)
+{
+	AcDbBlockTable* block_table = nullptr;
+	acdbHostApplicationServices()->workingDatabase()->getBlockTable(block_table, OpenMode::kForRead);
+	if (block_table->has(block_name))
+	{
+		block_table->close();
+		return true;
+	}
+	else
+	{
+		block_table->close();
+		return false;
+	}
+}
+
+AcDbObjectId BasicTools::GetBlockId(TCHAR* block_name)
+{
+	AcDbBlockTable* block_table = nullptr;
+	AcDbObjectId block_object_id = AcDbObjectId::kNull;
+	acdbHostApplicationServices()->workingDatabase()->getBlockTable(block_table, OpenMode::kForRead);
+	if (IsBlockExist(block_name))
+	{
+		block_table->getAt(block_name, block_object_id);
+		block_table->close();
+	}
+	else
+	{
+		block_table->close();
+	}
+	return block_object_id;
+}

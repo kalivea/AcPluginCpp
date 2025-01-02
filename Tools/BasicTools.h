@@ -37,4 +37,8 @@ public:
 	// grid tools
 	static AcGePoint3dArray DistanceToPointArrayX(const AcGePoint3d& first_point, const double distance[], const int cnt);
 	static AcGePoint3dArray DistanceToPointArrayY(const AcGePoint3d& first_point, const double distance[], const int cnt);
+
+	// block tools
+	static bool IsBlockExist(TCHAR* block_name);
+	static AcDbObjectId GetBlockId(TCHAR* block_name);
 };

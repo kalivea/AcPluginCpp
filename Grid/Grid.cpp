@@ -69,39 +69,6 @@ AcDbObjectId Grid::CreateHorizonAxis()
 	return gride_vertical_id;
 }
 
-bool Grid::IsBlockExist(TCHAR* block_name)
-{
-	AcDbBlockTable* block_table = nullptr;
-	acdbHostApplicationServices()->workingDatabase()->getBlockTable(block_table, OpenMode::kForRead);
-	if (block_table->has(block_name))
-	{
-		block_table->close();
-		return true;
-	}
-	else
-	{
-		block_table->close();
-		return false;
-	}
-}
-
-AcDbObjectId Grid::GetBlockId(TCHAR* block_name)
-{
-	AcDbBlockTable* block_table = nullptr;
-	AcDbObjectId block_object_id = AcDbObjectId::kNull;
-	acdbHostApplicationServices()->workingDatabase()->getBlockTable(block_table, OpenMode::kForRead);
-	if (IsBlockExist(block_name))
-	{
-		block_table->getAt(block_name, block_object_id);
-		block_table->close();
-	}
-	else
-	{
-		block_table->close();
-	}
-	return block_object_id;
-}
-
 void Grid::AddAttribute(AcDbBlockReference* block_reference, AcDbAttributeDefinition* att_definition)
 {
 	AcDbAttribute* attribute = new AcDbAttribute();
@@ -174,7 +141,7 @@ void Grid::SetAttribute(AcDbBlockReference* block_reference, TCHAR* tag, TCHAR* 
 
 AcDbObjectId Grid::InsertVerticalAxis(AcGePoint3d insert_point)
 {
-	AcDbBlockReference* block_reference = new AcDbBlockReference(insert_point, GetBlockId(_T("grid_v")));
+	AcDbBlockReference* block_reference = new AcDbBlockReference(insert_point, BasicTools::GetBlockId(_T("grid_v")));
 	AcDbBlockTableRecord* block_table_record = nullptr;
 	acdbOpenObject(block_table_record, block_reference->blockTableRecord());
 	if (block_table_record->hasAttributeDefinitions())
@@ -202,7 +169,7 @@ AcDbObjectId Grid::InsertVerticalAxis(AcGePoint3d insert_point)
 
 AcDbObjectId Grid::InsertHorizonAxis(AcGePoint3d insert_point)
 {
-	AcDbBlockReference* block_reference = new AcDbBlockReference(insert_point, GetBlockId(_T("grid_h")));
+	AcDbBlockReference* block_reference = new AcDbBlockReference(insert_point, BasicTools::GetBlockId(_T("grid_h")));
 	AcDbBlockTableRecord* block_table_record = nullptr;
 	acdbOpenObject(block_table_record, block_reference->blockTableRecord());
 	if (block_table_record->hasAttributeDefinitions())

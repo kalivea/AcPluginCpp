@@ -18,9 +18,6 @@ public:
 	AcDbObjectId CreateVerticalAxis();
 	AcDbObjectId CreateHorizonAxis();
 
-	static bool IsBlockExist(TCHAR* block_name);
-	static AcDbObjectId GetBlockId(TCHAR* block_name);
-
 	//static AcDbObjectId GetAttributeId(TCHAR* att_name);
 
 	static void AddAttribute(AcDbBlockReference* block_reference, AcDbAttributeDefinition* att_definition);

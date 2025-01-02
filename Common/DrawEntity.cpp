@@ -241,28 +241,25 @@ void DrawEntity::DrawFrame(char* frame_size, const AcGePoint3d& insert_point, co
 AcDbObjectId DrawEntity::AddMLeader(AcGePoint3d insert_point, AcGePoint3d point_on_leader, AcGePoint3d text_point, TCHAR* leader_text)
 {
 	AcDbMText* mtext = new AcDbMText();
-
 	mtext->setContents(leader_text);
-	mtext->setAttachment(AcDbMText::kTopLeft);
+	mtext->setAttachment(AcDbMText::kMiddleCenter);
+	mtext->setLocation(text_point);
+	mtext->setTextHeight(0.18);
 
+	AcDbObjectId arrow_object_id = BasicTools::GetBlockId(_T("_ARCHTICK"));
 	int leader_index;
-	
 	AcDbMLeader* mleader = new AcDbMLeader();
-	
-	mleader->addLeader(leader_index);
-	mleader->setFirstVertex(leader_index, insert_point);
+
+	mleader->addLeaderLine(insert_point, leader_index);
+	mleader->addFirstVertex(leader_index, insert_point);
+	mleader->setTextAttachmentType(AcDbMLeaderStyle::TextAttachmentType::kAttachmentBottomOfTopLine);
 	mleader->setLastVertex(leader_index, point_on_leader);
-
-	mleader->addLeaderLine(point_on_leader, leader_index);
 	mleader->setMText(mtext);
-	mleader->setTextHeight(350);
-	mleader->setDoglegDirection(leader_index, AcGeVector3d(-1, 0, 0));
-	mleader->setDoglegLength(8);
-	mleader->setTextStyleId(StyleTools::GetTextStyleId(_T("leader_text")));
-	mleader->setTextAttachmentType(AcDbMLeaderStyle::kAttachmentBottomOfTopLine);
-	
-	mtext->close();
+	mleader->setContentType(AcDbMLeaderStyle::kMTextContent);
+	mleader->setArrowSymbolId(arrow_object_id);
+	mleader->setArrowSize(0.018);
 
+	mtext->close();
 	return AddToModelSpace::AddEntityToModelSpace(mleader);
 }
 

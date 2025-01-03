@@ -260,7 +260,7 @@ AcGePoint3dArray BasicTools::DistanceToPointArrayY(const AcGePoint3d& first_poin
 	return temp_array;
 }
 
-bool BasicTools::IsBlockExist(TCHAR* block_name)
+bool BasicTools::IsBlockExist(const TCHAR* block_name)
 {
 	AcDbBlockTable* block_table = nullptr;
 	acdbHostApplicationServices()->workingDatabase()->getBlockTable(block_table, OpenMode::kForRead);
@@ -276,7 +276,7 @@ bool BasicTools::IsBlockExist(TCHAR* block_name)
 	}
 }
 
-AcDbObjectId BasicTools::GetBlockId(TCHAR* block_name)
+AcDbObjectId BasicTools::GetBlockId(const TCHAR* block_name)
 {
 	AcDbBlockTable* block_table = nullptr;
 	AcDbObjectId block_object_id = AcDbObjectId::kNull;

@@ -6,8 +6,9 @@ AcDbObjectId StyleTools::InitTextStyle()
 	AcDbTextStyleTable* text_style_table = nullptr;
 	acdbHostApplicationServices()->workingDatabase()->getTextStyleTable(text_style_table, OpenMode::kForWrite);
 	AcDbTextStyleTableRecord* text_style_table_record = new AcDbTextStyleTableRecord();
-	text_style_table_record->setName(_T("pt_txt"));
-	text_style_table_record->setFileName(_T("tssdeng.shx"));
+	text_style_table_record->setName(_T("default_txt"));
+	text_style_table_record->setFileName(_T("gbenor.shx"));
+	text_style_table_record->setBigFontFileName(_T("gbcbig.shx"));
 	text_style_table_record->setXScale(0.75);
 	text_style_table->add(text_style_table_record);
 
@@ -20,7 +21,7 @@ AcDbObjectId StyleTools::InitTextStyle()
 	return default_text_style_id;
 }
 
-AcDbObjectId StyleTools::InitDimStyle()						//TODO
+AcDbObjectId StyleTools::InitDimStyle()
 {
 	AcDbObjectId default_dim_style_id = AcDbObjectId::kNull;
 	AcDbDimStyleTable* dim_style_table;
@@ -43,37 +44,6 @@ AcDbObjectId StyleTools::InitDimStyle()						//TODO
 	dim_style_table_record->setDimdec(0);
 	dim_style_table_record->setDimtih(0);
 
-
-	dim_style_table->add(dim_style_table_record);
-	default_dim_style_id = dim_style_table_record->objectId();
-
-	dim_style_table_record->close();
-	dim_style_table->close();
-	return default_dim_style_id;
-}
-
-AcDbObjectId StyleTools::InitLeaderStyle()
-{
-	AcDbObjectId default_dim_style_id = AcDbObjectId::kNull;
-	AcDbDimStyleTable* dim_style_table;
-	acdbHostApplicationServices()->workingDatabase()->getDimStyleTable(dim_style_table, AcDb::kForWrite);
-	AcDbDimStyleTableRecord* dim_style_table_record;
-	dim_style_table_record = new AcDbDimStyleTableRecord();
-
-	dim_style_table_record->setName(_T("leader_350"));
-	dim_style_table_record->setDimtxsty(StyleTools::GetTextStyleId(_T("leader_text")));
-	dim_style_table_record->setDimtxt(350);
-	dim_style_table_record->setDimblk(_T("_ARCHTICK"));
-	dim_style_table_record->setDimdle(0);
-	dim_style_table_record->setDimdli(0);
-	dim_style_table_record->setDimexe(100);
-	dim_style_table_record->setDimexo(150);
-	dim_style_table_record->setDimfxlenOn(false);
-	dim_style_table_record->setDimasz(150);
-	dim_style_table_record->setDimtad(1);
-	dim_style_table_record->setDimlfac(1);
-	dim_style_table_record->setDimdec(0);
-	dim_style_table_record->setDimtih(1);
 
 	dim_style_table->add(dim_style_table_record);
 	default_dim_style_id = dim_style_table_record->objectId();
@@ -144,20 +114,22 @@ AcDbObjectId StyleTools::GetDimensionStyleId(const TCHAR* dimension_style_name)
 	}
 }
 
-AcDbObjectId StyleTools::CreateLayerStyle(const TCHAR* layer_name)
+AcDbObjectId StyleTools::CreateLayerStyle(const TCHAR* layer_name, const int color_index, const TCHAR* line_type)
 {
+	AcCmColor color;
+	color.setColorIndex(color_index);
 	AcDbObjectId layer_id = AcDbObjectId::kNull;
 	AcDbLayerTable* layer_table = nullptr;
-
 	acdbHostApplicationServices()->workingDatabase()->getLayerTable(layer_table, OpenMode::kForWrite);
 	AcDbLayerTableRecord* layer_table_record = new AcDbLayerTableRecord();
 	layer_table_record->setName(layer_name);								//TODO: only set layer name.
+	layer_table_record->setLinetypeObjectId(StyleTools::GetLineStyleId(line_type));
+	layer_table_record->setColor(color);
 	layer_table->add(layer_table_record);
 	layer_id = layer_table_record->objectId();
-
+	
 	layer_table_record->close();
 	layer_table->close();
-
 	return layer_id;
 }
 

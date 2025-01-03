@@ -2,7 +2,7 @@
 #include "StdAfx.h"
 /*
 *
-* Update Time: 2024-12-04
+* Update Time: 2025-01-02
 * This is a collection of tools.
 * Including mathematical tools and common graphic tools commonly used in the CAD drawing process.
 *
@@ -39,6 +39,6 @@ public:
 	static AcGePoint3dArray DistanceToPointArrayY(const AcGePoint3d& first_point, const double distance[], const int cnt);
 
 	// block tools
-	static bool IsBlockExist(TCHAR* block_name);
-	static AcDbObjectId GetBlockId(TCHAR* block_name);
+	static bool IsBlockExist(const TCHAR* block_name);
+	static AcDbObjectId GetBlockId(const TCHAR* block_name);
 };

@@ -63,7 +63,6 @@ LRESULT CPolaCustomUi::OnAcadKeepFocus(WPARAM, LPARAM) {
 
 void CPolaCustomUi::OnBnClickedOk()
 {
-
 	// TODO: Add your control notification handler code here
 	CDialog::OnOK();
 }
@@ -159,7 +158,7 @@ void CPolaCustomUi::OnBnClickedButton1()
 	// TODO: Add your control notification handler code here
 }
 
-void CPolaCustomUi::ScalePattern(CRect& rect, CPoint vertex_point[4])
+void CPolaCustomUi::ScalePattern(CRect& rect, CPoint vertex_point[4]) const
 {
 	int tb = int(0.6 * rect.Width());
 	int th = int(0.6 * rect.Height());

@@ -119,9 +119,24 @@ void TestClass::Test()
 	AcGePoint3d insert(-10, 0, 0);
 	AcGePoint3d last(20, 20, 0);
 	AcGePoint3d text(20.5, 20.5, 0);
-	StyleTools::CreateTextStyle(_T("leader_text"), _T("gbcbig.shx"), _T("gbenor.shx"));
+
 	StyleTools::CreateTextStyle(_T("dim_text"), _T("gbcbig.shx"), _T("gbenor.shx"));
 
 	DrawEntity::AddMLeader(insert, last, text, _T("Test\n350*500"));
+	
+	//StyleTools::CreateLayerStyle(_T("TEST"), 1, _T("Continuous"));
+	//
+	//EditEntity::SetLayer(DrawEntity::DrawCircle(AcGePoint3d(0, 0, 0), 5), _T("TEST"));
+	//DrawEntity::DrawLine(AcGePoint3d(0, 0, 0), 5, 45, 0);
+	//DrawEntity::DrawArc(AcGePoint3d(10, 10, 0), AcGePoint3d(20, 10, 0), 45, 0);
+
+
+	//AcDbObjectIdArray hatch_arrary;
+
+	//hatch_arrary.append(DrawEntity::DrawCircle(AcGePoint3d(0, 0, 0), 10));
+
+	//DrawEntity::HatchPattern(_T("ANGLE"), 0.5, 45, 0, true, hatch_arrary);
+
+
 #pragma endregion
 }

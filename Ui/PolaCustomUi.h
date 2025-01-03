@@ -61,5 +61,5 @@ public:
 
 	afx_msg void OnPaint();
 	afx_msg void OnBnClickedButton1();
-	void ScalePattern(CRect& rect, CPoint vertex_point[4]);
+	void ScalePattern(CRect& rect, CPoint vertex_point[4]) const;
 };

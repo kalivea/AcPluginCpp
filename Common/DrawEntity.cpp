@@ -7,15 +7,15 @@ AcDbObjectId DrawEntity::DrawLine(const AcGePoint3d& start_point, const AcGePoin
 	return AddToModelSpace::AddEntityToModelSpace(line_pointer);
 }
 
-AcDbObjectId DrawEntity::DrawLine(const AcGePoint3d& start_point, const double& length, const double& angle, char* angle_type)
+AcDbObjectId DrawEntity::DrawLine(const AcGePoint3d& start_point, const double& length, const double& angle, const int& angle_type)
 {
 	double temp_angle;
-	if (angle_type == "DEG")
-		temp_angle = BasicTools::ConvertAngle(angle, 0);
-	else if (angle_type == "RAD")
+	if (angle_type == 0)
+		temp_angle = BasicTools::ConvertAngle(angle, 1);
+	else if (angle_type == 1)
 		temp_angle = angle;
 	else
-		throw"Wrong angle type. Only \"DEG\",\"RAD\" can be use!~";
+		throw;								// 0 mean DEG, 1 mean RAD
 
 	AcGePoint3d end_point(start_point.x + length * cos(temp_angle), start_point.y + length * sin(temp_angle), 0);
 	return DrawLine(start_point, end_point);
@@ -23,28 +23,29 @@ AcDbObjectId DrawEntity::DrawLine(const AcGePoint3d& start_point, const double& 
 
 AcDbObjectId DrawEntity::DrawCircle(const AcGePoint3d& center_point, const double& radius)
 {
-	AcGeVector3d z_plane_vector(0, 0, 1);
-	AcDbCircle* circle_pointer = new AcDbCircle(center_point, z_plane_vector, radius);
+	AcDbCircle* circle_pointer = new AcDbCircle(center_point, AcGeVector3d::kZAxis, radius);
 	return AddToModelSpace::AddEntityToModelSpace(circle_pointer);
 }
 
 AcDbObjectId DrawEntity::DrawCircle(const AcGePoint3d& point1, const AcGePoint3d& point2)
 {
-	AcGeVector3d z_plane_vector(0, 0, 1);
 	AcGePoint3d circle_center = BasicTools::GetMidPoint(point1, point2);
 	double radius = BasicTools::GetDistanceBetweenTwoPoint(point1, point2);
-	AcDbCircle* circle_pointer = new AcDbCircle(circle_center, z_plane_vector, radius);
+	AcDbCircle* circle_pointer = new AcDbCircle(circle_center, AcGeVector3d::kZAxis, radius);
 	return AddToModelSpace::AddEntityToModelSpace(circle_pointer);
 }
 
 AcDbObjectId DrawEntity::DrawCircle(const AcGePoint3d& on_circle_point1, const AcGePoint3d& on_circle_point2, const AcGePoint3d& on_circle_point3)
 {
+	if (BasicTools::IsCollinearPoint(on_circle_point1, on_circle_point2, on_circle_point3));
+	{
+		throw;								// These three points are collinear points, a(n) arc cannot be drawn.
+	}
 	AcGeCircArc3d arc = AcGeCircArc3d(on_circle_point1, on_circle_point2, on_circle_point3);
 
-	AcGeVector3d z_plane_vector(0, 0, 1);
 	AcGePoint3d circle_center = arc.center();
 	double radius = arc.radius();
-	AcDbCircle* circle_pointer = new AcDbCircle(circle_center, z_plane_vector, radius);
+	AcDbCircle* circle_pointer = new AcDbCircle(circle_center, AcGeVector3d::kZAxis, radius);
 	return AddToModelSpace::AddEntityToModelSpace(circle_pointer);
 }
 
@@ -52,7 +53,7 @@ AcDbObjectId DrawEntity::DrawArc(const AcGePoint3d& start_point, const AcGePoint
 {
 	if (BasicTools::IsCollinearPoint(start_point, point_on_arc, end_point))
 	{
-		throw"These three points are collinear points, a(n) arc cannot be drawn.";
+		throw;								// These three points are collinear points, a(n) arc cannot be drawn.
 	}
 
 	AcDbArc* arc_pointer = new AcDbArc();
@@ -69,15 +70,18 @@ AcDbObjectId DrawEntity::DrawArc(const AcGePoint3d& start_point, const AcGePoint
 	return AddToModelSpace::AddEntityToModelSpace(arc_pointer);
 }
 
-AcDbObjectId DrawEntity::DrawArc(const AcGePoint3d& center_point, const AcGePoint3d& start_point, const double& angle, char* angle_type)
+AcDbObjectId DrawEntity::DrawArc(const AcGePoint3d& center_point, const AcGePoint3d& start_point, const double& angle, const int angle_type)
 {
 	double temp_angle;
-	if (angle_type == "DEG")
-		temp_angle = BasicTools::ConvertAngle(angle, 0);
-	else if (angle_type == "RAD")
+	if (angle_type == 0)
+		temp_angle = BasicTools::ConvertAngle(angle, 1);
+	else if (angle_type == 1)
 		temp_angle = angle;
 	else
-		throw"Wrong angle type. Only \"DEG\",\"RAD\" can be use!~";
+		throw;								// 0 mean DEG, 1 mean RAD
+
+	if (temp_angle > M_PI)
+		throw;								// If the input angle is greater than 2*Pi, arc cannot be drawn.
 
 	AcDbArc* arc_pointer = new AcDbArc();
 
@@ -95,9 +99,16 @@ AcDbObjectId DrawEntity::DrawArc(const AcGePoint3d& center_point, const AcGePoin
 {
 	if (BasicTools::GetDistanceBetweenTwoPoint(center_point, start_point) != BasicTools::GetDistanceBetweenTwoPoint(center_point, end_point))
 	{
-		throw"The distances from the center point to the start and end points are different.";			//TODO: improve ex handling logic
+		throw;										// The distances from the center point to the start and end points are different.
 	}
-	return AcDbObjectId();
+	double radius = BasicTools::GetDistanceBetweenTwoPoint(start_point, center_point);
+	double start_angle = BasicTools::GetAngleToXaxis(BasicTools::GetVectorBetweenTwoPoint(center_point, start_point), 1);
+	double end_angle = BasicTools::GetAngleToXaxis(BasicTools::GetVectorBetweenTwoPoint(center_point, end_point), 1);
+	AcDbArc* arc = new AcDbArc();
+	arc->setRadius(radius);
+	arc->setStartAngle(start_angle);
+	arc->setEndAngle(end_angle);
+	return AddToModelSpace::AddEntityToModelSpace(arc);
 }
 
 AcDbObjectId DrawEntity::DrawPolyLine(const AcGePoint2dArray& vertices_list, const double& contant_width, bool needClose)
@@ -105,13 +116,13 @@ AcDbObjectId DrawEntity::DrawPolyLine(const AcGePoint2dArray& vertices_list, con
 	AcDbPolyline* poly_line = new AcDbPolyline();
 	if (vertices_list.length() < 2)
 	{
-		throw"A polyline must consist of at least two vertices.";
+		throw;										// A polyline must consist of at least two vertices.
 	}
 	else
 	{
 		for (int i = 0; i < vertices_list.length(); i++)
 		{
-			poly_line->addVertexAt(i, vertices_list[i]);
+			poly_line->addVertexAt(i, vertices_list.at(i));
 		}
 		if (needClose)
 			poly_line->setClosed(true);
@@ -146,9 +157,52 @@ AcDbObjectId DrawEntity::DrawRectangle(const AcGePoint3d& vertex_point1, const A
 
 }
 
-AcDbObjectId DrawEntity::HatchPattern(char* hatch_pattern_name, const double& pattern_scale, const double& pattern_angle, char* angle_type, bool needAssociative, const AcDbObjectId& entity_id)
+AcDbObjectId DrawEntity::HatchPattern(const TCHAR* hatch_pattern_name, const double& pattern_scale, const double& pattern_angle, const int& angle_type, bool needAssociative, const AcDbObjectIdArray& entity_id_array)
 {
-	return AcDbObjectId();
+	AcDbHatch* hatch_pointer = new AcDbHatch();
+	AcDbObjectId hatch_id = AcDbObjectId::kNull;
+	Acad::ErrorStatus error_status;
+	double temp_angle;
+	if (angle_type == 0)
+		temp_angle = BasicTools::ConvertAngle(pattern_angle, 1);
+	else if (angle_type == 1)
+		temp_angle = pattern_angle;
+	else
+		throw;
+	hatch_pointer->setNormal(AcGeVector3d::kZAxis);
+	hatch_pointer->setElevation(0);
+	if (needAssociative)
+		hatch_pointer->setAssociative(true);
+	else
+		hatch_pointer->setAssociative(false);
+	hatch_pointer->setPatternAngle(temp_angle);
+	hatch_pointer->setPatternScale(pattern_scale);
+	hatch_pointer->setPattern(AcDbHatch::kPreDefined, hatch_pattern_name);
+
+	error_status = hatch_pointer->appendLoop(AcDbHatch::kExternal, entity_id_array);
+	error_status = hatch_pointer->evaluateHatch();
+	hatch_id = AddToModelSpace::AddEntityToModelSpace(hatch_pointer);
+
+	if (acdbOpenObject(hatch_pointer, hatch_id, OpenMode::kForRead) == Acad::eOk)
+	{
+		AcDbObjectIdArray associative_entity_id;
+		hatch_pointer->getAssocObjIds(associative_entity_id);
+		for (int i = 0; i < associative_entity_id.length(); i++)
+		{
+			AcDbEntity* entity_pointer = nullptr;
+			if (acdbOpenObject(entity_pointer, associative_entity_id.at(i), OpenMode::kForWrite) == Acad::eOk)
+			{
+				entity_pointer->addPersistentReactor(hatch_id);
+				entity_pointer->close();
+			}
+		}
+		hatch_pointer->close();
+	}
+	else
+	{
+		throw;
+	}
+	return hatch_id;
 }
 
 AcDbObjectId DrawEntity::AddText(const AcGePoint3d& insert_position, const TCHAR* insert_text, const AcDbObjectId text_style, const double& text_height, const double& text_rotation)
@@ -238,15 +292,15 @@ void DrawEntity::DrawFrame(char* frame_size, const AcGePoint3d& insert_point, co
 	}
 }
 
-AcDbObjectId DrawEntity::AddMLeader(AcGePoint3d insert_point, AcGePoint3d point_on_leader, AcGePoint3d text_point, TCHAR* leader_text)
+AcDbObjectId DrawEntity::AddMLeader(const AcGePoint3d insert_point, const AcGePoint3d point_on_leader, const AcGePoint3d text_point, const TCHAR* leader_text)
 {
 	AcDbMText* mtext = new AcDbMText();
 	mtext->setContents(leader_text);
 	mtext->setAttachment(AcDbMText::kMiddleCenter);
 	mtext->setLocation(text_point);
-	mtext->setTextHeight(0.18);
-
-	AcDbObjectId arrow_object_id = BasicTools::GetBlockId(_T("_ARCHTICK"));
+	mtext->setTextHeight(0.18);	
+	AcDbObjectId arrow_object_id;
+	// TODO: get arrowhead object id didn't finish yet.
 	int leader_index;
 	AcDbMLeader* mleader = new AcDbMLeader();
 

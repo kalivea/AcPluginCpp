@@ -27,6 +27,7 @@
 //-----------------------------------------------------------------------------
 #include "adui.h"
 #include "resource.h"
+#include <acuiEdit.h>
 
 //-----------------------------------------------------------------------------
 class CPolaCustomUi : public CAdUiBaseDialog {

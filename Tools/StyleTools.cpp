@@ -53,6 +53,17 @@ AcDbObjectId StyleTools::InitDimStyle()
 	return default_dim_style_id;
 }
 
+AcDbObjectId StyleTools::InitMLeaderStyle()
+{
+	AcDbMLeaderStyle* mleader_style = new AcDbMLeaderStyle();
+	AcDbObjectId mleader_style_id = AcDbObjectId::kNull;
+	mleader_style->setName(_T("NONE_ARROW"));
+	mleader_style->setArrowSymbolId(_T("_NONE"));
+	mleader_style->postMLeaderStyleToDb(acdbHostApplicationServices()->workingDatabase(), _T("NONE_ARROW"), mleader_style_id);
+	mleader_style->close();
+	return mleader_style_id;
+}
+
 AcDbObjectId StyleTools::CreateTextStyle(const TCHAR* text_style_name, const TCHAR* big_font_file_name, const TCHAR* text_file_name, const double& x_scale)
 {
 	AcDbObjectId default_text_style_id = AcDbObjectId::kNull;
@@ -127,7 +138,7 @@ AcDbObjectId StyleTools::CreateLayerStyle(const TCHAR* layer_name, const int col
 	layer_table_record->setColor(color);
 	layer_table->add(layer_table_record);
 	layer_id = layer_table_record->objectId();
-	
+
 	layer_table_record->close();
 	layer_table->close();
 	return layer_id;

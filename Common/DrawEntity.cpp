@@ -298,19 +298,16 @@ AcDbObjectId DrawEntity::AddMLeader(const AcGePoint3d insert_point, const AcGePo
 	mtext->setContents(leader_text);
 	mtext->setAttachment(AcDbMText::kMiddleCenter);
 	mtext->setLocation(text_point);
-	mtext->setTextHeight(0.18);	
-	AcDbObjectId arrow_object_id;
-	// TODO: get arrowhead object id didn't finish yet.
+	mtext->setTextHeight(0.18);
 	int leader_index;
 	AcDbMLeader* mleader = new AcDbMLeader();
-
+	mleader->setMLeaderStyle(StyleTools::InitMLeaderStyle());
 	mleader->addLeaderLine(insert_point, leader_index);
 	mleader->addFirstVertex(leader_index, insert_point);
 	mleader->setTextAttachmentType(AcDbMLeaderStyle::TextAttachmentType::kAttachmentBottomOfTopLine);
 	mleader->setLastVertex(leader_index, point_on_leader);
 	mleader->setMText(mtext);
 	mleader->setContentType(AcDbMLeaderStyle::kMTextContent);
-	mleader->setArrowSymbolId(arrow_object_id);
 	mleader->setArrowSize(0.018);
 
 	mtext->close();

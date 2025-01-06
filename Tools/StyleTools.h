@@ -6,6 +6,7 @@ class POLADLL_TOOLS_API StyleTools
 public:
 	static AcDbObjectId InitTextStyle();
 	static AcDbObjectId InitDimStyle();
+	static AcDbObjectId InitMLeaderStyle();
 
 	static AcDbObjectId CreateTextStyle(const TCHAR* text_style_name, const TCHAR* big_font_file_name, const TCHAR* text_file_name, const double& x_scale = 0.7);
 	static AcDbObjectId GetTextStyleId(const TCHAR* text_style_name);

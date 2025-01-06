@@ -146,6 +146,7 @@ public:
 	static bool checkValue(const CPolaCustomPillar* pillar);
 	static void BatchInsert(CPolaCustomPillar& pillar_template, AcGePoint3dArray insert_point_array);
 	static void SingleInsert(CPolaCustomPillar& pillar_template, AcGePoint3d insert_point);
+	static void AddPillarLeader(const CPolaCustomPillar* pillar);
 
 };
 

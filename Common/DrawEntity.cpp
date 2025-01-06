@@ -298,7 +298,8 @@ AcDbObjectId DrawEntity::AddMLeader(const AcGePoint3d insert_point, const AcGePo
 	mtext->setContents(leader_text);
 	mtext->setAttachment(AcDbMText::kMiddleCenter);
 	mtext->setLocation(text_point);
-	mtext->setTextHeight(0.18);
+	mtext->setTextHeight(350);
+	mtext->setTextStyle(StyleTools::InitTextStyle());
 	int leader_index;
 	AcDbMLeader* mleader = new AcDbMLeader();
 	mleader->setMLeaderStyle(StyleTools::InitMLeaderStyle());

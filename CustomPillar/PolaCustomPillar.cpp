@@ -614,5 +614,9 @@ void CPolaCustomPillar::SingleInsert(CPolaCustomPillar& pillar_template, AcGePoi
 void CPolaCustomPillar::AddPillarLeader(const CPolaCustomPillar* pillar)
 {
 	AcGePoint3d point_on_leader = pillar->getCenterPoint() + AcGeVector3d(1000, -1000, 0);
-	//DrawEntity::AddMLeader(pillar->getCenterPoint(), point_on_leader, point_on_leader, info);
+	CString info;
+	double b, h;
+	pillar->getDiameter(b, h);
+	info.Format(_T("Z%d\n%.0f*%.0f"), pillar->getPillarSn(), b, h);
+	DrawEntity::AddMLeader(pillar->getCenterPoint(), point_on_leader, point_on_leader, info);
 }

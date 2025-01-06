@@ -116,14 +116,14 @@ void TestClass::Test()
 	//	acutPrintf(_T("is"));
 	//else
 	//	acutPrintf(_T("!is"));
-	AcGePoint3d insert(-10, 0, 0);
-	AcGePoint3d last(20, 20, 0);
-	AcGePoint3d text(20.5, 20.5, 0);
+	//AcGePoint3d insert(-10, 0, 0);
+	//AcGePoint3d last(20, 20, 0);
+	//AcGePoint3d text(20.5, 20.5, 0);
 
-	StyleTools::CreateTextStyle(_T("dim_text"), _T("gbcbig.shx"), _T("gbenor.shx"));
+	//StyleTools::CreateTextStyle(_T("dim_text"), _T("gbcbig.shx"), _T("gbenor.shx"));
 
-	DrawEntity::AddMLeader(insert, last, text, _T("Test\n350*500"));
-	
+	//DrawEntity::AddMLeader(insert, last, text, _T("Test\n350*500"));
+
 	//StyleTools::CreateLayerStyle(_T("TEST"), 1, _T("Continuous"));
 	//
 	//EditEntity::SetLayer(DrawEntity::DrawCircle(AcGePoint3d(0, 0, 0), 5), _T("TEST"));
@@ -139,4 +139,7 @@ void TestClass::Test()
 
 
 #pragma endregion
+	/*EditEntity::SetColor(DrawEntity::DrawArc(AcGePoint3d(900, 500, 0), AcGePoint3d(480, 690, 0), AcGePoint3d(0, 0, 0)), 1);
+	EditEntity::SetColor(DrawEntity::DrawArc(AcGePoint3d(0, 0, 0), AcGePoint3d(400, 400, 0), 45, 0), 2);
+	EditEntity::SetColor(DrawEntity::DrawArc(AcGePoint3d(100, 100, 0), AcGePoint3d(200, 100, 0), AcGePoint3d(0, 100, 0), 1), 3);*/
 }

@@ -18,7 +18,7 @@ public:
 
 	static AcDbObjectId DrawArc(const AcGePoint3d& start_point, const AcGePoint3d& point_on_arc, const AcGePoint3d& end_point);
 	static AcDbObjectId DrawArc(const AcGePoint3d& center_point, const AcGePoint3d& start_point, const double& angle, const int angle_type);
-	static AcDbObjectId DrawArc(const AcGePoint3d& center_point, const AcGePoint3d& start_point, const AcGePoint3d& end_point, int n);			//TODO
+	static AcDbObjectId DrawArc(const AcGePoint3d& center_point, const AcGePoint3d& start_point, const AcGePoint3d& end_point, int n);		
 
 	static AcDbObjectId DrawPolyLine(const AcGePoint2dArray& vertices_list, const double& contant_width, bool needClose);
 

@@ -90,6 +90,7 @@
 #include "Grid.h"					//draw architecture grid 
 #include "PolaCustomPillar.h"
 
+#include "SelectEntitys.h"			//select entitys
 
 	//- Declare it as an extern here so that it becomes available in all modules
 extern AcApDataManager<CDocData> DocVars;

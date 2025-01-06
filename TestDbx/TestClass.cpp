@@ -142,4 +142,6 @@ void TestClass::Test()
 	/*EditEntity::SetColor(DrawEntity::DrawArc(AcGePoint3d(900, 500, 0), AcGePoint3d(480, 690, 0), AcGePoint3d(0, 0, 0)), 1);
 	EditEntity::SetColor(DrawEntity::DrawArc(AcGePoint3d(0, 0, 0), AcGePoint3d(400, 400, 0), 45, 0), 2);
 	EditEntity::SetColor(DrawEntity::DrawArc(AcGePoint3d(100, 100, 0), AcGePoint3d(200, 100, 0), AcGePoint3d(0, 100, 0), 1), 3);*/
+	//EditEntity::SetColor(DrawEntity::DrawPolyLine(BasicTools::DistanceToPointArrayX(AcGePoint3d(0, 0, 0), 100, 10), 0.5, true), 1);
+
 }

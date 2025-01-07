@@ -154,7 +154,7 @@ void TestClass::Test()
 	std::vector<AcGeLine3d> line_vector;
 	for (int i = 0; i < line_array.length(); i++)
 	{
-		if (acdbOpenObject(entity, line_array[i], AcDb::kForRead) == Acad::eOk)
+		if (acdbOpenObject(entity, line_array.at(i), AcDb::kForRead) == Acad::eOk)
 		{
 			line_vector.push_back(BasicTools::EntityToLine(entity));
 		}
@@ -164,7 +164,10 @@ void TestClass::Test()
 	{
 		for (int j = i + 1; j < line_vector.size(); j++)
 		{
-			insert_point.append(BasicTools::GetIntersect(line_vector.at(i), line_vector.at(j)));
+			if (BasicTools::GetIntersect(line_vector.at(i), line_vector.at(j)) != AcGePoint3d::kOrigin)
+			{
+				insert_point.append(BasicTools::GetIntersect(line_vector.at(i), line_vector.at(j)));
+			}
 		}
 	}
 	CPolaCustomPillar* pillar = new CPolaCustomPillar();
@@ -175,7 +178,7 @@ void TestClass::Test()
 	pillar->setViewable(true);
 
 	CPolaCustomPillar::BatchInsert(*pillar, insert_point);
-	
+
 #pragma endregion
 
 

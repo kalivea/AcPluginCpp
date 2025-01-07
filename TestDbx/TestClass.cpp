@@ -144,6 +144,39 @@ void TestClass::Test()
 	EditEntity::SetColor(DrawEntity::DrawArc(AcGePoint3d(100, 100, 0), AcGePoint3d(200, 100, 0), AcGePoint3d(0, 100, 0), 1), 3);*/
 	//EditEntity::SetColor(DrawEntity::DrawPolyLine(BasicTools::DistanceToPointArrayX(AcGePoint3d(0, 0, 0), 100, 10), 0.5, true), 1);
 
+#pragma region ss
+	StyleTools::LoadLineType(_T("DASHED"), _T("acad.lin"));
+	AcDbObjectIdArray line_array;
+	AcGePoint3dArray insert_point;
+	SelectEntitys::PickLinesOnLayer(_T("Line"), line_array);
+
+	AcDbEntity* entity = nullptr;
+	std::vector<AcGeLine3d> line_vector;
+	for (int i = 0; i < line_array.length(); i++)
+	{
+		if (acdbOpenObject(entity, line_array[i], AcDb::kForRead) == Acad::eOk)
+		{
+			line_vector.push_back(BasicTools::EntityToLine(entity));
+		}
+	}
+
+	for (int i = 0; i < line_vector.size(); i++)
+	{
+		for (int j = i + 1; j < line_vector.size(); j++)
+		{
+			insert_point.append(BasicTools::GetIntersect(line_vector.at(i), line_vector.at(j)));
+		}
+	}
+	CPolaCustomPillar* pillar = new CPolaCustomPillar();
+	pillar->setDiameter(350, 500);
+	pillar->setSn(1);
+	pillar->setPillarProperty(1);
+	pillar->setPillarType(1);
+	pillar->setViewable(true);
+
+	CPolaCustomPillar::BatchInsert(*pillar, insert_point);
 	
+#pragma endregion
+
 
 }

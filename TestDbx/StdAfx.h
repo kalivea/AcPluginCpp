@@ -89,7 +89,6 @@
 #include "StyleTools.h"				//set default text,dim style [and so on (TODO)]
 #include "Grid.h"					//draw architecture grid 
 #include "PolaCustomPillar.h"
-
 #include "SelectEntitys.h"			//select entitys
 
 	//- Declare it as an extern here so that it becomes available in all modules

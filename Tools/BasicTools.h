@@ -29,6 +29,8 @@ public:
 
 	//math tools: Line Tools
 	static bool IsIntersectLine(const AcGeLine3d& line_1, const AcGeLine3d& line_2, AcGePoint3d& out_intersect_point);
+	static AcGePoint3d GetIntersect(const AcGeLine3d& line_1, const AcGeLine3d& line_2);
+	static AcGeLine3d EntityToLine(const AcDbEntity* entity);
 
 	// math tools: Numerical tools
 	static double Max(const double& num1, const double& num2);

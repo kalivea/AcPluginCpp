@@ -78,3 +78,11 @@ bool SelectEntitys::PickEntitys(const TCHAR* prompt, const std::vector<AcRxClass
 	acedSSFree(selection_set_name);
 	return entity_id_array.isEmpty() ? false : true;
 }
+
+bool SelectEntitys::PickLinesOnLayer(const TCHAR* layer_name, AcDbObjectIdArray& entity_id_array)
+{
+	struct resbuf* result_buff = acutBuildList(RTDXF0, _T("LINE"), 8, layer_name, RTNONE);
+	bool result = PickEntitys(_T("Select lines on layer: "), result_buff, entity_id_array);
+	acutRelRb(result_buff);
+	return result;
+}

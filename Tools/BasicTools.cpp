@@ -225,6 +225,35 @@ bool BasicTools::IsIntersectLine(const AcGeLine3d& line_1, const AcGeLine3d& lin
 		return false;
 	}
 }
+AcGePoint3d BasicTools::GetIntersect(const AcGeLine3d& line_1, const AcGeLine3d& line_2)
+{
+	AcGePoint3d temp_point;
+	if (IsIntersectLine(line_1, line_2, temp_point))
+	{
+		return temp_point;
+	}
+	else
+	{
+		return AcGePoint3d::kOrigin;
+	}
+}
+AcGeLine3d BasicTools::EntityToLine(const AcDbEntity* entity)
+{
+	if (entity->isKindOf(AcDbLine::desc()))
+	{
+		AcDbLine* line = AcDbLine::cast(entity);
+		AcGePoint3d start_point = line->startPoint();
+		AcGePoint3d end_point = line->endPoint();
+
+		line->close();
+		return AcGeLine3d(start_point, end_point);
+	}
+	else
+	{
+		throw;
+	}
+	
+}
 /// <summary>
 /// Grid modules: Calculate X direction point Array based on spacing.
 /// </summary>

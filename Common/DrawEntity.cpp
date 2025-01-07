@@ -292,7 +292,7 @@ void DrawEntity::DrawFrame(char* frame_size, const AcGePoint3d& insert_point, co
 	}
 }
 
-AcDbObjectId DrawEntity::AddMLeader(const AcGePoint3d insert_point, const AcGePoint3d point_on_leader, const AcGePoint3d text_point, const TCHAR* leader_text)
+AcDbObjectId DrawEntity::AddMLeader(const AcGePoint3d& insert_point, const AcGePoint3d& point_on_leader, const AcGePoint3d& text_point, const TCHAR* leader_text)
 {
 	AcDbMText* mtext = new AcDbMText();
 	mtext->setContents(leader_text);

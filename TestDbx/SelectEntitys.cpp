@@ -8,9 +8,9 @@ bool SelectEntitys::PickEntitys(const TCHAR* prompt, resbuf* result_buff, AcDbOb
 
 	bool result = false;
 	ads_name selection_set_name;
-	int result_status = acedSSGet(nullptr, nullptr, nullptr, result_buff, selection_set_name);
+	acutPrintf(prompt);
 
-	if (result_status==RTNORM)
+	if (acedSSGet(nullptr, nullptr, nullptr, result_buff, selection_set_name) == RTNORM)
 	{
 		int length = 0;
 		acedSSLength(selection_set_name, &length);
@@ -30,4 +30,51 @@ bool SelectEntitys::PickEntitys(const TCHAR* prompt, resbuf* result_buff, AcDbOb
 	}
 	acedSSFree(selection_set_name);
 	return result;
+}
+
+bool SelectEntitys::PickEntitys(const TCHAR* prompt, const std::vector<AcRxClass*>& class_describe, AcDbObjectIdArray& entity_id_array)
+{
+	entity_id_array.removeAll();
+	entity_id_array.setLogicalLength(0);
+	ads_name selection_set_name;
+	int result = 0;
+	acutPrintf(prompt);
+
+	if (acedSSGet(nullptr, nullptr, nullptr, nullptr, selection_set_name) != RTNORM)
+	{
+		return false;
+	}
+
+	int length = 0;
+	acedSSLength(selection_set_name, &length);
+
+	Acad::ErrorStatus error_status;
+	AcDbEntity* entity = nullptr;
+	for (int i = 0; i < length; i++)
+	{
+		ads_name entity_name;
+		acedSSName(selection_set_name, i, entity_name);
+		AcDbObjectId current_entity_id = AcDbObjectId::kNull;
+		error_status = acdbGetObjectId(current_entity_id, entity_name);
+		if (error_status != Acad::eOk)
+		{
+			continue;
+		}
+		error_status = acdbOpenAcDbEntity(entity, current_entity_id, AcDb::kForRead);
+		if (error_status != Acad::eOk)
+		{
+			continue;
+		}
+		for (int j = 0; j < class_describe.size(); j++)
+		{
+			if (entity->isKindOf(class_describe[j]))
+			{
+				entity_id_array.append(entity->objectId());
+				break;
+			}
+		}
+		entity->close();
+	}
+	acedSSFree(selection_set_name);
+	return entity_id_array.isEmpty() ? false : true;
 }

@@ -125,7 +125,7 @@ AcDbObjectId StyleTools::GetDimensionStyleId(const TCHAR* dimension_style_name)
 	}
 }
 
-AcDbObjectId StyleTools::CreateLayerStyle(const TCHAR* layer_name, const int color_index, const TCHAR* line_type)
+AcDbObjectId StyleTools::CreateLayerStyle(const TCHAR* layer_name, const int& color_index, const TCHAR* line_type)
 {
 	AcCmColor color;
 	color.setColorIndex(color_index);

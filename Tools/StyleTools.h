@@ -14,7 +14,7 @@ public:
 	static AcDbObjectId CreateDimensionStyle(const TCHAR* dimension_style_name);
 	static AcDbObjectId GetDimensionStyleId(const TCHAR* dimension_style_name);
 
-	static AcDbObjectId CreateLayerStyle(const TCHAR* layer_name, const int color_index, const TCHAR* line_type);
+	static AcDbObjectId CreateLayerStyle(const TCHAR* layer_name, const int& color_index, const TCHAR* line_type);
 	static AcDbObjectId GetLayerId(const TCHAR* layer_name);
 
 	static AcDbObjectId LoadLineType(const TCHAR* line_type, const TCHAR* line_type_file);

@@ -117,13 +117,13 @@ private:
 
 public:
 	//					set function
-	void setCenterPoint(AcGePoint3d center);
-	void setDirectionVector(AcGeVector3d dir_vec = AcGeVector3d::kXAxis);
-	void setDiameter(double d, double h);
-	void setViewable(bool view);
-	void setPillarProperty(Adesk::Int32 prop);
-	void setSn(Adesk::Int32 sn);
-	void setPillarType(Adesk::Int32 type);
+	void setCenterPoint(const AcGePoint3d& center);
+	void setDirectionVector(const AcGeVector3d& dir_vec = AcGeVector3d::kXAxis);
+	void setDiameter(const double& d, const double& h);
+	void setViewable(const bool view);
+	void setPillarProperty(const Adesk::Int32& prop);
+	void setSn(const Adesk::Int32& sn);
+	void setPillarType(const Adesk::Int32& type);
 
 	//					get function
 	AcGePoint3d getCenterPoint() const;
@@ -144,8 +144,8 @@ public:
 
 	//					init pillar and value check
 	static bool checkValue(const CPolaCustomPillar* pillar);
-	static void BatchInsert(CPolaCustomPillar& pillar_template, AcGePoint3dArray insert_point_array);
-	static void SingleInsert(CPolaCustomPillar& pillar_template, AcGePoint3d insert_point);
+	static void BatchInsert(const CPolaCustomPillar& pillar_template, const AcGePoint3dArray& insert_point_array);
+	static void SingleInsert(const CPolaCustomPillar& pillar_template, const AcGePoint3d& insert_point);
 	static void AddPillarLeader(const CPolaCustomPillar* pillar);
 
 };

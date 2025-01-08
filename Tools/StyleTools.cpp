@@ -7,22 +7,25 @@ AcDbObjectId StyleTools::InitTextStyle()
 	{
 		return GetTextStyleId(_T("default_txt"));
 	}
-	AcDbTextStyleTable* text_style_table = nullptr;
-	acdbHostApplicationServices()->workingDatabase()->getTextStyleTable(text_style_table, OpenMode::kForWrite);
-	AcDbTextStyleTableRecord* text_style_table_record = new AcDbTextStyleTableRecord();
-	text_style_table_record->setName(_T("default_txt"));
-	text_style_table_record->setFileName(_T("gbenor.shx"));
-	text_style_table_record->setBigFontFileName(_T("gbcbig.shx"));
-	text_style_table_record->setXScale(0.75);
-	text_style_table->add(text_style_table_record);
+	else
+	{
+		AcDbTextStyleTable* text_style_table = nullptr;
+		acdbHostApplicationServices()->workingDatabase()->getTextStyleTable(text_style_table, OpenMode::kForWrite);
+		AcDbTextStyleTableRecord* text_style_table_record = new AcDbTextStyleTableRecord();
+		text_style_table_record->setName(_T("default_txt"));
+		text_style_table_record->setFileName(_T("gbenor.shx"));
+		text_style_table_record->setBigFontFileName(_T("gbcbig.shx"));
+		text_style_table_record->setXScale(0.75);
+		text_style_table->add(text_style_table_record);
 
-	AcDbObjectId default_text_style_id = AcDbObjectId::kNull;
-	default_text_style_id = text_style_table_record->objectId();
+		AcDbObjectId default_text_style_id = AcDbObjectId::kNull;
+		default_text_style_id = text_style_table_record->objectId();
 
-	text_style_table_record->close();
-	text_style_table->close();
+		text_style_table_record->close();
+		text_style_table->close();
 
-	return default_text_style_id;
+		return default_text_style_id;
+	}
 }
 
 AcDbObjectId StyleTools::InitDimStyle()
@@ -31,34 +34,36 @@ AcDbObjectId StyleTools::InitDimStyle()
 	{
 		return GetDimensionStyleId(_T("pt_100_350"));
 	}
-	AcDbObjectId default_dim_style_id = AcDbObjectId::kNull;
-	AcDbDimStyleTable* dim_style_table;
-	acdbHostApplicationServices()->workingDatabase()->getDimStyleTable(dim_style_table, AcDb::kForWrite);
-	AcDbDimStyleTableRecord* dim_style_table_record;
-	dim_style_table_record = new AcDbDimStyleTableRecord();
+	else
+	{
+		AcDbObjectId default_dim_style_id = AcDbObjectId::kNull;
+		AcDbDimStyleTable* dim_style_table;
+		acdbHostApplicationServices()->workingDatabase()->getDimStyleTable(dim_style_table, AcDb::kForWrite);
+		AcDbDimStyleTableRecord* dim_style_table_record;
+		dim_style_table_record = new AcDbDimStyleTableRecord();
 
-	dim_style_table_record->setName(_T("pt_100_350"));
-	dim_style_table_record->setDimtxsty(StyleTools::GetTextStyleId(_T("dim_text")));
-	dim_style_table_record->setDimtxt(350);
-	dim_style_table_record->setDimblk(_T("_ARCHTICK"));
-	dim_style_table_record->setDimdle(0);
-	dim_style_table_record->setDimdli(0);
-	dim_style_table_record->setDimexe(100);
-	dim_style_table_record->setDimexo(150);
-	dim_style_table_record->setDimfxlenOn(false);
-	dim_style_table_record->setDimasz(150);
-	dim_style_table_record->setDimtad(2);
-	dim_style_table_record->setDimlfac(1);
-	dim_style_table_record->setDimdec(0);
-	dim_style_table_record->setDimtih(0);
+		dim_style_table_record->setName(_T("pt_100_350"));
+		dim_style_table_record->setDimtxsty(StyleTools::GetTextStyleId(_T("dim_text")));
+		dim_style_table_record->setDimtxt(350);
+		dim_style_table_record->setDimblk(_T("_ARCHTICK"));
+		dim_style_table_record->setDimdle(0);
+		dim_style_table_record->setDimdli(0);
+		dim_style_table_record->setDimexe(100);
+		dim_style_table_record->setDimexo(150);
+		dim_style_table_record->setDimfxlenOn(false);
+		dim_style_table_record->setDimasz(150);
+		dim_style_table_record->setDimtad(2);
+		dim_style_table_record->setDimlfac(1);
+		dim_style_table_record->setDimdec(0);
+		dim_style_table_record->setDimtih(0);
 
+		dim_style_table->add(dim_style_table_record);
+		default_dim_style_id = dim_style_table_record->objectId();
 
-	dim_style_table->add(dim_style_table_record);
-	default_dim_style_id = dim_style_table_record->objectId();
-
-	dim_style_table_record->close();
-	dim_style_table->close();
-	return default_dim_style_id;
+		dim_style_table_record->close();
+		dim_style_table->close();
+		return default_dim_style_id;
+	}
 }
 
 AcDbObjectId StyleTools::InitMLeaderStyle()
@@ -67,13 +72,16 @@ AcDbObjectId StyleTools::InitMLeaderStyle()
 	{
 		return GetMLeaderStyleId(_T("NONE_ARROW"));
 	}
-	AcDbMLeaderStyle* mleader_style = new AcDbMLeaderStyle();
-	AcDbObjectId mleader_style_id = AcDbObjectId::kNull;
-	mleader_style->setName(_T("NONE_ARROW"));
-	mleader_style->setArrowSymbolId(_T("_NONE"));
-	mleader_style->postMLeaderStyleToDb(acdbHostApplicationServices()->workingDatabase(), _T("NONE_ARROW"), mleader_style_id);
-	mleader_style->close();
-	return mleader_style_id;
+	else
+	{
+		AcDbMLeaderStyle* mleader_style = new AcDbMLeaderStyle();
+		AcDbObjectId mleader_style_id = AcDbObjectId::kNull;
+		mleader_style->setName(_T("NONE_ARROW"));
+		mleader_style->setArrowSymbolId(_T("_NONE"));
+		mleader_style->postMLeaderStyleToDb(acdbHostApplicationServices()->workingDatabase(), _T("NONE_ARROW"), mleader_style_id);
+		mleader_style->close();
+		return mleader_style_id;
+	}
 }
 
 AcDbObjectId StyleTools::CreateTextStyle(const TCHAR* text_style_name, const TCHAR* big_font_file_name, const TCHAR* text_file_name, const double& x_scale)

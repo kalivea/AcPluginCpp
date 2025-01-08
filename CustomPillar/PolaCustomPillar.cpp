@@ -617,6 +617,18 @@ void CPolaCustomPillar::AddPillarLeader(const CPolaCustomPillar * pillar)
 	CString info;
 	double b, h;
 	pillar->getDiameter(b, h);
-	info.Format(_T("Z%d\n%.0f*%.0f"), pillar->getPillarSn(), b, h);
-	DrawEntity::AddMLeader(pillar->getCenterPoint(), point_on_leader, point_on_leader, info);
+	if (pillar->getPillarType() == 1)
+	{
+		info.Format(_T("Z%d\n%.0f*%.0f"), pillar->getPillarSn(), b, h);
+		DrawEntity::AddMLeader(pillar->getCenterPoint(), point_on_leader, point_on_leader, info);
+	}
+	else if (pillar->getPillarType() == 0)
+	{
+		info.Format(_T("Z%d\n %%%%c %.0f"), pillar->getPillarSn(), b);
+		DrawEntity::AddMLeader(pillar->getCenterPoint(), point_on_leader, point_on_leader, info);
+	}
+	else
+	{
+		throw;
+	}
 }

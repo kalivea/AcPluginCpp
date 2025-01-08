@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "SelectEntitys.h"
 
 bool SelectEntitys::PickEntitys(const TCHAR* prompt, resbuf* result_buff, AcDbObjectIdArray& entity_id_array)
@@ -67,7 +67,7 @@ bool SelectEntitys::PickEntitys(const TCHAR* prompt, const std::vector<AcRxClass
 		}
 		for (int j = 0; j < class_describe.size(); j++)
 		{
-			if (entity->isKindOf(class_describe[j]))
+			if (entity->isKindOf(class_describe.at(j)))
 			{
 				entity_id_array.append(entity->objectId());
 				break;
@@ -79,11 +79,12 @@ bool SelectEntitys::PickEntitys(const TCHAR* prompt, const std::vector<AcRxClass
 	return entity_id_array.isEmpty() ? false : true;
 }
 
-//bool SelectEntitys::PickEntitys(const TCHAR* prompt, AcRxClass* class_describe, AcDbObjectIdArray& entity_id_array)
-//{
-//	std::vector<AcRxClass*> class_describe_vector;
-//	class_describe_vector.push_back(class_describe);
-//}
+bool SelectEntitys::PickEntitys(const TCHAR* prompt, AcRxClass* class_describe, AcDbObjectIdArray& entity_id_array)
+{
+	std::vector<AcRxClass*> class_describe_vector;
+	class_describe_vector.push_back(class_describe);
+	return PickEntitys(prompt, class_describe_vector, entity_id_array);
+}
 
 bool SelectEntitys::PickLinesOnLayer(const TCHAR* layer_name, AcDbObjectIdArray& entity_id_array)
 {
@@ -91,4 +92,36 @@ bool SelectEntitys::PickLinesOnLayer(const TCHAR* layer_name, AcDbObjectIdArray&
 	bool result = PickEntitys(_T("Select lines on layer: "), result_buff, entity_id_array);
 	acutRelRb(result_buff);
 	return result;
+}
+
+bool SelectEntitys::PickEntitysInRectangel(const TCHAR* prompt, const AcGePoint2d& point1, const AcGePoint2d& point2, AcDbObjectIdArray& entity_id_array)
+{
+	entity_id_array.removeAll();
+	entity_id_array.setLogicalLength(0);
+
+	if (BasicTools::CanDrawRect(BasicTools::Point2dToPoint3d(point1), BasicTools::Point2dToPoint3d(point2)))
+	{
+		AcDbObjectIdArray all_entity_ids = BasicTools::GetAllEntityIdsInDatabase();
+		for (int i = 0; i < all_entity_ids.length(); i++)
+		{
+			AcDbEntity* entity = nullptr;
+			if (acdbOpenObject(entity, all_entity_ids.at(i), AcDb::kForRead) == Acad::eOk)
+			{
+				AcDbExtents extents;
+				entity->getGeomExtents(extents);
+				AcGePoint3d extents_min_point = extents.minPoint();
+				AcGePoint3d extents_max_point = extents.maxPoint();
+				if (BasicTools::IsIntersectRectangle(BasicTools::Point2dToPoint3d(point1), BasicTools::Point2dToPoint3d(point2), extents_min_point, extents_max_point))
+				{
+					entity_id_array.append(entity->objectId());
+				}
+				entity->close();
+			}
+		}
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }

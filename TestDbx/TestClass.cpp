@@ -145,41 +145,90 @@ void TestClass::Test()
 	//EditEntity::SetColor(DrawEntity::DrawPolyLine(BasicTools::DistanceToPointArrayX(AcGePoint3d(0, 0, 0), 100, 10), 0.5, true), 1);
 
 #pragma region ss
-	StyleTools::LoadLineType(_T("DASHED"), _T("acad.lin"));
-	AcDbObjectIdArray line_array;
-	AcGePoint3dArray insert_point;
-	SelectEntitys::PickLinesOnLayer(_T("Line"), line_array);
+	//StyleTools::LoadLineType(_T("DASHED"), _T("acad.lin"));
+	//AcDbObjectIdArray line_array;
+	//AcGePoint3dArray insert_point;
+	//SelectEntitys::PickLinesOnLayer(_T("Line"), line_array);
 
-	AcDbEntity* entity = nullptr;
-	std::vector<AcGeLine3d> line_vector;
-	for (int i = 0; i < line_array.length(); i++)
-	{
-		if (acdbOpenObject(entity, line_array.at(i), AcDb::kForRead) == Acad::eOk)
-		{
-			line_vector.push_back(BasicTools::EntityToLine(entity));
-		}
-	}
+	//AcDbEntity* entity = nullptr;
+	//std::vector<AcGeLine3d> line_vector;
+	//for (int i = 0; i < line_array.length(); i++)
+	//{
+	//	if (acdbOpenObject(entity, line_array.at(i), AcDb::kForRead) == Acad::eOk)
+	//	{
+	//		line_vector.push_back(BasicTools::EntityToLine(entity));
+	//	}
+	//}
 
-	for (int i = 0; i < line_vector.size(); i++)
-	{
-		for (int j = i + 1; j < line_vector.size(); j++)
-		{
-			if (BasicTools::GetIntersect(line_vector.at(i), line_vector.at(j)) != AcGePoint3d(6496,6496,6496))
-			{
-				insert_point.append(BasicTools::GetIntersect(line_vector.at(i), line_vector.at(j)));
-			}
-		}
-	}
-	CPolaCustomPillar* pillar = new CPolaCustomPillar();
-	pillar->setDiameter(350, 500);
-	pillar->setSn(1);
-	pillar->setPillarProperty(1);
-	pillar->setPillarType(1);
-	pillar->setViewable(true);
+	//for (int i = 0; i < line_vector.size(); i++)
+	//{
+	//	for (int j = i + 1; j < line_vector.size(); j++)
+	//	{
+	//		if (BasicTools::GetIntersect(line_vector.at(i), line_vector.at(j)) != AcGePoint3d(6496,6496,6496))
+	//		{
+	//			insert_point.append(BasicTools::GetIntersect(line_vector.at(i), line_vector.at(j)));
+	//		}
+	//	}
+	//}
+	//CPolaCustomPillar* pillar = new CPolaCustomPillar();
+	//pillar->setDiameter(350, 500);
+	//pillar->setSn(1);
+	//pillar->setPillarProperty(1);
+	//pillar->setPillarType(1);
+	//pillar->setViewable(true);
 
-	CPolaCustomPillar::BatchInsert(*pillar, insert_point);
+	//CPolaCustomPillar::BatchInsert(*pillar, insert_point);
 
 #pragma endregion
+#pragma region ss plus
 
+	AcGePoint3d rect_point1(0, 0, 0);
+	AcGePoint3d rect_point2(100, 100, 0);
+
+	AcGePoint3d rect_point3(50, 50, 0);
+	AcGePoint3d rect_point4(250, 250, 0);
+
+	AcGePoint3d rect_point5(-100, 150, 0);
+	AcGePoint3d rect_point6(-70, 0, 0);
+
+	AcGePoint3d rect_point7(0, 0, 0);
+	AcGePoint3d rect_point8(-100, -100, 0);
+	/*
+	if (BasicTools::IsIntersectRectangle(rect_point1, rect_point2, rect_point3, rect_point4))
+		acutPrintf(_T("is\n"));
+	else
+		acutPrintf(_T("!is\n"));
+
+	if (BasicTools::IsIntersectRectangle(rect_point1, rect_point2, rect_point5, rect_point6))
+		acutPrintf(_T("is\n"));
+	else
+		acutPrintf(_T("!is\n"));
+
+	if (BasicTools::IsIntersectRectangle(rect_point1, rect_point2, rect_point7, rect_point8))
+		acutPrintf(_T("is\n"));
+	else
+		acutPrintf(_T("!is\n"));*/
+
+		/*AcDbObjectIdArray ent = BasicTools::GetAllEntityIdsInDatabase();
+		acutPrintf(_T("%d\n"), ent.length());*/
+	//DrawEntity::DrawRectangle(rect_point1, rect_point2, 0);
+	//DrawEntity::DrawRectangle(rect_point3, rect_point4, 0);
+	//DrawEntity::DrawRectangle(rect_point5, rect_point6, 0);
+	//DrawEntity::DrawRectangle(rect_point7, rect_point8, 0);
+
+	//AcDbObjectIdArray ent;
+	//SelectEntitys::PickEntitysInRectangel(NULL, AcGePoint2d(-500, 500), AcGePoint2d(500, -500), ent);
+	//acutPrintf(_T("%d\n"), ent.length());
+	//for (int i = 0; i < ent.length(); i++)
+	//{
+	//	AcDbEntity* entity = nullptr;
+	//	if (acdbOpenObject(entity, ent.at(i), AcDb::kForWrite) == Acad::eOk)
+	//	{
+	//		entity->setColorIndex(2);
+	//		entity->close();
+	//	}
+	//}
+	//EditEntity::SetColor(DrawEntity::DrawRectangle(AcGePoint3d(-500, 500, 0), AcGePoint3d(500, -500, 0), 0), 2);
+#pragma endregion
 
 }

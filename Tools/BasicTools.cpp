@@ -1,5 +1,6 @@
 #include "StdAfx.h"
 #include "BasicTools.h"
+#include "StyleTools.h"
 
 /// <summary>
 /// Converts the angle to the target angle type.
@@ -7,7 +8,7 @@
 /// <param name="angle">Source angel</param>
 /// <param name="target_angle_type">0 mean RAD->DEG;1 mean DED->RAD</param>
 /// <returns>target angle</returns>
-double BasicTools::ConvertAngle(const double& angle, const int target_angle_type)
+double BasicTools::ConvertAngle(const double& angle, const int& target_angle_type)
 {
 	if (target_angle_type == 1)
 		return angle * (M_PI / 180.0);
@@ -54,7 +55,7 @@ bool BasicTools::IsCollinearPoint(const AcGePoint3d& point1, const AcGePoint3d& 
 /// <param name="end_point"></param>
 /// <param name="target_angle_type">0 mean target angle type is DEG,1 mean target angle type is RAD</param>
 /// <returns>result</returns>
-double BasicTools::GetAngleToXaxis(const AcGePoint3d& start_point, const AcGePoint3d& end_point, const int target_angle_type)
+double BasicTools::GetAngleToXaxis(const AcGePoint3d& start_point, const AcGePoint3d& end_point, const int& target_angle_type)
 {
 	AcGeVector3d i(1.0, 0.0, 0.0);
 	AcGeVector3d vector = GetVectorBetweenTwoPoint(start_point, end_point);
@@ -74,7 +75,7 @@ double BasicTools::GetAngleToXaxis(const AcGePoint3d& start_point, const AcGePoi
 /// <param name="vector"></param>
 /// <param name="target_angle_type">0 mean target angle type is DEG,1 mean target angle type is RAD</param>
 /// <returns></returns>
-double BasicTools::GetAngleToXaxis(const AcGeVector3d& vector, const int target_angle_type)
+double BasicTools::GetAngleToXaxis(const AcGeVector3d& vector, const int& target_angle_type)
 {
 	AcGeVector3d i(1.0, 0.0, 0.0);
 	double angle = vector.y >= 0 ? vector.angleTo(i) : -vector.angleTo(i);
@@ -104,7 +105,7 @@ double BasicTools::GetDistanceBetweenTwoPoint(const AcGePoint3d& start_point, co
 /// <param name="start_point2"></param>
 /// <param name="target_angle_type">0 mean target angle type is DEG,1 mean target angle type is RAD</param>
 /// <returns></returns>
-double BasicTools::GetAngleByThreePoint(const AcGePoint3d& start_point1, const AcGePoint3d& common_end_point, const AcGePoint3d& start_point2, const int target_angle_type)
+double BasicTools::GetAngleByThreePoint(const AcGePoint3d& start_point1, const AcGePoint3d& common_end_point, const AcGePoint3d& start_point2, const int& target_angle_type)
 {
 	AcGeVector3d startPoint1ToEndPoint = BasicTools::GetVectorBetweenTwoPoint(common_end_point, start_point1);
 	AcGeVector3d startPoint2ToEndPoint = BasicTools::GetVectorBetweenTwoPoint(common_end_point, start_point2);
@@ -134,6 +135,10 @@ AcGePoint3d BasicTools::AdsPointToPoint3d(const ads_point& point)
 AcGePoint2d BasicTools::Point3dToPoint2d(const AcGePoint3d& point3d)
 {
 	return AcGePoint2d(point3d.x, point3d.y);
+}
+AcGePoint3d BasicTools::Point2dToPoint3d(const AcGePoint2d& point2d)
+{
+	return AcGePoint3d(point2d.x, point2d.y, 0);
 }
 /// <summary>
 /// Convert AcGePoint3dArray type to AcGePoint2dArray type.
@@ -207,6 +212,90 @@ AcGePoint3d BasicTools::OffsetMidPoint(const AcGePoint3d& start_point, const AcG
 	AcGePoint3d offseted_end_point(end_point.x - distance * (sin(angle)), end_point.y + distance * (cos(angle)), 0);
 	return BasicTools::GetMidPoint(offseted_start_point, offseted_end_point);
 }
+
+bool BasicTools::IsIntersectRectangle(const AcGePoint3d& vertex_point1, const AcGePoint3d& vertex_point2, const AcGePoint3d& vertex_point3, const AcGePoint3d& vertex_point4)
+{
+	bool rect1_check = CanDrawRect(vertex_point1, vertex_point2);
+	bool rect2_check = CanDrawRect(vertex_point3, vertex_point4);
+	if (rect1_check && rect2_check)
+	{
+		double rect1_min_x = BasicTools::Min(vertex_point1.x, vertex_point2.x);
+		double rect1_max_x = BasicTools::Max(vertex_point1.x, vertex_point2.x);
+		double rect1_min_y = BasicTools::Min(vertex_point1.y, vertex_point2.y);
+		double rect1_max_y = BasicTools::Max(vertex_point1.y, vertex_point2.y);
+
+		double rect2_min_x = BasicTools::Min(vertex_point3.x, vertex_point4.x);
+		double rect2_max_x = BasicTools::Max(vertex_point3.x, vertex_point4.x);
+		double rect2_min_y = BasicTools::Min(vertex_point3.y, vertex_point4.y);
+		double rect2_max_y = BasicTools::Max(vertex_point3.y, vertex_point4.y);
+
+		if (rect1_max_x < rect2_min_x || rect1_min_x > rect2_max_x || rect1_max_y < rect2_min_y || rect1_min_y > rect2_max_y)
+		{
+			return false;
+		}
+		else
+		{
+			return true;
+		}
+	}
+	else
+	{
+		throw;
+	}
+}
+
+AcDbObjectIdArray BasicTools::GetAllEntityIdsInDatabase(const TCHAR* layer_name, AcDbDatabase* database)
+{
+	AcDbObjectIdArray all_entity_ids;
+	bool needFilterLayer;
+	if ((layer_name != NULL ? true : false) && (StyleTools::IsLayerExist(layer_name)))
+	{
+		needFilterLayer = true;
+	}
+	else
+	{
+		needFilterLayer = false;
+	}
+	AcDbObjectId layer_id = AcDbObjectId::kNull;
+
+	AcDbBlockTable* block_table = nullptr;
+	database->getBlockTable(block_table, OpenMode::kForRead);
+	AcDbBlockTableRecord* block_table_record = nullptr;
+	block_table->getAt(ACDB_MODEL_SPACE, block_table_record, OpenMode::kForRead);
+
+	AcDbBlockTableRecordIterator* block_table_record_iterator = nullptr;
+	block_table_record->newIterator(block_table_record_iterator);
+	for (block_table_record_iterator->start(); !block_table_record_iterator->done(); block_table_record_iterator->step())
+	{
+		AcDbEntity* entity = nullptr;
+		Acad::ErrorStatus error_status;
+		error_status = block_table_record_iterator->getEntity(entity, AcDb::kForRead);
+		if (error_status == Acad::eOk)
+		{
+			if (needFilterLayer)
+			{
+				if (entity->layerId() == layer_id)
+				{
+					all_entity_ids.append(entity->objectId());
+				}
+			}
+			else
+			{
+				all_entity_ids.append(entity->objectId());
+			}
+			entity->close();
+		}
+		else
+		{
+			throw;
+		}
+	}
+	delete block_table_record_iterator;
+	block_table_record->close();
+	block_table->close();
+
+	return all_entity_ids;
+}
 /// <summary>
 /// Determine whether two points intersect.
 /// </summary>
@@ -234,7 +323,7 @@ AcGePoint3d BasicTools::GetIntersect(const AcGeLine3d& line_1, const AcGeLine3d&
 	}
 	else
 	{
-		return AcGePoint3d(6496,6496,6496);
+		return AcGePoint3d(6496, 6496, 6496);
 	}
 }
 AcGeLine3d BasicTools::EntityToLine(const AcDbEntity* entity)
@@ -252,7 +341,7 @@ AcGeLine3d BasicTools::EntityToLine(const AcDbEntity* entity)
 	{
 		throw;
 	}
-	
+
 }
 /// <summary>
 /// Grid modules: Calculate X direction point Array based on spacing.

@@ -11,23 +11,27 @@ class POLADLL_TOOLS_API BasicTools
 {
 public:
 	// math tools: Angle tools
-	static double ConvertAngle(const double& angle, const int target_angle_type);
-	static double GetAngleToXaxis(const AcGePoint3d& start_point, const AcGePoint3d& end_point, const int target_angle_type);
-	static double GetAngleToXaxis(const AcGeVector3d& vector, const int target_angle_type);
-	static double GetAngleByThreePoint(const AcGePoint3d& start_point1, const AcGePoint3d& common_end_point, const AcGePoint3d& start_point2, const int target_angle_type);
+	static double ConvertAngle(const double& angle, const int& target_angle_type);
+	static double GetAngleToXaxis(const AcGePoint3d& start_point, const AcGePoint3d& end_point, const int& target_angle_type);
+	static double GetAngleToXaxis(const AcGeVector3d& vector, const int& target_angle_type);
+	static double GetAngleByThreePoint(const AcGePoint3d& start_point1, const AcGePoint3d& common_end_point, const AcGePoint3d& start_point2, const int& target_angle_type);
 
 	// math tools: Geometry
 	static AcGePoint3d GetMidPoint(const AcGePoint3d& start_point, const AcGePoint3d& end_point);
 	static bool IsCollinearPoint(const AcGePoint3d& point1, const AcGePoint3d& point2, const AcGePoint3d& point3);
 	static AcGePoint3d AdsPointToPoint3d(const ads_point& ads_point);
 	static AcGePoint2d Point3dToPoint2d(const AcGePoint3d& point3d);
+	static AcGePoint3d Point2dToPoint3d(const AcGePoint2d& point2d);
 	static bool CanDrawRect(const AcGePoint3d& vertex_point1, const AcGePoint3d& vertex_point2);
 	static double GetDistanceBetweenTwoPoint(const AcGePoint3d& start_point, const AcGePoint3d& end_point);
 	static AcGePoint2dArray Point3dToPoint2d(const AcGePoint3dArray& point3d_array);
 	static AcGeVector3d GetVectorBetweenTwoPoint(const AcGePoint3d& start_point, const AcGePoint3d& end_point);
 	static AcGePoint3d OffsetMidPoint(const AcGePoint3d& start_point, const AcGePoint3d& end_point, const double& distance);
 
-	//math tools: Line Tools
+	static bool IsIntersectRectangle(const AcGePoint3d& vertex_point1, const AcGePoint3d& vertex_point2, const AcGePoint3d& vertex_point3, const AcGePoint3d& vertex_point4);
+
+
+	// math tools: Line Tools
 	static bool IsIntersectLine(const AcGeLine3d& line_1, const AcGeLine3d& line_2, AcGePoint3d& out_intersect_point);
 	static AcGePoint3d GetIntersect(const AcGeLine3d& line_1, const AcGeLine3d& line_2);
 	static AcGeLine3d EntityToLine(const AcDbEntity* entity);
@@ -43,4 +47,7 @@ public:
 	// block tools
 	static bool IsBlockExist(const TCHAR* block_name);
 	static AcDbObjectId GetBlockId(const TCHAR* block_name);
+
+	// database tools
+	static AcDbObjectIdArray GetAllEntityIdsInDatabase(const TCHAR* layer_name = NULL, AcDbDatabase* database = acdbHostApplicationServices()->workingDatabase());
 };

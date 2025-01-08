@@ -20,8 +20,11 @@ public:
 	static AcDbObjectId LoadLineType(const TCHAR* line_type, const TCHAR* line_type_file);
 	static AcDbObjectId GetLineStyleId(const TCHAR* line_type);
 
+	static AcDbObjectId GetMLeaderStyleId(const TCHAR* mleader_style_name);
+
 	static bool IsLayerExist(const TCHAR* layer_name);
 	static bool IsDimensionStyleExist(const TCHAR* dimension_style);
 	static bool IsTextStyleExist(const TCHAR* text_style_name);
 	static bool IsLineTypeExist(const TCHAR* line_type);
+	static bool IsMLeaderStyleExist(const TCHAR* mleader_style_name);
 };

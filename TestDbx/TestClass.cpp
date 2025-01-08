@@ -164,7 +164,7 @@ void TestClass::Test()
 	{
 		for (int j = i + 1; j < line_vector.size(); j++)
 		{
-			if (BasicTools::GetIntersect(line_vector.at(i), line_vector.at(j)) != AcGePoint3d::kOrigin)
+			if (BasicTools::GetIntersect(line_vector.at(i), line_vector.at(j)) != AcGePoint3d(6496,6496,6496))
 			{
 				insert_point.append(BasicTools::GetIntersect(line_vector.at(i), line_vector.at(j)));
 			}

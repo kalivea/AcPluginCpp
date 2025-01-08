@@ -79,6 +79,12 @@ bool SelectEntitys::PickEntitys(const TCHAR* prompt, const std::vector<AcRxClass
 	return entity_id_array.isEmpty() ? false : true;
 }
 
+//bool SelectEntitys::PickEntitys(const TCHAR* prompt, AcRxClass* class_describe, AcDbObjectIdArray& entity_id_array)
+//{
+//	std::vector<AcRxClass*> class_describe_vector;
+//	class_describe_vector.push_back(class_describe);
+//}
+
 bool SelectEntitys::PickLinesOnLayer(const TCHAR* layer_name, AcDbObjectIdArray& entity_id_array)
 {
 	struct resbuf* result_buff = acutBuildList(RTDXF0, _T("LINE"), 8, layer_name, RTNONE);

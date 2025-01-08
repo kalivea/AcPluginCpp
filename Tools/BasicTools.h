@@ -37,8 +37,8 @@ public:
 	static double Min(const double& num1, const double& num2);
 
 	// grid tools
-	static AcGePoint3dArray DistanceToPointArrayX(const AcGePoint3d& first_point, const double distance[], const int cnt);
-	static AcGePoint3dArray DistanceToPointArrayY(const AcGePoint3d& first_point, const double distance[], const int cnt);
+	static AcGePoint3dArray DistanceToPointArrayX(const AcGePoint3d& first_point, const double distance[], const int& cnt);
+	static AcGePoint3dArray DistanceToPointArrayY(const AcGePoint3d& first_point, const double distance[], const int& cnt);
 
 	// block tools
 	static bool IsBlockExist(const TCHAR* block_name);

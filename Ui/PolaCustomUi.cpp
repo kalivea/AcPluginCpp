@@ -63,6 +63,21 @@ LRESULT CPolaCustomUi::OnAcadKeepFocus(WPARAM, LPARAM) {
 
 void CPolaCustomUi::OnBnClickedOk()
 {
+	CString temp;
+	Edit_b.GetWindowTextW(temp);
+	b = _wtof(temp);
+	Edit_h.GetWindowTextW(temp);
+	h = _wtof(temp);
+
+	Edit_viewable.GetWindowTextW(temp);
+	viewable = _wtoi(temp);
+
+	Edit_shape.GetWindowTextW(temp);
+	shape = _wtoi(temp);
+	Edit_x.GetWindowTextW(temp);
+	x = _wtof(temp);
+	Edit_y.GetWindowTextW(temp);
+	y = _wtoi(temp);
 	// TODO: Add your control notification handler code here
 	CDialog::OnOK();
 }

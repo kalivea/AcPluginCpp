@@ -234,7 +234,7 @@ AcGePoint3d BasicTools::GetIntersect(const AcGeLine3d& line_1, const AcGeLine3d&
 	}
 	else
 	{
-		return AcGePoint3d::kOrigin;
+		return AcGePoint3d(6496,6496,6496);
 	}
 }
 AcGeLine3d BasicTools::EntityToLine(const AcDbEntity* entity)
@@ -261,7 +261,7 @@ AcGeLine3d BasicTools::EntityToLine(const AcDbEntity* entity)
 /// <param name="distance"></param>
 /// <param name="cnt">Number of spacing</param>
 /// <returns></returns>
-AcGePoint3dArray BasicTools::DistanceToPointArrayX(const AcGePoint3d& first_point, const double distance[], const int cnt)
+AcGePoint3dArray BasicTools::DistanceToPointArrayX(const AcGePoint3d& first_point, const double distance[], const int& cnt)
 {
 	AcGePoint3dArray temp_array;
 	temp_array.append(first_point);
@@ -278,7 +278,7 @@ AcGePoint3dArray BasicTools::DistanceToPointArrayX(const AcGePoint3d& first_poin
 /// <param name="distance"></param>
 /// <param name="cnt">Number of spacing</param>
 /// <returns></returns>
-AcGePoint3dArray BasicTools::DistanceToPointArrayY(const AcGePoint3d& first_point, const double distance[], const int cnt)
+AcGePoint3dArray BasicTools::DistanceToPointArrayY(const AcGePoint3d& first_point, const double distance[], const int& cnt)
 {
 	AcGePoint3dArray temp_array;
 	temp_array.append(first_point);

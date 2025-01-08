@@ -3,6 +3,10 @@
 
 AcDbObjectId StyleTools::InitTextStyle()
 {
+	if (IsTextStyleExist(_T("default_txt")))
+	{
+		return GetTextStyleId(_T("default_txt"));
+	}
 	AcDbTextStyleTable* text_style_table = nullptr;
 	acdbHostApplicationServices()->workingDatabase()->getTextStyleTable(text_style_table, OpenMode::kForWrite);
 	AcDbTextStyleTableRecord* text_style_table_record = new AcDbTextStyleTableRecord();
@@ -23,6 +27,10 @@ AcDbObjectId StyleTools::InitTextStyle()
 
 AcDbObjectId StyleTools::InitDimStyle()
 {
+	if (IsDimensionStyleExist(_T("pt_100_350")))
+	{
+		return GetDimensionStyleId(_T("pt_100_350"));
+	}
 	AcDbObjectId default_dim_style_id = AcDbObjectId::kNull;
 	AcDbDimStyleTable* dim_style_table;
 	acdbHostApplicationServices()->workingDatabase()->getDimStyleTable(dim_style_table, AcDb::kForWrite);
@@ -55,6 +63,10 @@ AcDbObjectId StyleTools::InitDimStyle()
 
 AcDbObjectId StyleTools::InitMLeaderStyle()
 {
+	if (IsMLeaderStyleExist(_T("NONE_ARROW")))
+	{
+		return GetMLeaderStyleId(_T("NONE_ARROW"));
+	}
 	AcDbMLeaderStyle* mleader_style = new AcDbMLeaderStyle();
 	AcDbObjectId mleader_style_id = AcDbObjectId::kNull;
 	mleader_style->setName(_T("NONE_ARROW"));
@@ -193,6 +205,24 @@ AcDbObjectId StyleTools::GetLineStyleId(const TCHAR* line_type)
 	}
 }
 
+AcDbObjectId StyleTools::GetMLeaderStyleId(const TCHAR* mleader_style_name)
+{
+	AcDbObjectId mleader_style_id = AcDbObjectId::kNull;
+	if (IsMLeaderStyleExist(mleader_style_name))
+	{
+		AcDbDatabase* current_database = acdbHostApplicationServices()->workingDatabase();
+		AcDbDictionary* mleader_style_dict = nullptr;
+		current_database->getMLeaderStyleDictionary(mleader_style_dict, OpenMode::kForRead);
+		mleader_style_dict->getAt(mleader_style_name, mleader_style_id);
+		mleader_style_dict->close();
+		return mleader_style_id;
+	}
+	else
+	{
+		return mleader_style_id;
+	}
+}
+
 bool StyleTools::IsLayerExist(const TCHAR* layer_name)
 {
 	AcDbLayerTable* layer_table = nullptr;
@@ -254,6 +284,23 @@ bool StyleTools::IsLineTypeExist(const TCHAR* line_type)
 	else
 	{
 		line_type_table->close();
+		return false;
+	}
+}
+
+bool StyleTools::IsMLeaderStyleExist(const TCHAR* mleader_style_name)
+{
+	AcDbDatabase* current_database = acdbHostApplicationServices()->workingDatabase();
+	AcDbDictionary* mleader_style_dict = nullptr;
+	current_database->getMLeaderStyleDictionary(mleader_style_dict, OpenMode::kForRead);
+	if (mleader_style_dict->has(mleader_style_name))
+	{
+		mleader_style_dict->close();
+		return true;
+	}
+	else
+	{
+		mleader_style_dict->close();
 		return false;
 	}
 }

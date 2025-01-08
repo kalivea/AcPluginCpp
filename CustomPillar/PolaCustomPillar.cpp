@@ -329,7 +329,7 @@ Acad::ErrorStatus CPolaCustomPillar::subGetGripPoints(
 		for (int i = 0; i < vertex_.length(); i++)
 		{
 			gripPoints.append(vertex_.at(i));
-		}	
+		}
 	}
 	else
 	{
@@ -375,13 +375,13 @@ Acad::ErrorStatus CPolaCustomPillar::subMoveGripPointsAt(
 // ---------------------------------------------------------------------------------------------------
 // custom pillar define function						----Pola
 
-void CPolaCustomPillar::setCenterPoint(const AcGePoint3d& center)
+void CPolaCustomPillar::setCenterPoint(const AcGePoint3d & center)
 {
 	assertWriteEnabled();
 	center_point_ = center;
 }
 
-void CPolaCustomPillar::setDirectionVector(const AcGeVector3d& dir_vec)
+void CPolaCustomPillar::setDirectionVector(const AcGeVector3d & dir_vec)
 {
 	assertWriteEnabled();
 	direction_vector_ = dir_vec;
@@ -400,7 +400,7 @@ void CPolaCustomPillar::setViewable(const bool view)
 	viewable_ = view;
 }
 
-void CPolaCustomPillar::setPillarProperty(const Adesk::Int32& prop)
+void CPolaCustomPillar::setPillarProperty(const Adesk::Int32 & prop)
 {
 	assertWriteEnabled();
 	if (prop == 0)
@@ -411,13 +411,13 @@ void CPolaCustomPillar::setPillarProperty(const Adesk::Int32& prop)
 		throw;
 }
 
-void CPolaCustomPillar::setSn(const Adesk::Int32& sn)
+void CPolaCustomPillar::setSn(const Adesk::Int32 & sn)
 {
 	assertWriteEnabled();
 	pillar_serial_number_ = sn;
 }
 
-void CPolaCustomPillar::setPillarType(const Adesk::Int32& type)
+void CPolaCustomPillar::setPillarType(const Adesk::Int32 & type)
 {
 	assertWriteEnabled();
 	if (type == 0)
@@ -553,7 +553,7 @@ bool CPolaCustomPillar::checkValue(const CPolaCustomPillar * pillar)
 	return check_result;
 }
 
-void CPolaCustomPillar::BatchInsert(const CPolaCustomPillar & pillar_template, const AcGePoint3dArray& insert_point_array)
+void CPolaCustomPillar::BatchInsert(const CPolaCustomPillar & pillar_template, const AcGePoint3dArray & insert_point_array)
 {
 	if (pillar_template.getPillarType() == 0)
 	{
@@ -604,16 +604,16 @@ void CPolaCustomPillar::BatchInsert(const CPolaCustomPillar & pillar_template, c
 	}
 }
 
-void CPolaCustomPillar::SingleInsert(const CPolaCustomPillar& pillar_template, const AcGePoint3d& insert_point)
+void CPolaCustomPillar::SingleInsert(const CPolaCustomPillar & pillar_template, const AcGePoint3d & insert_point)
 {
 	AcGePoint3dArray tmp_array;
 	tmp_array.append(insert_point);
 	BatchInsert(pillar_template, tmp_array);
 }
 
-void CPolaCustomPillar::AddPillarLeader(const CPolaCustomPillar* pillar)
+void CPolaCustomPillar::AddPillarLeader(const CPolaCustomPillar * pillar)
 {
-	AcGePoint3d point_on_leader = pillar->getCenterPoint() + AcGeVector3d(1000, -1000, 0);
+	AcGePoint3d point_on_leader = AcGePoint3d(pillar->getCenterPoint().x - 900, pillar->getCenterPoint().y - 900, pillar->getCenterPoint().z);
 	CString info;
 	double b, h;
 	pillar->getDiameter(b, h);

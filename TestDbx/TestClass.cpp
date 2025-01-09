@@ -227,5 +227,10 @@ void TestClass::Test()
 	//EditEntity::SetLinetype(ent, _T("DASHED"),20);
 
 #pragma endregion
+#pragma region grid
 
+AcGePoint3dArray a;
+AcGePoint3dArray b;
+
+#pragma endregion
 }

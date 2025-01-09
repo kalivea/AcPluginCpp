@@ -235,6 +235,37 @@ bool BasicTools::IsIntersectRectangle(const AcGePoint3d& vertex_point1, const Ac
 	}
 }
 
+bool BasicTools::IsLineThroughRectangle(const AcGePoint3d& line_point1, const AcGePoint3d& line_point2, const AcGePoint3d vertex_point1, const AcGePoint3d vertex_point2)
+{
+	if (!CanDrawRect(vertex_point1, vertex_point2))
+	{
+		throw;
+	}
+
+	AcGePoint3dArray rectangle_vertex;
+	AcGePoint3d p1(BasicTools::Min(vertex_point1.x, vertex_point2.x), BasicTools::Min(vertex_point1.y, vertex_point2.y), 0);
+	AcGePoint3d p2(BasicTools::Max(vertex_point1.x, vertex_point2.x), BasicTools::Min(vertex_point1.y, vertex_point2.y), 0);
+	AcGePoint3d p3(BasicTools::Max(vertex_point1.x, vertex_point2.x), BasicTools::Max(vertex_point1.y, vertex_point2.y), 0);
+	AcGePoint3d p4(BasicTools::Min(vertex_point1.x, vertex_point2.x), BasicTools::Max(vertex_point1.y, vertex_point2.y), 0);
+
+	rectangle_vertex.append(p1);
+	rectangle_vertex.append(p2);
+	rectangle_vertex.append(p3);
+	rectangle_vertex.append(p4);
+
+	bool first = IsIntersectLine(rectangle_vertex.at(1), rectangle_vertex.at(3), line_point1, line_point2);
+	bool second = IsIntersectLine(rectangle_vertex.at(0), rectangle_vertex.at(2), line_point1, line_point2);
+
+	if (first || second)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
 AcDbObjectIdArray BasicTools::GetAllEntityIdsInDatabase(const TCHAR* layer_name, AcDbDatabase* database)
 {
 	AcDbObjectIdArray all_entity_ids;
@@ -294,8 +325,9 @@ AcDbObjectIdArray BasicTools::GetAllEntityIdsInDatabase(const TCHAR* layer_name,
 /// <param name="line_2"></param>
 /// <param name="out_intersect_point">if there is an intersection, return a correct intersection coordinate</param>
 /// <returns></returns>
-bool BasicTools::IsIntersectLine(const AcGeLine3d& line_1, const AcGeLine3d& line_2, AcGePoint3d& out_intersect_point)
+bool BasicTools::IsIntersectLine(const AcGeLine3d& line_1, const AcGeLine3d& line_2)
 {
+	AcGePoint3d out_intersect_point(6496, 6496, 6496);
 	if (line_1.intersectWith(line_2, out_intersect_point))
 	{
 		return true;
@@ -305,11 +337,20 @@ bool BasicTools::IsIntersectLine(const AcGeLine3d& line_1, const AcGeLine3d& lin
 		return false;
 	}
 }
+
+bool BasicTools::IsIntersectLine(const AcGePoint3d& line1_point1, const AcGePoint3d& line1_point2, const AcGePoint3d& line2_point1, const AcGePoint3d& line2_point2)
+{
+	AcGeLine3d line1(line1_point1, line1_point2);
+	AcGeLine3d line2(line2_point1, line2_point2);
+	return IsIntersectLine(line1, line2);
+}
+
 AcGePoint3d BasicTools::GetIntersect(const AcGeLine3d& line_1, const AcGeLine3d& line_2)
 {
 	AcGePoint3d temp_point;
-	if (IsIntersectLine(line_1, line_2, temp_point))
+	if (IsIntersectLine(line_1, line_2))
 	{
+		line_1.intersectWith(line_2, temp_point);
 		return temp_point;
 	}
 	else
@@ -317,6 +358,14 @@ AcGePoint3d BasicTools::GetIntersect(const AcGeLine3d& line_1, const AcGeLine3d&
 		return AcGePoint3d(6496, 6496, 6496);
 	}
 }
+
+AcGePoint3d BasicTools::GetIntersect(const AcGePoint3d& line1_point1, const AcGePoint3d& line1_point2, const AcGePoint3d& line2_point1, const AcGePoint3d& line2_point2)
+{
+	AcGeLine3d line1(line1_point1, line1_point2);
+	AcGeLine3d line2(line2_point1, line2_point2);
+	return GetIntersect(line1, line2);
+}
+
 AcGeLine3d BasicTools::EntityToLine(const AcDbEntity* entity)
 {
 	if (entity->isKindOf(AcDbLine::desc()))

@@ -9,12 +9,27 @@ void EditEntity::SetColor(const AcDbObjectId& entity_id, const unsigned char& co
 	{
 		throw;						//TODO: improve handling logic.
 	}
-
 	entity->setColorIndex(color_index);
 	entity->close();
 }
 
-void EditEntity::SetLayer(const AcDbObjectId& entity_id, TCHAR* layer_name)
+void EditEntity::SetColor(const AcDbObjectIdArray& entity_ids, const unsigned char& color_index)
+{
+	for (int i = 0; i < entity_ids.length(); i++)
+	{
+		SetColor(entity_ids.at(i), color_index);
+	}
+}
+
+void EditEntity::SetColor(const AcDbObjectIdArray& entity_id, const unsigned char color_index[])
+{
+	for (int i = 0; i < entity_id.length(); i++)
+	{
+		SetColor(entity_id.at(i), color_index[i]);
+	}
+}
+
+void EditEntity::SetLayer(const AcDbObjectId& entity_id, const TCHAR* layer_name)
 {
 	AcDbEntity* entity = nullptr;
 	ErrorStatus err_status = acdbOpenObject(entity, entity_id, OpenMode::kForWrite);
@@ -46,6 +61,51 @@ void EditEntity::SetLayer(const AcDbObjectId& entity_id, TCHAR* layer_name)
 	}
 }
 
+void EditEntity::SetLayer(const AcDbObjectIdArray& entity_ids, const TCHAR* layer_name)
+{
+	for (int i = 0; i < entity_ids.length(); i++)
+	{
+		SetLayer(entity_ids.at(i), layer_name);
+	}
+}
+
+void EditEntity::SetLayer(const AcDbObjectIdArray& entity_ids, const TCHAR* layer_name[])
+{
+	for (int i = 0; i < entity_ids.length(); i++)
+	{
+		SetLayer(entity_ids.at(i), layer_name[i]);
+	}
+}
+
+void EditEntity::SetLinetype(const AcDbObjectId& entity_id, const TCHAR* linetype_name, const double& line_type_scale)
+{
+	if (StyleTools::IsLineTypeExist(linetype_name))
+	{
+		AcDbEntity* entity = nullptr;
+		ErrorStatus err_status = acdbOpenObject(entity, entity_id, OpenMode::kForWrite);
+		if (err_status != Acad::eOk)
+		{
+			throw;						//TODO: improve handling logic.
+		}
+		entity->setLinetype(linetype_name);
+		entity->setLinetypeScale(line_type_scale);
+		entity->close();
+	}
+	else
+	{
+		StyleTools::LoadLineType(linetype_name, _T("acad.lin"));
+		SetLinetype(entity_id, linetype_name, line_type_scale);
+	}
+}
+
+void EditEntity::SetLinetype(const AcDbObjectIdArray& entity_ids, const TCHAR* linetype_name, const double& line_type_scale)
+{
+	for (int i = 0; i < entity_ids.length(); i++)
+	{
+		SetLinetype(entity_ids.at(i), linetype_name, line_type_scale);
+	}
+}
+
 void EditEntity::MoveEntity(const AcDbObjectId& entity_id, const AcGePoint3d& base_point, const AcGePoint3d& target_point)
 {
 	AcDbEntity* entity = nullptr;
@@ -59,6 +119,18 @@ void EditEntity::MoveEntity(const AcDbObjectId& entity_id, const AcGePoint3d& ba
 	move_transform_matrix.setToTranslation(vector);
 	entity->transformBy(move_transform_matrix);
 	entity->close();
+}
+
+void EditEntity::MoveEntity(const AcDbObjectIdArray& entity_ids, const AcGePoint3dArray& base_point, const AcGePoint3dArray& target_point)
+{
+	if (entity_ids.length() != base_point.length() || entity_ids.length() != target_point.length())
+	{
+		throw;						//TODO: improve handling logic.
+	}
+	for (int i = 0; i < entity_ids.length(); i++)
+	{
+		MoveEntity(entity_ids.at(i), base_point.at(i), target_point.at(i));
+	}
 }
 
 AcDbObjectId EditEntity::CopyEntity(const AcDbObjectId& base_entity_id, const AcGePoint3d& base_point, const AcGePoint3d& target_point)
@@ -76,6 +148,20 @@ AcDbObjectId EditEntity::CopyEntity(const AcDbObjectId& base_entity_id, const Ac
 	base_entity->getTransformedCopy(vector, copy_entity);
 	base_entity->close();
 	return AddToModelSpace::AddEntityToModelSpace(copy_entity);
+}
+
+AcDbObjectIdArray EditEntity::CopyEntity(const AcDbObjectIdArray& base_entity_ids, const AcGePoint3dArray& base_point, const AcGePoint3dArray& target_point)
+{
+	AcDbObjectIdArray copy_entity_ids;
+	if (base_entity_ids.length() != base_point.length() || base_entity_ids.length() != target_point.length())
+	{
+		throw;						//TODO: improve handling logic.
+	}
+	for (int i = 0; i < base_entity_ids.length(); i++)
+	{
+		copy_entity_ids.append(CopyEntity(base_entity_ids.at(i), base_point.at(i), target_point.at(i)));
+	}
+	return copy_entity_ids;
 }
 
 void EditEntity::RotateEntity(const AcDbObjectId& entity_id, const AcGePoint3d& base_point, const double& angle, char* angle_type)
@@ -111,8 +197,21 @@ void EditEntity::DeleteEntity(const AcDbObjectId& entity_id)
 	entity->close();
 }
 
+void EditEntity::DeleteEntity(const AcDbObjectIdArray& entity_ids)
+{
+	for (int i = 0; i < entity_ids.length(); i++)
+	{
+		DeleteEntity(entity_ids.at(i));
+	}
+}
+
 void EditEntity::ScaleEntity(const AcDbObjectId& entity_id, const AcGePoint3d& base_point, const double& scale)
 {
+	if (scale <= 0)
+	{
+		throw;						//TODO: improve handling logic.
+	}
+
 	AcDbEntity* entity = nullptr;
 	ErrorStatus err_status = acdbOpenObject(entity, entity_id, OpenMode::kForWrite);
 	if (err_status != Acad::eOk)
@@ -125,7 +224,19 @@ void EditEntity::ScaleEntity(const AcDbObjectId& entity_id, const AcGePoint3d& b
 	entity->close();
 }
 
-AcDbObjectId EditEntity::MirrorEntity(const AcDbObjectId& entity_id, const AcGePoint3d& mirror_point1, const AcGePoint3d& mirror_point2, bool need_delete_original_entity)
+void EditEntity::ScaleEntity(const AcDbObjectIdArray& entity_ids, const AcGePoint3dArray& base_point, const double& scale)
+{
+	if (entity_ids.length() != base_point.length())
+	{
+		throw;						//TODO: improve handling logic.
+	}
+	for (int i = 0; i < entity_ids.length(); i++)
+	{
+		ScaleEntity(entity_ids.at(i), base_point.at(i), scale);
+	}
+}
+
+AcDbObjectId EditEntity::MirrorEntity(const AcDbObjectId& entity_id, const AcGePoint3d& mirror_point1, const AcGePoint3d& mirror_point2, const bool need_delete_original_entity)
 {
 	AcDbEntity* mirror_entity = nullptr;
 	AcDbEntity* base_entity = nullptr;
@@ -144,4 +255,14 @@ AcDbObjectId EditEntity::MirrorEntity(const AcDbObjectId& entity_id, const AcGeP
 	}
 	base_entity->close();
 	return AddToModelSpace::AddEntityToModelSpace(mirror_entity);
+}
+
+AcDbObjectIdArray EditEntity::MirrorEntity(const AcDbObjectIdArray& entity_ids, const AcGePoint3d& mirror_point1, const AcGePoint3d& mirror_point2, const bool need_delete_original_entity)
+{
+	AcDbObjectIdArray mirror_entity_ids;
+	for (int i = 0; i < entity_ids.length(); i++)
+	{
+		mirror_entity_ids.append(MirrorEntity(entity_ids.at(i), mirror_point1, mirror_point2, need_delete_original_entity));
+	}
+	return mirror_entity_ids;
 }

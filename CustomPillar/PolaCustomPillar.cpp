@@ -636,10 +636,11 @@ void CPolaCustomPillar::AddPillarLeader(const CPolaCustomPillar * pillar)
 
 Acad::ErrorStatus CPolaCustomPillar::subGetGeomExtents(AcDbExtents & extents) const
 {
+	Acad::ErrorStatus error_status;
 	if (pillar_type_ == 0)
 	{
 		AcDbCircle* circle = new AcDbCircle(center_point_, AcGeVector3d::kZAxis, pillar_d_ * 0.5);
-		circle->getGeomExtents(extents);
+		error_status = circle->getGeomExtents(extents);
 		delete circle;
 	}
 	else if (pillar_type_ == 1)
@@ -651,11 +652,12 @@ Acad::ErrorStatus CPolaCustomPillar::subGetGeomExtents(AcDbExtents & extents) co
 		}
 		pl->setDatabaseDefaults();
 		pl->setClosed(true);
-		pl->getGeomExtents(extents);
+		error_status = pl->getGeomExtents(extents);
 		delete pl;
 	}
 	else
 	{
 		throw;
 	}
+	return error_status;
 }

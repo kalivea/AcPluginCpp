@@ -1,6 +1,6 @@
 #pragma once
 #include "StdAfx.h"
-class SelectEntitys
+class POLADLL_INTERACTIVE_API SelectEntitys
 {
 public:
 	static bool PickEntitys(const TCHAR* prompt, struct resbuf* result_buff, AcDbObjectIdArray& entity_id_array);

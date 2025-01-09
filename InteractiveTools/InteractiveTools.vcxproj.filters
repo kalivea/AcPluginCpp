@@ -18,16 +18,13 @@
     <ClCompile Include="StdAfx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DocData.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="acrxEntryPoint.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TestDbx.cpp">
+    <ClCompile Include="InteractiveTools.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TestClass.cpp">
+    <ClCompile Include="SelectEntitys.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -35,18 +32,18 @@
     <ClInclude Include="StdAfx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DocData.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TestClass.h">
+    <ClInclude Include="InteractiveDef.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SelectEntitys.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="TestDbx.rc">
+    <ResourceCompile Include="InteractiveTools.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>

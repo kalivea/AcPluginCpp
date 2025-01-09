@@ -211,24 +211,20 @@ void TestClass::Test()
 
 		/*AcDbObjectIdArray ent = BasicTools::GetAllEntityIdsInDatabase();
 		acutPrintf(_T("%d\n"), ent.length());*/
-	//DrawEntity::DrawRectangle(rect_point1, rect_point2, 0);
-	//DrawEntity::DrawRectangle(rect_point3, rect_point4, 0);
-	//DrawEntity::DrawRectangle(rect_point5, rect_point6, 0);
-	//DrawEntity::DrawRectangle(rect_point7, rect_point8, 0);
+	DrawEntity::DrawRectangle(rect_point1, rect_point2, 0);
+	DrawEntity::DrawRectangle(rect_point3, rect_point4, 0);
+	DrawEntity::DrawRectangle(rect_point5, rect_point6, 0);
+	DrawEntity::DrawRectangle(rect_point7, rect_point8, 0);
 
 	//EditEntity::SetColor(DrawEntity::DrawRectangle(AcGePoint3d(-500, 500, 0), AcGePoint3d(500, -500, 0), 0), 2);
 	AcDbObjectIdArray ent;
+
 	SelectEntitys::PickEntitysInRectangel(NULL, AcGePoint2d(-499, 499), AcGePoint2d(499, -499), ent);
 	acutPrintf(_T("%d\n"), ent.length());
-	for (int i = 0; i < ent.length(); i++)
-	{
-		AcDbEntity* entity = nullptr;
-		if (acdbOpenObject(entity, ent.at(i), AcDb::kForWrite) == Acad::eOk)
-		{
-			entity->setColorIndex(2);
-			entity->close();
-		}
-	}
+	
+	EditEntity::SetColor(ent, 3);
+	EditEntity::SetLayer(ent, _T("TEST"));
+	EditEntity::SetLinetype(ent, _T("DASHED"),20);
 
 #pragma endregion
 

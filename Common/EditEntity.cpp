@@ -121,6 +121,14 @@ void EditEntity::MoveEntity(const AcDbObjectId& entity_id, const AcGePoint3d& ba
 	entity->close();
 }
 
+void EditEntity::MoveEntity(const AcDbObjectIdArray& entity_ids, const AcGePoint3d& base_point, const AcGePoint3d& target_point)
+{
+	for (int i = 0; i < entity_ids.length(); i++)
+	{
+		MoveEntity(entity_ids.at(i), base_point, target_point);
+	}
+}
+
 void EditEntity::MoveEntity(const AcDbObjectIdArray& entity_ids, const AcGePoint3dArray& base_point, const AcGePoint3dArray& target_point)
 {
 	if (entity_ids.length() != base_point.length() || entity_ids.length() != target_point.length())
@@ -150,6 +158,16 @@ AcDbObjectId EditEntity::CopyEntity(const AcDbObjectId& base_entity_id, const Ac
 	return AddToModelSpace::AddEntityToModelSpace(copy_entity);
 }
 
+AcDbObjectIdArray EditEntity::CopyEntity(const AcDbObjectIdArray& base_entity_ids, const AcGePoint3d& base_point, const AcGePoint3d& target_point)
+{
+	AcDbObjectIdArray copy_entity_ids;
+	for (int i = 0; i < base_entity_ids.length(); i++)
+	{
+		copy_entity_ids.append(CopyEntity(base_entity_ids.at(i), base_point, target_point));
+	}
+	return copy_entity_ids;
+}
+
 AcDbObjectIdArray EditEntity::CopyEntity(const AcDbObjectIdArray& base_entity_ids, const AcGePoint3dArray& base_point, const AcGePoint3dArray& target_point)
 {
 	AcDbObjectIdArray copy_entity_ids;
@@ -164,7 +182,7 @@ AcDbObjectIdArray EditEntity::CopyEntity(const AcDbObjectIdArray& base_entity_id
 	return copy_entity_ids;
 }
 
-void EditEntity::RotateEntity(const AcDbObjectId& entity_id, const AcGePoint3d& base_point, const double& angle, char* angle_type)
+void EditEntity::RotateEntity(const AcDbObjectId& entity_id, const AcGePoint3d& base_point, const double& angle, const int& angle_type)
 {
 	AcDbEntity* entity = nullptr;
 	ErrorStatus err_status = acdbOpenObject(entity, entity_id, OpenMode::kForWrite);
@@ -173,9 +191,9 @@ void EditEntity::RotateEntity(const AcDbObjectId& entity_id, const AcGePoint3d& 
 		throw;						//TODO: improve handling logic.
 	}
 	double temp_angle;
-	if (angle_type == "DEG")
+	if (angle_type == 0)
 		temp_angle = BasicTools::ConvertAngle(angle, 1);
-	else if (angle_type == "RAD")
+	else if (angle_type == 1)
 		temp_angle = angle;
 	else
 		throw"Wrong angle type. Only \"DEG\",\"RAD\" can be use!~";
@@ -183,6 +201,22 @@ void EditEntity::RotateEntity(const AcDbObjectId& entity_id, const AcGePoint3d& 
 	rotate_transform_matrix.setToRotation(temp_angle, AcGeVector3d::kZAxis, base_point);
 	entity->transformBy(rotate_transform_matrix);
 	entity->close();
+}
+
+void EditEntity::RotateEntity(const AcDbObjectIdArray& entity_ids, const AcGePoint3d& base_point, const double& angle, const int& angle_type)
+{
+	for (int i = 0; i < entity_ids.length(); i++)
+	{
+		RotateEntity(entity_ids.at(i), base_point, angle, angle_type);
+	}
+}
+
+void EditEntity::RotateEntity(const AcDbObjectIdArray& entity_ids, const AcGePoint3dArray& base_point, const double angle[], const int& angle_type)
+{
+	for (int i = 0; i < entity_ids.length(); i++)
+	{
+		RotateEntity(entity_ids.at(i), base_point.at(i), angle[i], angle_type);
+	}
 }
 
 void EditEntity::DeleteEntity(const AcDbObjectId& entity_id)
@@ -222,6 +256,14 @@ void EditEntity::ScaleEntity(const AcDbObjectId& entity_id, const AcGePoint3d& b
 	scale_transform_matrix.setToScaling(scale, base_point);
 	entity->transformBy(scale_transform_matrix);
 	entity->close();
+}
+
+void EditEntity::ScaleEntity(const AcDbObjectIdArray& entity_ids, const AcGePoint3d& base_point, const double& scale)
+{
+	for (int i = 0; i < entity_ids.length(); i++)
+	{
+		ScaleEntity(entity_ids.at(i), base_point, scale);
+	}
 }
 
 void EditEntity::ScaleEntity(const AcDbObjectIdArray& entity_ids, const AcGePoint3dArray& base_point, const double& scale)

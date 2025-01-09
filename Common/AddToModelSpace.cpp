@@ -29,3 +29,17 @@ AcDbObjectId AddToModelSpace::AddEntityToModelSpace(AcDbEntity* entity_pointer)
 
 	return entity_id;							//return entity id
 }
+
+AcDbObjectIdArray AddToModelSpace::AddEntityToModelSpace(std::vector<AcDbEntity*> entity_pointer_vector)
+{
+	AcDbObjectIdArray entity_id_array;
+	for (int i = 0; i < entity_pointer_vector.size(); i++)
+	{
+		if (entity_pointer_vector.at(i) == nullptr)				//check pointer
+			throw;									//TODO:Improve exception handling logic
+		else
+			entity_id_array.append(AddToModelSpace::AddEntityToModelSpace(entity_pointer_vector.at(i)));
+	}
+	return entity_id_array;
+}
+

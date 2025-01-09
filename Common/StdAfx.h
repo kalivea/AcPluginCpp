@@ -80,4 +80,3 @@
 #include "AddToModelSpace.h"
 #include "DrawEntity.h"
 #include "EditEntity.h"
-#include "TestTools.h"

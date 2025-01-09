@@ -22,17 +22,22 @@ public:
 
 	// entity edit
 	static void MoveEntity(const AcDbObjectId& entity_id, const AcGePoint3d& base_point, const AcGePoint3d& target_point);
+	static void MoveEntity(const AcDbObjectIdArray& entity_ids, const AcGePoint3d& base_point, const AcGePoint3d& target_point);
 	static void MoveEntity(const AcDbObjectIdArray& entity_ids, const AcGePoint3dArray& base_point, const AcGePoint3dArray& target_point);
 
 	static AcDbObjectId CopyEntity(const AcDbObjectId& base_entity_id, const AcGePoint3d& base_point, const AcGePoint3d& target_point);
+	static AcDbObjectIdArray CopyEntity(const AcDbObjectIdArray& base_entity_ids, const AcGePoint3d& base_point, const AcGePoint3d& target_point);
 	static AcDbObjectIdArray CopyEntity(const AcDbObjectIdArray& base_entity_ids, const AcGePoint3dArray& base_point, const AcGePoint3dArray& target_point);
 
-	static void RotateEntity(const AcDbObjectId& entity_id, const AcGePoint3d& base_point, const double& angle, char* angle_type);
+	static void RotateEntity(const AcDbObjectId& entity_id, const AcGePoint3d& base_point, const double& angle, const int& angle_type);
+	static void RotateEntity(const AcDbObjectIdArray& entity_ids, const AcGePoint3d& base_point, const double& angle, const int& angle_type);
+	static void RotateEntity(const AcDbObjectIdArray& entity_ids, const AcGePoint3dArray& base_point, const double angle[], const int& angle_type);
 
 	static void DeleteEntity(const AcDbObjectId& entity_id);
 	static void DeleteEntity(const AcDbObjectIdArray& entity_ids);
 
 	static void ScaleEntity(const AcDbObjectId& entity_id, const AcGePoint3d& base_point, const double& scale);
+	static void ScaleEntity(const AcDbObjectIdArray& entity_ids, const AcGePoint3d& base_point, const double& scale);
 	static void ScaleEntity(const AcDbObjectIdArray& entity_ids, const AcGePoint3dArray& base_point, const double& scale);
 
 	static AcDbObjectId MirrorEntity(const AcDbObjectId& entity_id, const AcGePoint3d& mirror_point1, const AcGePoint3d& mirror_point2, const bool need_delete_original_entity);

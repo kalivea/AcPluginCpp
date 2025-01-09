@@ -79,7 +79,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="StyleTools.cpp" />
-    <ClCompile Include="TestTools.cpp" />
     <ClCompile Include="Tools.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -87,7 +86,6 @@
     <ClInclude Include="Resource.h" />
     <ClInclude Include="StdAfx.h" />
     <ClInclude Include="StyleTools.h" />
-    <ClInclude Include="TestTools.h" />
     <ClInclude Include="ToolsDef.h" />
   </ItemGroup>
   <ItemGroup>

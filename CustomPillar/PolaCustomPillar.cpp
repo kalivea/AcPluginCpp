@@ -516,6 +516,7 @@ void CPolaCustomPillar::UpdateEntity()
 
 Acad::ErrorStatus CPolaCustomPillar::subTransformBy(const AcGeMatrix3d & transform_matrix)
 {
+	assertReadEnabled();
 	if (getPillarType() == 0)
 	{
 		center_point_.transformBy(transform_matrix);
@@ -626,6 +627,32 @@ void CPolaCustomPillar::AddPillarLeader(const CPolaCustomPillar * pillar)
 	{
 		info.Format(_T("Z%d\n %%%%c %.0f"), pillar->getPillarSn(), b);
 		DrawEntity::AddMLeader(pillar->getCenterPoint(), point_on_leader, point_on_leader, info);
+	}
+	else
+	{
+		throw;
+	}
+}
+
+Acad::ErrorStatus CPolaCustomPillar::subGetGeomExtents(AcDbExtents & extents) const
+{
+	if (pillar_type_ == 0)
+	{
+		AcDbCircle* circle = new AcDbCircle(center_point_, AcGeVector3d::kZAxis, pillar_d_ * 0.5);
+		circle->getGeomExtents(extents);
+		delete circle;
+	}
+	else if (pillar_type_ == 1)
+	{
+		AcDbPolyline* pl = new AcDbPolyline();
+		for (int i = 0; i < vertex_.length(); i++)
+		{
+			pl->addVertexAt(i, BasicTools::Point3dToPoint2d(vertex_.at(i)));
+		}
+		pl->setDatabaseDefaults();
+		pl->setClosed(true);
+		pl->getGeomExtents(extents);
+		delete pl;
 	}
 	else
 	{

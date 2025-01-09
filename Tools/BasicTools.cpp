@@ -215,32 +215,23 @@ AcGePoint3d BasicTools::OffsetMidPoint(const AcGePoint3d& start_point, const AcG
 
 bool BasicTools::IsIntersectRectangle(const AcGePoint3d& vertex_point1, const AcGePoint3d& vertex_point2, const AcGePoint3d& vertex_point3, const AcGePoint3d& vertex_point4)
 {
-	bool rect1_check = CanDrawRect(vertex_point1, vertex_point2);
-	bool rect2_check = CanDrawRect(vertex_point3, vertex_point4);
-	if (rect1_check && rect2_check)
+	double rect1_min_x = BasicTools::Min(vertex_point1.x, vertex_point2.x);
+	double rect1_max_x = BasicTools::Max(vertex_point1.x, vertex_point2.x);
+	double rect1_min_y = BasicTools::Min(vertex_point1.y, vertex_point2.y);
+	double rect1_max_y = BasicTools::Max(vertex_point1.y, vertex_point2.y);
+
+	double rect2_min_x = BasicTools::Min(vertex_point3.x, vertex_point4.x);
+	double rect2_max_x = BasicTools::Max(vertex_point3.x, vertex_point4.x);
+	double rect2_min_y = BasicTools::Min(vertex_point3.y, vertex_point4.y);
+	double rect2_max_y = BasicTools::Max(vertex_point3.y, vertex_point4.y);
+
+	if (rect1_max_x < rect2_min_x || rect1_min_x > rect2_max_x || rect1_max_y < rect2_min_y || rect1_min_y > rect2_max_y)
 	{
-		double rect1_min_x = BasicTools::Min(vertex_point1.x, vertex_point2.x);
-		double rect1_max_x = BasicTools::Max(vertex_point1.x, vertex_point2.x);
-		double rect1_min_y = BasicTools::Min(vertex_point1.y, vertex_point2.y);
-		double rect1_max_y = BasicTools::Max(vertex_point1.y, vertex_point2.y);
-
-		double rect2_min_x = BasicTools::Min(vertex_point3.x, vertex_point4.x);
-		double rect2_max_x = BasicTools::Max(vertex_point3.x, vertex_point4.x);
-		double rect2_min_y = BasicTools::Min(vertex_point3.y, vertex_point4.y);
-		double rect2_max_y = BasicTools::Max(vertex_point3.y, vertex_point4.y);
-
-		if (rect1_max_x < rect2_min_x || rect1_min_x > rect2_max_x || rect1_max_y < rect2_min_y || rect1_min_y > rect2_max_y)
-		{
-			return false;
-		}
-		else
-		{
-			return true;
-		}
+		return false;
 	}
 	else
 	{
-		throw;
+		return true;
 	}
 }
 

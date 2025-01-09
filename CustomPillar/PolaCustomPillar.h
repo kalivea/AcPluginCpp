@@ -148,6 +148,7 @@ public:
 	static void SingleInsert(const CPolaCustomPillar& pillar_template, const AcGePoint3d& insert_point);
 	static void AddPillarLeader(const CPolaCustomPillar* pillar);
 
+	virtual Acad::ErrorStatus subGetGeomExtents(AcDbExtents& extents) const;		// get pillar geometry extents.
 };
 
 #ifdef CUSTOMPILLAR_MODULE

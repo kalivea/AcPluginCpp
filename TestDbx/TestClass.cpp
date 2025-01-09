@@ -216,19 +216,20 @@ void TestClass::Test()
 	//DrawEntity::DrawRectangle(rect_point5, rect_point6, 0);
 	//DrawEntity::DrawRectangle(rect_point7, rect_point8, 0);
 
-	//AcDbObjectIdArray ent;
-	//SelectEntitys::PickEntitysInRectangel(NULL, AcGePoint2d(-500, 500), AcGePoint2d(500, -500), ent);
-	//acutPrintf(_T("%d\n"), ent.length());
-	//for (int i = 0; i < ent.length(); i++)
-	//{
-	//	AcDbEntity* entity = nullptr;
-	//	if (acdbOpenObject(entity, ent.at(i), AcDb::kForWrite) == Acad::eOk)
-	//	{
-	//		entity->setColorIndex(2);
-	//		entity->close();
-	//	}
-	//}
 	//EditEntity::SetColor(DrawEntity::DrawRectangle(AcGePoint3d(-500, 500, 0), AcGePoint3d(500, -500, 0), 0), 2);
+	AcDbObjectIdArray ent;
+	SelectEntitys::PickEntitysInRectangel(NULL, AcGePoint2d(-499, 499), AcGePoint2d(499, -499), ent);
+	acutPrintf(_T("%d\n"), ent.length());
+	for (int i = 0; i < ent.length(); i++)
+	{
+		AcDbEntity* entity = nullptr;
+		if (acdbOpenObject(entity, ent.at(i), AcDb::kForWrite) == Acad::eOk)
+		{
+			entity->setColorIndex(2);
+			entity->close();
+		}
+	}
+
 #pragma endregion
 
 }

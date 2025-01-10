@@ -78,6 +78,7 @@
 #include "AddToModelSpace.h"		//add entity to model space
 #include "DrawEntity.h"				//draw all entity 
 
+
 #include "TestClass.h"				//test class
 #include "BasicTools.h"				//some custom useful geometry basic tools
 #include <corecrt_math_defines.h>	//math defines

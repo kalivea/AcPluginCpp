@@ -69,7 +69,7 @@ AcDbObjectId Grid::CreateHorizonAxis()
 	return gride_vertical_id;
 }
 
-void Grid::AddAttribute(AcDbBlockReference* block_reference, AcDbAttributeDefinition* att_definition)
+void Grid::AddAttribute(AcDbBlockReference* block_reference, const AcDbAttributeDefinition* att_definition)
 {
 	AcDbAttribute* attribute = new AcDbAttribute();
 	attribute->setPropertiesFrom(att_definition);
@@ -89,7 +89,7 @@ void Grid::AddAttribute(AcDbBlockReference* block_reference, AcDbAttributeDefini
 	attribute->close();
 }
 
-void Grid::SetAttribute(AcDbBlockReference* block_reference, TCHAR* tag, TCHAR* att_string)
+void Grid::SetAttribute(AcDbBlockReference* block_reference, const TCHAR* tag, const TCHAR* att_string)
 {
 	AcDbBlockTableRecord* block_record = nullptr;
 	acdbOpenObject(block_record, block_reference->blockTableRecord());
@@ -139,7 +139,7 @@ void Grid::SetAttribute(AcDbBlockReference* block_reference, TCHAR* tag, TCHAR* 
 	block_record->close();
 }
 
-AcDbObjectId Grid::InsertVerticalAxis(AcGePoint3d insert_point)
+AcDbObjectId Grid::InsertVerticalAxis(const AcGePoint3d& insert_point)
 {
 	AcDbBlockReference* block_reference = new AcDbBlockReference(insert_point, BasicTools::GetBlockId(_T("grid_v")));
 	AcDbBlockTableRecord* block_table_record = nullptr;
@@ -167,7 +167,7 @@ AcDbObjectId Grid::InsertVerticalAxis(AcGePoint3d insert_point)
 	return AddToModelSpace::AddEntityToModelSpace(block_reference);
 }
 
-AcDbObjectId Grid::InsertHorizonAxis(AcGePoint3d insert_point)
+AcDbObjectId Grid::InsertHorizonAxis(const AcGePoint3d& insert_point)
 {
 	AcDbBlockReference* block_reference = new AcDbBlockReference(insert_point, BasicTools::GetBlockId(_T("grid_h")));
 	AcDbBlockTableRecord* block_table_record = nullptr;
@@ -195,7 +195,7 @@ AcDbObjectId Grid::InsertHorizonAxis(AcGePoint3d insert_point)
 	return AddToModelSpace::AddEntityToModelSpace(block_reference);
 }
 
-void Grid::DrawVerticalAxis(AcGePoint3dArray insert_point, TCHAR* insert_att[])
+void Grid::DrawVerticalAxis(const AcGePoint3dArray& insert_point, const TCHAR* insert_att[])
 {
 	for (int i = 0; i < insert_point.length(); i++)
 	{
@@ -207,7 +207,7 @@ void Grid::DrawVerticalAxis(AcGePoint3dArray insert_point, TCHAR* insert_att[])
 	}
 }
 
-void Grid::DrawHorizonAxis(AcGePoint3dArray insert_point, TCHAR* insert_att[])
+void Grid::DrawHorizonAxis(const AcGePoint3dArray& insert_point, const TCHAR* insert_att[])
 {
 	for (int i = 0; i < insert_point.length(); i++)
 	{

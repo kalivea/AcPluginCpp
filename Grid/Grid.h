@@ -20,14 +20,14 @@ public:
 
 	//static AcDbObjectId GetAttributeId(TCHAR* att_name);
 
-	static void AddAttribute(AcDbBlockReference* block_reference, AcDbAttributeDefinition* att_definition);
-	static void SetAttribute(AcDbBlockReference* block_reference, TCHAR* tag, TCHAR* att_string);
+	static void AddAttribute(AcDbBlockReference* block_reference, const AcDbAttributeDefinition* att_definition);
+	static void SetAttribute(AcDbBlockReference* block_reference, const TCHAR* tag, const TCHAR* att_string);
 
-	static AcDbObjectId InsertVerticalAxis(AcGePoint3d insert_point);
-	static AcDbObjectId InsertHorizonAxis(AcGePoint3d insert_point);
+	static AcDbObjectId InsertVerticalAxis(const AcGePoint3d& insert_point);
+	static AcDbObjectId InsertHorizonAxis(const AcGePoint3d& insert_point);
 
-	static void DrawVerticalAxis(AcGePoint3dArray insert_point, TCHAR* insert_att[]);
-	static void DrawHorizonAxis(AcGePoint3dArray insert_point, TCHAR* insert_att[]);
+	static void DrawVerticalAxis(const AcGePoint3dArray& insert_point, const TCHAR* insert_att[]);
+	static void DrawHorizonAxis(const AcGePoint3dArray& insert_point, const TCHAR* insert_att[]);
 	//AcDbObjectId CreateHorizonAxis();
 
 	//void DrawLogic();

@@ -27,17 +27,16 @@ public:
 	static AcGePoint2dArray Point3dToPoint2d(const AcGePoint3dArray& point3d_array);
 	static AcGeVector3d GetVectorBetweenTwoPoint(const AcGePoint3d& start_point, const AcGePoint3d& end_point);
 	static AcGePoint3d OffsetMidPoint(const AcGePoint3d& start_point, const AcGePoint3d& end_point, const double& distance);
-
+	
+	// math tools: Rectangle Tools
 	static bool IsIntersectRectangle(const AcGePoint3d& vertex_point1, const AcGePoint3d& vertex_point2, const AcGePoint3d& vertex_point3, const AcGePoint3d& vertex_point4);
 	static bool IsLineThroughRectangle(const AcGePoint3d& line_point1, const AcGePoint3d& line_point2, const AcGePoint3d vertex_point1, const AcGePoint3d vertex_point2);
 
 	// math tools: Line Tools
-	static bool IsIntersectLine(const AcGeLine3d& line_1, const AcGeLine3d& line_2);
+	static bool IsIntersectLine(const AcGeLineSeg3d& line_1, const AcGeLineSeg3d& line_2);
 	static bool IsIntersectLine(const AcGePoint3d& line1_point1, const AcGePoint3d& line1_point2, const AcGePoint3d& line2_point1, const AcGePoint3d& line2_point2);
-	
-	static AcGePoint3d GetIntersect(const AcGeLine3d& line_1, const AcGeLine3d& line_2);
+	static AcGePoint3d GetIntersect(const AcGeLineSeg3d& line_1, const AcGeLineSeg3d& line_2);
 	static AcGePoint3d GetIntersect(const AcGePoint3d& line1_point1, const AcGePoint3d& line1_point2, const AcGePoint3d& line2_point1, const AcGePoint3d& line2_point2);
-	
 	static AcGeLine3d EntityToLine(const AcDbEntity* entity);
 
 	// math tools: Numerical tools

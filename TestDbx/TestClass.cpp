@@ -211,26 +211,64 @@ void TestClass::Test()
 
 		/*AcDbObjectIdArray ent = BasicTools::GetAllEntityIdsInDatabase();
 		acutPrintf(_T("%d\n"), ent.length());*/
-	//DrawEntity::DrawRectangle(rect_point1, rect_point2, 0);
-	//DrawEntity::DrawRectangle(rect_point3, rect_point4, 0);
-	//DrawEntity::DrawRectangle(rect_point5, rect_point6, 0);
-	//DrawEntity::DrawRectangle(rect_point7, rect_point8, 0);
+		//DrawEntity::DrawRectangle(rect_point1, rect_point2, 0);
+		//DrawEntity::DrawRectangle(rect_point3, rect_point4, 0);
+		//DrawEntity::DrawRectangle(rect_point5, rect_point6, 0);
+		//DrawEntity::DrawRectangle(rect_point7, rect_point8, 0);
 
-	////EditEntity::SetColor(DrawEntity::DrawRectangle(AcGePoint3d(-500, 500, 0), AcGePoint3d(500, -500, 0), 0), 2);
-	//AcDbObjectIdArray ent;
+		////EditEntity::SetColor(DrawEntity::DrawRectangle(AcGePoint3d(-500, 500, 0), AcGePoint3d(500, -500, 0), 0), 2);
+		//AcDbObjectIdArray ent;
 
-	//SelectEntitys::PickEntitysInRectangel(NULL, AcGePoint2d(-499, 499), AcGePoint2d(499, -499), ent);
-	//acutPrintf(_T("%d\n"), ent.length());
-	//
-	//EditEntity::SetColor(ent, 3);
-	//EditEntity::SetLayer(ent, _T("TEST"));
-	//EditEntity::SetLinetype(ent, _T("DASHED"),20);
+		//SelectEntitys::PickEntitysInRectangel(NULL, AcGePoint2d(-499, 499), AcGePoint2d(499, -499), ent);
+		//acutPrintf(_T("%d\n"), ent.length());
+		//
+		//EditEntity::SetColor(ent, 3);
+		//EditEntity::SetLayer(ent, _T("TEST"));
+		//EditEntity::SetLinetype(ent, _T("DASHED"),20);
 
 #pragma endregion
 #pragma region grid
 
-AcGePoint3dArray a;
-AcGePoint3dArray b;
+	/*AcGePoint3d vertex_point1(0, 0, 0);
+	AcGePoint3d vertex_point2(100, 100, 0);
+	EditEntity::SetColor(DrawEntity::DrawRectangle(vertex_point1, vertex_point2, 0), 3);
 
+	AcGePoint3d line_point1(0, 0, 0);
+	AcGePoint3d line_point2(100, 100, 0);
+	AcGePoint3d line_point3(20, -70, 0);
+	AcGePoint3d line_point4(-70, 20, 0);
+
+	if (BasicTools::IsLineThroughRectangle(line_point1, line_point2, vertex_point1, vertex_point2))
+		acutPrintf(_T("is\n"));
+	else
+		acutPrintf(_T("!is\n"));
+	if (BasicTools::IsLineThroughRectangle(line_point3, line_point4, vertex_point1, vertex_point2))
+		acutPrintf(_T("is\n"));
+	else
+		acutPrintf(_T("!is\n"));
+
+	DrawEntity::DrawLine(line_point1, line_point2);
+	DrawEntity::DrawLine(line_point3, line_point4);*/
+
+	//AcGePoint3d vertex_point1(0, 0, 0);
+	//AcGePoint3d vertex_point2(100, 100, 0);
+	//EditEntity::SetColor(DrawEntity::DrawRectangle(vertex_point1, vertex_point2, 0), 3);
+
+	//AcGePoint3d line_point1(-10, -10, 0);
+	//for (int i = 0; i < 360; i++)
+	//{
+	//	double line_point2_x = line_point1.x + 500 * cos(BasicTools::ConvertAngle(i, 1));
+	//	double line_point2_y = line_point1.y + 500 * sin(BasicTools::ConvertAngle(i, 1));
+	//	AcGePoint3d line_point2(line_point2_x, line_point2_y, 0);
+
+	//	if (BasicTools::IsLineThroughRectangle(line_point1, line_point2, vertex_point1, vertex_point2))
+	//	{
+	//		EditEntity::SetColor(DrawEntity::DrawLine(line_point1, line_point2), 1);
+	//	}
+	//	else
+	//	{
+	//		EditEntity::SetColor(DrawEntity::DrawLine(line_point1, line_point2), 8);
+	//	}
+	//}
 #pragma endregion
 }

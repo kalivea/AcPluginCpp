@@ -325,12 +325,15 @@ AcDbObjectIdArray BasicTools::GetAllEntityIdsInDatabase(const TCHAR* layer_name,
 /// <param name="line_2"></param>
 /// <param name="out_intersect_point">if there is an intersection, return a correct intersection coordinate</param>
 /// <returns></returns>
-bool BasicTools::IsIntersectLine(const AcGeLine3d& line_1, const AcGeLine3d& line_2)
+bool BasicTools::IsIntersectLine(const AcGeLineSeg3d& line_1, const AcGeLineSeg3d& line_2)
 {
 	AcGePoint3d out_intersect_point(6496, 6496, 6496);
 	if (line_1.intersectWith(line_2, out_intersect_point))
 	{
-		return true;
+		if (line_1.isOn(out_intersect_point) && line_2.isOn(out_intersect_point))
+			return true;
+		else
+			return false;
 	}
 	else
 	{
@@ -340,12 +343,12 @@ bool BasicTools::IsIntersectLine(const AcGeLine3d& line_1, const AcGeLine3d& lin
 
 bool BasicTools::IsIntersectLine(const AcGePoint3d& line1_point1, const AcGePoint3d& line1_point2, const AcGePoint3d& line2_point1, const AcGePoint3d& line2_point2)
 {
-	AcGeLine3d line1(line1_point1, line1_point2);
-	AcGeLine3d line2(line2_point1, line2_point2);
+	AcGeLineSeg3d line1(line1_point1, line1_point2);
+	AcGeLineSeg3d line2(line2_point1, line2_point2);
 	return IsIntersectLine(line1, line2);
 }
 
-AcGePoint3d BasicTools::GetIntersect(const AcGeLine3d& line_1, const AcGeLine3d& line_2)
+AcGePoint3d BasicTools::GetIntersect(const AcGeLineSeg3d& line_1, const AcGeLineSeg3d& line_2)
 {
 	AcGePoint3d temp_point;
 	if (IsIntersectLine(line_1, line_2))
@@ -361,8 +364,8 @@ AcGePoint3d BasicTools::GetIntersect(const AcGeLine3d& line_1, const AcGeLine3d&
 
 AcGePoint3d BasicTools::GetIntersect(const AcGePoint3d& line1_point1, const AcGePoint3d& line1_point2, const AcGePoint3d& line2_point1, const AcGePoint3d& line2_point2)
 {
-	AcGeLine3d line1(line1_point1, line1_point2);
-	AcGeLine3d line2(line2_point1, line2_point2);
+	AcGeLineSeg3d line1(line1_point1, line1_point2);
+	AcGeLineSeg3d line2(line2_point1, line2_point2);
 	return GetIntersect(line1, line2);
 }
 

@@ -125,3 +125,30 @@ bool SelectEntitys::PickEntitysInRectangel(const TCHAR* prompt, const AcGePoint2
 		return false;
 	}
 }
+
+bool SelectEntitys::PickPoint(const TCHAR* prompt, AcGePoint3d& point)
+{
+	if (acedGetPoint(nullptr, prompt, asDblArray(point)) == RTNORM)
+	{
+		point = BasicTools::UcsToWcs(point);
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+bool SelectEntitys::PickPoint(const TCHAR* prompt, const AcGePoint3d& base_point, AcGePoint3d& point)
+{
+	AcGePoint3d ucs_base_point = BasicTools::WcsToUcs(base_point);
+	if (acedGetPoint(asDblArray(ucs_base_point), prompt, asDblArray(point)) == RTNORM)
+	{
+		point = BasicTools::UcsToWcs(point);
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}

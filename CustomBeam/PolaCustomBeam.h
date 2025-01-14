@@ -20,11 +20,11 @@
 //
 
 //-----------------------------------------------------------------------------
-//----- PolaCustomPillar.h : Declaration of the CPolaCustomPillar
+//----- PolaCustomBeam.h : Declaration of the CPolaCustomBeam
 //-----------------------------------------------------------------------------
 #pragma once
 
-#ifdef CUSTOMPILLAR_MODULE
+#ifdef CUSTOMBEAM_MODULE
 #define DLLIMPEXP __declspec(dllexport)
 #else
 //----- Note: we don't use __declspec(dllimport) here, because of the
@@ -48,18 +48,17 @@
 #include "dbmain.h"
 
 //-----------------------------------------------------------------------------
-class DLLIMPEXP CPolaCustomPillar : public AcDbEntity {
+class DLLIMPEXP CPolaCustomBeam : public AcDbEntity {
 
 public:
-	ACRX_DECLARE_MEMBERS(CPolaCustomPillar);
+	ACRX_DECLARE_MEMBERS(CPolaCustomBeam);
 
 protected:
 	static Adesk::UInt32 kCurrentVersionNumber;
 
 public:
-	CPolaCustomPillar();
-	CPolaCustomPillar(const CPolaCustomPillar& pillar_template);
-	virtual ~CPolaCustomPillar();
+	CPolaCustomBeam();
+	virtual ~CPolaCustomBeam();
 
 	//----- AcDbObject protocols
 	//- Dwg Filing protocol
@@ -99,57 +98,41 @@ public:
 		AcDbGripDataPtrArray& grips, const double curViewUnitSize, const int gripSize,
 		const AcGeVector3d& curViewDir, const int bitflags) const;
 	virtual Acad::ErrorStatus subMoveGripPointsAt(const AcDbVoidPtrArray& gripAppData, const AcGeVector3d& offset, const int bitflags);
-	virtual Acad::ErrorStatus subGetGeomExtents(AcDbExtents& extents) const;		// get pillar geometry extents.
+
 	//-----------------------------------------------------------------------------
 	// custom define pillar part             ------Pola
-private:
-	//					save to XData
-	AcGePoint3d center_point_;					// center point: Used to define the insertion point of the entity in the drawing file.
-	AcGeVector3d direction_vector_;				// direction vercor: The angle between the center point and the x-axis, used to define the positive direction of the entity.
-	double pillar_d_, pillar_h_;				// Diameter of the entity: If it is a rectangular pillar, d and h represent the length and width.
-	//						   If it is a circular pillar, d = h, represent the diameter of the circle.
-	bool viewable_;								// viewalbe: Used to control the entity line type. true mean continuous; false mean dashed.
-	Adesk::Int32 pillar_property_;				// pillar property: (int) 0 mean concrete; (int) 1 mean concrete-filled steel tube pillar.
-	Adesk::Int32 pillar_serial_number_;			// pillar serial number.
-	Adesk::Int32 pillar_type_;					// pillar type: (int) 0 mean round pillar; (int) 1 mean rectangular pillar.
 
-	//	               auxiliary data
-	AcGePoint3dArray vertex_;					//vertex: store rectangular pillar vertex.
+private:
+	AcGePoint3dArray beam_vertexes_;				// store bertexes of beam.
+	Adesk::Int32 vertexes_num_;						// store number of vertexes.
+
+	double beam_b_;								    // store width of beam.	
+	double beam_h_;								    // store height of beam.
+
+	std::vector<Adesk::Int32> beam_viewable_;		// store viewable of beam.
+	Adesk::Int32 beam_property_;					// store property of beam.
+
 
 public:
-	//					set function
-	void setCenterPoint(const AcGePoint3d& center);
-	void setDirectionVector(const AcGeVector3d& dir_vec = AcGeVector3d::kXAxis);
-	void setDiameter(const double& d, const double& h);
-	void setViewable(const bool view);
-	void setPillarProperty(const Adesk::Int32& prop);
-	void setSn(const Adesk::Int32& sn);
-	void setPillarType(const Adesk::Int32& type);
+	//           get functions
+	AcGePoint3dArray getBeamVertexes() const;
+	double getBeamWidth() const;
+	double getBeamHeight() const;
+	std::vector<Adesk::Int32> getBeamViewable() const;
+	Adesk::Int32 getBeamProperty() const;
+	Adesk::Int32 getVertexesNum() const;
 
-	//					get function
-	AcGePoint3d getCenterPoint() const;
-	AcGeVector3d getDirectionVector() const;
-	void getDiameter(double& d, double& h) const;
-	bool getViewable() const;
-	Adesk::Int32 getPillarProperty() const;
-	Adesk::Int32 getPillarSn() const;
-	Adesk::Int32 getPillarType() const;
+	//           set functions
+	void setBeamVertexes(const AcGePoint3dArray& beam_vertexes);
+	void setBeamWidth(const double& beam_b);
+	void setBeamHeight(const double& beam_h);
+	void setBeamViewable(const std::vector<Adesk::Int32>& beam_viewable);
+	void setBeamProperty(const Adesk::Int32& beam_property);
 
-	//				   auxiliary data generation function
-	void CalculateVertex();
-	void UpdateEntity();			// TODO
+	//          
 
-	//                  move transform
-	virtual Acad::ErrorStatus subTransformBy(const AcGeMatrix3d& transform_matrix);
-	//virtual Acad::ErrorStatus subGetTransformedCopy(AcGeMatrix3d transform_atrix, AcDbEntity* entity);
-
-	//					init pillar and value check
-	static bool checkValue(const CPolaCustomPillar* pillar);
-	static AcDbObjectIdArray BatchInsert(const CPolaCustomPillar& pillar_template, const AcGePoint3dArray& insert_point_array);
-	static AcDbObjectId SingleInsert(const CPolaCustomPillar& pillar_template, const AcGePoint3d& insert_point);
-	static void AddPillarLeader(const CPolaCustomPillar* pillar);
 };
 
-#ifdef CUSTOMPILLAR_MODULE
-ACDB_REGISTER_OBJECT_ENTRY_AUTO(CPolaCustomPillar)
+#ifdef CUSTOMBEAM_MODULE
+ACDB_REGISTER_OBJECT_ENTRY_AUTO(CPolaCustomBeam)
 #endif

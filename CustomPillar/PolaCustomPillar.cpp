@@ -554,8 +554,9 @@ bool CPolaCustomPillar::checkValue(const CPolaCustomPillar * pillar)
 	return check_result;
 }
 
-void CPolaCustomPillar::BatchInsert(const CPolaCustomPillar & pillar_template, const AcGePoint3dArray & insert_point_array)
+AcDbObjectIdArray CPolaCustomPillar::BatchInsert(const CPolaCustomPillar & pillar_template, const AcGePoint3dArray & insert_point_array)
 {
+	AcDbObjectIdArray pillar_id_array;
 	if (pillar_template.getPillarType() == 0)
 	{
 		if (pillar_template.checkValue(&pillar_template))
@@ -565,7 +566,7 @@ void CPolaCustomPillar::BatchInsert(const CPolaCustomPillar & pillar_template, c
 				CPolaCustomPillar* pillar = new CPolaCustomPillar(pillar_template);
 				pillar->vertex_.removeAll();
 				pillar->setCenterPoint(insert_point_array.at(i));
-				AddToModelSpace::AddEntityToModelSpace(pillar);
+				pillar_id_array.append(AddToModelSpace::AddEntityToModelSpace(pillar));
 			}
 		}
 		else
@@ -585,7 +586,7 @@ void CPolaCustomPillar::BatchInsert(const CPolaCustomPillar & pillar_template, c
 				{
 					pillar->setCenterPoint(insert_point_array.at(i));
 					pillar->CalculateVertex();
-					AddToModelSpace::AddEntityToModelSpace(pillar);
+					pillar_id_array.append(AddToModelSpace::AddEntityToModelSpace(pillar));
 				}
 				else
 				{
@@ -603,13 +604,14 @@ void CPolaCustomPillar::BatchInsert(const CPolaCustomPillar & pillar_template, c
 	{
 		throw;
 	}
+	return pillar_id_array;
 }
 
-void CPolaCustomPillar::SingleInsert(const CPolaCustomPillar & pillar_template, const AcGePoint3d & insert_point)
+AcDbObjectId CPolaCustomPillar::SingleInsert(const CPolaCustomPillar & pillar_template, const AcGePoint3d & insert_point)
 {
 	AcGePoint3dArray tmp_array;
 	tmp_array.append(insert_point);
-	BatchInsert(pillar_template, tmp_array);
+	return BatchInsert(pillar_template, tmp_array).at(0);
 }
 
 void CPolaCustomPillar::AddPillarLeader(const CPolaCustomPillar * pillar)

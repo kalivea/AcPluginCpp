@@ -130,7 +130,7 @@ bool SelectEntitys::PickPoint(const TCHAR* prompt, AcGePoint3d& point)
 {
 	if (acedGetPoint(nullptr, prompt, asDblArray(point)) == RTNORM)
 	{
-		point = BasicTools::UcsToWcs(point);
+		point = CoordinateSystem::UcsToWcs(point);
 		return true;
 	}
 	else
@@ -141,10 +141,10 @@ bool SelectEntitys::PickPoint(const TCHAR* prompt, AcGePoint3d& point)
 
 bool SelectEntitys::PickPoint(const TCHAR* prompt, const AcGePoint3d& base_point, AcGePoint3d& point)
 {
-	AcGePoint3d ucs_base_point = BasicTools::WcsToUcs(base_point);
+	AcGePoint3d ucs_base_point = CoordinateSystem::WcsToUcs(base_point);
 	if (acedGetPoint(asDblArray(ucs_base_point), prompt, asDblArray(point)) == RTNORM)
 	{
-		point = BasicTools::UcsToWcs(point);
+		point = CoordinateSystem::UcsToWcs(point);
 		return true;
 	}
 	else

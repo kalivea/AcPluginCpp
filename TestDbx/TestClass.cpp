@@ -271,4 +271,19 @@ void TestClass::Test()
 	//	}
 	//}
 #pragma endregion
+#pragma region Beam
+	AcGePoint3dArray vertexes;
+	for (int i = 0; i < 5; i++)
+	{
+		vertexes.append(AcGePoint3d(i * 100, i * 100, 0));
+	}
+	CPolaCustomBeam* beam = new CPolaCustomBeam();
+
+	beam->setBeamWidth(500);
+	beam->setBeamHeight(500);
+	beam->setBeamProperty(1);
+	beam->setBeamVertexes(vertexes);
+
+	AddToModelSpace::AddEntityToModelSpace(beam);
+#pragma endregion
 }

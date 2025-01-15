@@ -138,15 +138,18 @@ Acad::ErrorStatus CPolaCustomBeam::dwgInFields(AcDbDwgFiler * pFiler) {
 Adesk::Boolean CPolaCustomBeam::subWorldDraw(AcGiWorldDraw * mode) {
 	assertReadEnabled();
 
-	AcGePoint3dArray top_offset_vertexes;
-	AcGePoint3dArray bottom_offset_vertexes;
+	AcDbVoidPtrArray top_offset_vertexes;
+	AcDbVoidPtrArray bottom_offset_vertexes;
 
-	AcDbPolyline* pl = new AcDbPolyline();
+	AcDbPolyline* pl_center = new AcDbPolyline();
 	for (int i = 0; i < vertexes_num_; i++)
 	{
-		pl->addVertexAt(i, BasicTools::Point3dToPoint2d(beam_vertexes_.at(i)));
+		pl_center->addVertexAt(i, BasicTools::Point3dToPoint2d(beam_vertexes_.at(i)));
 	}
-	pl->worldDraw(mode);
+	pl_center->getOffsetCurves(0.5 * beam_b_, top_offset_vertexes);
+	pl_center->getOffsetCurves(-0.5 * beam_b_, bottom_offset_vertexes);
+
+
 	return (AcDbEntity::subWorldDraw(mode));
 }
 
@@ -272,6 +275,7 @@ void CPolaCustomBeam::setBeamVertexes(const AcGePoint3dArray & beam_vertexes)
 			beam_vertexes_.append(beam_vertexes.at(i));
 		}
 	}
+	vertexes_num_ = beam_vertexes.length();
 }
 
 void CPolaCustomBeam::setBeamWidth(const double& beam_b)

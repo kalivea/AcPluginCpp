@@ -80,6 +80,8 @@
 #define POLA_DLL_INTERACTIVE
 #include "InteractiveDef.h"
 
+#include "CoordinateSystem.h"
+#include "SelectEntitys.h"
     //- Declare it as an extern here so that it becomes available in all modules
     //extern AcApDataManager<CDocData> DocVars;
 

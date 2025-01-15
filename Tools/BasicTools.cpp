@@ -213,30 +213,9 @@ AcGePoint3d BasicTools::OffsetMidPoint(const AcGePoint3d& start_point, const AcG
 	return BasicTools::GetMidPoint(offseted_start_point, offseted_end_point);
 }
 
-AcGePoint3d BasicTools::WcsToUcs(const AcGePoint3d& wcs_point)
+bool BasicTools::OffsetPolyLine(const AcDbPolyline& center_line, const double& distance, AcGePoint3dArray& offset_vertex_array)
 {
-	AcGePoint3d ucs_point;
-	struct resbuf result_buff_from, result_buff_to;
-	result_buff_from.restype = RTSHORT;
-	result_buff_from.resval.rint = 0;
-	result_buff_to.restype = RTSHORT;
-	result_buff_to.resval.rint = 1;
 	
-	acedTrans(asDblArray(wcs_point), &result_buff_from, &result_buff_to, 0, asDblArray(ucs_point));
-	return ucs_point;
-}
-
-AcGePoint3d BasicTools::UcsToWcs(const AcGePoint3d& ucs_point)
-{
-	AcGePoint3d wcs_point;
-	struct resbuf result_buff_from, result_buff_to;
-	result_buff_from.restype = RTSHORT;
-	result_buff_from.resval.rint = 1;
-	result_buff_to.restype = RTSHORT;
-	result_buff_to.resval.rint = 0;
-
-	acedTrans(asDblArray(ucs_point), &result_buff_from, &result_buff_to, 0, asDblArray(wcs_point));
-	return wcs_point;
 }
 
 bool BasicTools::IsIntersectRectangle(const AcGePoint3d& vertex_point1, const AcGePoint3d& vertex_point2, const AcGePoint3d& vertex_point3, const AcGePoint3d& vertex_point4)

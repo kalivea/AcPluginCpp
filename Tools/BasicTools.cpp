@@ -215,7 +215,21 @@ AcGePoint3d BasicTools::OffsetMidPoint(const AcGePoint3d& start_point, const AcG
 
 bool BasicTools::OffsetPolyLine(const AcDbPolyline& center_line, const double& distance, AcGePoint3dArray& offset_vertex_array)
 {
-	
+	AcDbVoidPtrArray offset_curves;
+	Acad::ErrorStatus error_status;
+	error_status = center_line.getOffsetCurves(distance, offset_curves);
+	if (error_status == Acad::eOk)
+	{
+		AcDbPolyline* pl = (AcDbPolyline*)(offset_curves[0]);
+		for (unsigned int i = 0; i < pl->numVerts(); i++)
+		{
+			AcGePoint2d temp;
+			pl->getPointAt(i, temp);
+			offset_vertex_array.append(BasicTools::Point2dToPoint3d(temp));
+		}
+		delete pl;
+	}
+	return true;
 }
 
 bool BasicTools::IsIntersectRectangle(const AcGePoint3d& vertex_point1, const AcGePoint3d& vertex_point2, const AcGePoint3d& vertex_point3, const AcGePoint3d& vertex_point4)

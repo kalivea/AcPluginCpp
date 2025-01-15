@@ -138,18 +138,36 @@ Acad::ErrorStatus CPolaCustomBeam::dwgInFields(AcDbDwgFiler * pFiler) {
 Adesk::Boolean CPolaCustomBeam::subWorldDraw(AcGiWorldDraw * mode) {
 	assertReadEnabled();
 
-	AcDbVoidPtrArray top_offset_vertexes;
-	AcDbVoidPtrArray bottom_offset_vertexes;
-
 	AcDbPolyline* pl_center = new AcDbPolyline();
 	for (int i = 0; i < vertexes_num_; i++)
 	{
 		pl_center->addVertexAt(i, BasicTools::Point3dToPoint2d(beam_vertexes_.at(i)));
 	}
-	pl_center->getOffsetCurves(0.5 * beam_b_, top_offset_vertexes);
-	pl_center->getOffsetCurves(-0.5 * beam_b_, bottom_offset_vertexes);
+	AcDbPolyline* pl_up = new AcDbPolyline();
+	AcDbPolyline* pl_down = new AcDbPolyline();
 
+	AcGePoint3dArray up;
+	AcGePoint3dArray down;
+	BasicTools::OffsetPolyLine(*pl_center, 0.5 * beam_b_, up);
+	BasicTools::OffsetPolyLine(*pl_center, -0.5 * beam_b_, down);
 
+	for (int i = 0; i < up.length(); i++)
+	{
+		pl_up->addVertexAt(i, BasicTools::Point3dToPoint2d(up.at(i)));
+	}
+
+	for (int i = 0; i < down.length(); i++)
+	{
+		pl_down->addVertexAt(i, BasicTools::Point3dToPoint2d(down.at(i)));
+	}
+
+	pl_center->worldDraw(mode);
+	pl_up->worldDraw(mode);
+	pl_down->worldDraw(mode);
+
+	pl_center->close();
+	pl_up->close();
+	pl_down->close();
 	return (AcDbEntity::subWorldDraw(mode));
 }
 
@@ -306,7 +324,7 @@ void CPolaCustomBeam::setBeamViewable(const std::vector<Adesk::Int32>&beam_viewa
 	}
 }
 
-void CPolaCustomBeam::setBeamProperty(const Adesk::Int32& beam_property)
+void CPolaCustomBeam::setBeamProperty(const Adesk::Int32 & beam_property)
 {
 	assertWriteEnabled();
 	beam_property_ = beam_property;

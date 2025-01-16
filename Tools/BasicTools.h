@@ -38,6 +38,7 @@ public:
 	static bool IsIntersectLine(const AcGePoint3d& line1_point1, const AcGePoint3d& line1_point2, const AcGePoint3d& line2_point1, const AcGePoint3d& line2_point2);
 	static AcGePoint3d GetIntersect(const AcGeLineSeg3d& line_1, const AcGeLineSeg3d& line_2);
 	static AcGePoint3d GetIntersect(const AcGePoint3d& line1_point1, const AcGePoint3d& line1_point2, const AcGePoint3d& line2_point1, const AcGePoint3d& line2_point2);
+	static AcGeLineSeg3d EntityToLineSegment(const AcDbEntity* entity);
 	static AcGeLine3d EntityToLine(const AcDbEntity* entity);
 
 	// math tools: Numerical tools

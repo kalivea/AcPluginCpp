@@ -151,7 +151,7 @@ void TestClass::Test()
 	//SelectEntitys::PickLinesOnLayer(_T("Line"), line_array);
 
 	//AcDbEntity* entity = nullptr;
-	//std::vector<AcGeLine3d> line_vector;
+	//std::vector<AcGeLineSeg3d> line_vector;
 	//for (int i = 0; i < line_array.length(); i++)
 	//{
 	//	if (acdbOpenObject(entity, line_array.at(i), AcDb::kForRead) == Acad::eOk)
@@ -272,18 +272,18 @@ void TestClass::Test()
 	//}
 #pragma endregion
 #pragma region Beam
-	//AcGePoint3dArray vertexes;
-	//for (int i = 0; i < 5; i++)
-	//{
-	//	vertexes.append(AcGePoint3d(i * 1000, i * 1000 + 50, 0));
-	//}
-	//CPolaCustomBeam* beam = new CPolaCustomBeam();
+	AcGePoint3dArray vertexes;
+	for (int i = 0; i < 5; i++)
+	{
+		vertexes.append(AcGePoint3d(i * 1000, i * 1000 + 50, 0));
+	}
+	CPolaCustomBeam* beam = new CPolaCustomBeam();
 
-	//beam->setBeamWidth(500);
-	//beam->setBeamHeight(500);
-	//beam->setBeamProperty(1);
-	//beam->setBeamVertexes(vertexes);
+	beam->setBeamWidth(500);
+	beam->setBeamHeight(500);
+	beam->setBeamProperty(1);
+	beam->setBeamVertexes(vertexes);
 
-	//AddToModelSpace::AddEntityToModelSpace(beam);
+	AddToModelSpace::AddEntityToModelSpace(beam);
 #pragma endregion
 }

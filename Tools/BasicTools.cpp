@@ -395,6 +395,23 @@ AcGePoint3d BasicTools::GetIntersect(const AcGePoint3d& line1_point1, const AcGe
 	return GetIntersect(line1, line2);
 }
 
+AcGeLineSeg3d BasicTools::EntityToLineSegment(const AcDbEntity* entity)
+{
+	if (entity->isKindOf(AcDbLine::desc()))
+	{
+		AcDbLine* line = AcDbLine::cast(entity);
+		AcGePoint3d start_point = line->startPoint();
+		AcGePoint3d end_point = line->endPoint();
+
+		line->close();
+		return AcGeLineSeg3d(start_point, end_point);
+	}
+	else
+	{
+		throw;
+	}
+}
+
 AcGeLine3d BasicTools::EntityToLine(const AcDbEntity* entity)
 {
 	if (entity->isKindOf(AcDbLine::desc()))
@@ -410,7 +427,6 @@ AcGeLine3d BasicTools::EntityToLine(const AcDbEntity* entity)
 	{
 		throw;
 	}
-
 }
 /// <summary>
 /// Grid modules: Calculate X direction point Array based on spacing.

@@ -144,7 +144,7 @@ void TestClass::Test()
 	EditEntity::SetColor(DrawEntity::DrawArc(AcGePoint3d(100, 100, 0), AcGePoint3d(200, 100, 0), AcGePoint3d(0, 100, 0), 1), 3);*/
 	//EditEntity::SetColor(DrawEntity::DrawPolyLine(BasicTools::DistanceToPointArrayX(AcGePoint3d(0, 0, 0), 100, 10), 0.5, true), 1);
 
-#pragma region ss
+#pragma region ss--------------------------------------------
 	//StyleTools::LoadLineType(_T("DASHED"), _T("acad.lin"));
 	//AcDbObjectIdArray line_array;
 	//AcGePoint3dArray insert_point;
@@ -272,18 +272,18 @@ void TestClass::Test()
 	//}
 #pragma endregion
 #pragma region Beam
-	AcGePoint3dArray vertexes;
-	for (int i = 0; i < 5; i++)
-	{
-		vertexes.append(AcGePoint3d(i * 100, i * 100, 0));
-	}
-	CPolaCustomBeam* beam = new CPolaCustomBeam();
+	//AcGePoint3dArray vertexes;
+	//for (int i = 0; i < 5; i++)
+	//{
+	//	vertexes.append(AcGePoint3d(i * 1000, i * 1000 + 50, 0));
+	//}
+	//CPolaCustomBeam* beam = new CPolaCustomBeam();
 
-	beam->setBeamWidth(500);
-	beam->setBeamHeight(500);
-	beam->setBeamProperty(1);
-	beam->setBeamVertexes(vertexes);
+	//beam->setBeamWidth(500);
+	//beam->setBeamHeight(500);
+	//beam->setBeamProperty(1);
+	//beam->setBeamVertexes(vertexes);
 
-	AddToModelSpace::AddEntityToModelSpace(beam);
+	//AddToModelSpace::AddEntityToModelSpace(beam);
 #pragma endregion
 }

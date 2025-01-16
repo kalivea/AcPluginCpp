@@ -220,14 +220,21 @@ bool BasicTools::OffsetPolyLine(const AcDbPolyline& center_line, const double& d
 	error_status = center_line.getOffsetCurves(distance, offset_curves);
 	if (error_status == Acad::eOk)
 	{
-		AcDbPolyline* pl = (AcDbPolyline*)(offset_curves[0]);
-		for (unsigned int i = 0; i < pl->numVerts(); i++)
+		if (offset_curves.length() == 1)			// Currently only polylines can be converted!
 		{
-			AcGePoint2d temp;
-			pl->getPointAt(i, temp);
-			offset_vertex_array.append(BasicTools::Point2dToPoint3d(temp));
+			AcDbPolyline* pl = AcDbPolyline::cast(reinterpret_cast<const AcRxObject*> (offset_curves.at(0)));	// TODO: unsafely cast!!
+			for (unsigned int i = 0; i < pl->numVerts(); i++)
+			{
+				AcGePoint2d temp;
+				pl->getPointAt(i, temp);
+				offset_vertex_array.append(BasicTools::Point2dToPoint3d(temp));
+			}
+			delete pl;
 		}
-		delete pl;
+		else
+		{
+			throw;
+		}
 	}
 	return true;
 }

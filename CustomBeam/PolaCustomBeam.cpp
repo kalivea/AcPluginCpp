@@ -160,8 +160,10 @@ Adesk::Boolean CPolaCustomBeam::subWorldDraw(AcGiWorldDraw * mode) {
 	{
 		pl_down->addVertexAt(i, BasicTools::Point3dToPoint2d(down.at(i)));
 	}
-
+	mode->subEntityTraits().setLineType(StyleTools::GetLineStyleId(_T("CENTER")));
+	mode->subEntityTraits().setLineTypeScale(100);
 	pl_center->worldDraw(mode);
+	mode->subEntityTraits().setLineType(StyleTools::GetLineStyleId(_T("CONTINUOUS")));
 	pl_up->worldDraw(mode);
 	pl_down->worldDraw(mode);
 

@@ -70,5 +70,6 @@
 #include "AcExtensionModule.h" //- Needed for AutoCAD MFC extension even if not present in the RealDWG SDK
 #include "PolaCustomBeam.h"
 #include "BasicTools.h"
+#include "StyleTools.h"
 #pragma pack(pop)
 

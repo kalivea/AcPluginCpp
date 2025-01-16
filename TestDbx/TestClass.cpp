@@ -272,6 +272,7 @@ void TestClass::Test()
 	//}
 #pragma endregion
 #pragma region Beam
+	StyleTools::LoadLineType(_T("CENTER"), _T("acad.lin"));
 	AcGePoint3dArray vertexes;
 	for (int i = 0; i < 5; i++)
 	{

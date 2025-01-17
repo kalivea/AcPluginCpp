@@ -138,38 +138,14 @@ Acad::ErrorStatus CPolaCustomBeam::dwgInFields(AcDbDwgFiler * pFiler) {
 Adesk::Boolean CPolaCustomBeam::subWorldDraw(AcGiWorldDraw * mode) {
 	assertReadEnabled();
 
-	AcDbPolyline* pl_center = new AcDbPolyline();
-	for (int i = 0; i < vertexes_num_; i++)
-	{
-		pl_center->addVertexAt(i, BasicTools::Point3dToPoint2d(beam_vertexes_.at(i)));
-	}
-	AcDbPolyline* pl_up = new AcDbPolyline();
-	AcDbPolyline* pl_down = new AcDbPolyline();
-
-	AcGePoint3dArray up;
-	AcGePoint3dArray down;
-	BasicTools::OffsetPolyLine(*pl_center, 0.5 * beam_b_, up);
-	BasicTools::OffsetPolyLine(*pl_center, -0.5 * beam_b_, down);
-
-	for (int i = 0; i < up.length(); i++)
-	{
-		pl_up->addVertexAt(i, BasicTools::Point3dToPoint2d(up.at(i)));
-	}
-
-	for (int i = 0; i < down.length(); i++)
-	{
-		pl_down->addVertexAt(i, BasicTools::Point3dToPoint2d(down.at(i)));
-	}
+	UpdateOffsetLine();
 	mode->subEntityTraits().setLineType(StyleTools::GetLineStyleId(_T("CENTER")));
-	mode->subEntityTraits().setLineTypeScale(100);
-	pl_center->worldDraw(mode);
-	mode->subEntityTraits().setLineType(StyleTools::GetLineStyleId(_T("CONTINUOUS")));
-	pl_up->worldDraw(mode);
-	pl_down->worldDraw(mode);
+	mode->subEntityTraits().setLineTypeScale(70);
+	mode->geometry().polyline(vertexes_num_, beam_vertexes_.asArrayPtr());			// center line.
 
-	pl_center->close();
-	pl_up->close();
-	pl_down->close();
+	mode->subEntityTraits().setLineType(StyleTools::GetLineStyleId(_T("CONTINUOUS")));
+	mode->geometry().polyline(vertexes_num_, top_offset_vertex_.asArrayPtr());
+	mode->geometry().polyline(vertexes_num_, bottom_offset_vertex_.asArrayPtr());
 	return (AcDbEntity::subWorldDraw(mode));
 }
 
@@ -190,7 +166,14 @@ Acad::ErrorStatus CPolaCustomBeam::subGetOsnapPoints(
 	AcDbIntArray & geomIds) const
 {
 	assertReadEnabled();
-	return (AcDbEntity::subGetOsnapPoints(osnapMode, gsSelectionMark, pickPoint, lastPoint, viewXform, snapPoints, geomIds));
+	Acad::ErrorStatus error_status;
+	AcDbPolyline* poly_line = new AcDbPolyline();
+	for (int i = 0;i < vertexes_num_;i++)
+	{
+		poly_line->addVertexAt(i, BasicTools::Point3dToPoint2d(beam_vertexes_.at(i)));
+	}
+	error_status = poly_line->getOsnapPoints(osnapMode, gsSelectionMark, pickPoint, lastPoint, viewXform, snapPoints, geomIds);
+	return error_status;
 }
 
 Acad::ErrorStatus CPolaCustomBeam::subGetOsnapPoints(
@@ -204,7 +187,14 @@ Acad::ErrorStatus CPolaCustomBeam::subGetOsnapPoints(
 	const AcGeMatrix3d & insertionMat) const
 {
 	assertReadEnabled();
-	return (AcDbEntity::subGetOsnapPoints(osnapMode, gsSelectionMark, pickPoint, lastPoint, viewXform, snapPoints, geomIds, insertionMat));
+	Acad::ErrorStatus error_status;
+	AcDbPolyline* poly_line = new AcDbPolyline();
+	for (int i = 0;i < vertexes_num_;i++)
+	{
+		poly_line->addVertexAt(i, BasicTools::Point3dToPoint2d(beam_vertexes_.at(i)));
+	}
+	error_status = poly_line->getOsnapPoints(osnapMode, gsSelectionMark, pickPoint, lastPoint, viewXform, snapPoints, geomIds, insertionMat);
+	return error_status;
 }
 
 //- Grip points protocol
@@ -215,7 +205,12 @@ Acad::ErrorStatus CPolaCustomBeam::subGetGripPoints(
 	//----- This method is never called unless you return eNotImplemented 
 	//----- from the new getGripPoints() method below (which is the default implementation)
 
-	return (AcDbEntity::subGetGripPoints(gripPoints, osnapModes, geomIds));
+	//return (AcDbEntity::subGetGripPoints(gripPoints, osnapModes, geomIds));
+	for (int i = 0;i < vertexes_num_;i++)
+	{
+		gripPoints.append(beam_vertexes_.at(i));
+	}
+	return Acad::eOk;
 }
 
 Acad::ErrorStatus CPolaCustomBeam::subMoveGripPointsAt(const AcDbIntArray & indices, const AcGeVector3d & offset) {
@@ -330,4 +325,18 @@ void CPolaCustomBeam::setBeamProperty(const Adesk::Int32 & beam_property)
 {
 	assertWriteEnabled();
 	beam_property_ = beam_property;
+}
+
+void CPolaCustomBeam::addVertex(const int& index, const AcGePoint3d & vertex)
+{
+	beam_vertexes_.insertAt(index, vertex);
+	vertexes_num_++;
+}
+
+void CPolaCustomBeam::UpdateOffsetLine()
+{
+	top_offset_vertex_.removeAll();
+	bottom_offset_vertex_.removeAll();
+	BasicTools::OffsetPolyLine(beam_vertexes_, 0.5 * beam_b_, top_offset_vertex_);
+	BasicTools::OffsetPolyLine(beam_vertexes_, -0.5 * beam_b_, bottom_offset_vertex_);
 }

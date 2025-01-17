@@ -103,8 +103,12 @@ public:
 	// custom define pillar part             ------Pola
 
 private:
+	// save to dwg files.
 	AcGePoint3dArray beam_vertexes_;				// store bertexes of beam.
-	Adesk::Int32 vertexes_num_;						// store number of vertexes.
+	AcGePoint3dArray top_offset_vertex_;
+	AcGePoint3dArray bottom_offset_vertex_;
+
+	Adesk::Int32 vertexes_num_ = 0;						// store number of vertexes.
 
 	double beam_b_;								    // store width of beam.	
 	double beam_h_;								    // store height of beam.
@@ -128,7 +132,8 @@ public:
 	void setBeamHeight(const double& beam_h);
 	void setBeamViewable(const std::vector<Adesk::Int32>& beam_viewable);
 	void setBeamProperty(const Adesk::Int32& beam_property);
-
+	void addVertex(const int& index,const AcGePoint3d& vertex);
+	void UpdateOffsetLine();
 	//          
 
 };

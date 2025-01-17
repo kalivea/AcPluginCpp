@@ -71,5 +71,6 @@
 #include "PolaCustomBeam.h"
 #include "BasicTools.h"
 #include "StyleTools.h"
+#include "SelectEntitys.h"
 #pragma pack(pop)
 

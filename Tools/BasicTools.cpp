@@ -239,6 +239,16 @@ bool BasicTools::OffsetPolyLine(const AcDbPolyline& center_line, const double& d
 	return true;
 }
 
+bool BasicTools::OffsetPolyLine(const AcGePoint3dArray& center_array, const double& distance, AcGePoint3dArray& offset_vertex_array)
+{
+	AcDbPolyline* poly_line = new AcDbPolyline();
+	for (int i = 0;i < center_array.length();i++)
+	{
+		poly_line->addVertexAt(i, BasicTools::Point3dToPoint2d(center_array.at(i)));
+	}
+	return OffsetPolyLine(*poly_line, distance, offset_vertex_array);
+}
+
 bool BasicTools::IsIntersectRectangle(const AcGePoint3d& vertex_point1, const AcGePoint3d& vertex_point2, const AcGePoint3d& vertex_point3, const AcGePoint3d& vertex_point4)
 {
 	double rect1_min_x = BasicTools::Min(vertex_point1.x, vertex_point2.x);

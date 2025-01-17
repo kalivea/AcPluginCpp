@@ -273,7 +273,7 @@ void TestClass::Test()
 #pragma endregion
 #pragma region Beam
 	StyleTools::LoadLineType(_T("CENTER"), _T("acad.lin"));
-	AcGePoint3dArray vertexes;
+	/*AcGePoint3dArray vertexes;
 	for (int i = 0; i < 5; i++)
 	{
 		vertexes.append(AcGePoint3d(i * 1000, i * 1000 + 50, 0));
@@ -284,7 +284,78 @@ void TestClass::Test()
 	beam->setBeamHeight(500);
 	beam->setBeamProperty(1);
 	beam->setBeamVertexes(vertexes);
+	beam->addVertex(AcGePoint3d(0, 6000, 0));
+	beam->UpdateOffsetLine();
+	AddToModelSpace::AddEntityToModelSpace(beam);*/
 
-	AddToModelSpace::AddEntityToModelSpace(beam);
+
+
+	/******************************************************************************************************/
+	/*int index = 2;
+	AcGePoint3d start_point;
+	if (!SelectEntitys::PickPoint(_T("pick first point:\n"), start_point))
+	{
+		throw;
+	}
+	AcGePoint3d previous_point, current_point;
+	previous_point = start_point;
+	AcDbObjectId pl_id = AcDbObjectId::kNull;
+	while (SelectEntitys::PickPoint(_T("pick next point:\n"), start_point, current_point))
+	{
+		if (index == 2)
+		{
+			AcDbPolyline* pl = new AcDbPolyline();
+			pl->addVertexAt(0, BasicTools::Point3dToPoint2d(previous_point));
+			pl->addVertexAt(1, BasicTools::Point3dToPoint2d(current_point));
+			pl_id = AddToModelSpace::AddEntityToModelSpace(pl);
+		}
+		else if (index > 2)
+		{
+			AcDbPolyline* pl = nullptr;
+			if (acdbOpenObject(pl, pl_id, OpenMode::kForWrite) == Acad::eOk)
+			{
+				pl->addVertexAt(index - 1, BasicTools::Point3dToPoint2d(current_point));
+				pl->close();
+			}
+		}
+		previous_point = current_point;
+		index++;
+	}*/
+	/******************************************************************************************************/
+
+	CPolaCustomBeam* beam = new CPolaCustomBeam();
+	beam->setBeamWidth(500);
+	beam->setBeamHeight(500);
+	beam->setBeamProperty(1);
+
+	int index = 2;
+	AcGePoint3d start_point;
+	if (!SelectEntitys::PickPoint(_T("pick first point:\n"), start_point))
+	{
+		throw;
+	}
+	AcGePoint3d previous_point, current_point;
+	previous_point = start_point;
+	AcDbObjectId beam_id = AcDbObjectId::kNull;
+	while (SelectEntitys::PickPoint(_T("pick next point:\n"), start_point, current_point))
+	{
+		if (index == 2)
+		{
+			beam->addVertex(0, previous_point);
+			beam->addVertex(1, current_point);
+			beam_id = AddToModelSpace::AddEntityToModelSpace(beam);
+		}
+		else if (index > 2)
+		{
+			CPolaCustomBeam* beam = nullptr;
+			if (acdbOpenObject(beam, beam_id, OpenMode::kForWrite) == Acad::eOk)
+			{
+				beam->addVertex(index - 1, current_point);
+				beam->close();
+			}
+		}
+		previous_point = current_point;
+		index++;
+	}
 #pragma endregion
 }

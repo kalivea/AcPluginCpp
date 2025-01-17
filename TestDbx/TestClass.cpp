@@ -42,6 +42,11 @@ void TestClass::Test()
 	//{
 	//	DrawEntity::AlignedDimension(ver_array[i], ver_array[i + 1], BasicTools::OffsetMidPoint(ver_array[i], ver_array[i + 1], 1700), dim_style_id);
 	//}
+
+	//AcGePoint3d st(0, 0, 0);
+	//AcGePoint3d ed(100, 0, 0);
+	//AcDbObjectId dim_id = DrawEntity::AlignedDimension(st, ed, BasicTools::OffsetMidPoint(st, ed, 30));
+	//EditEntity::SetColor(dim_id, 1);
 #pragma endregion
 #pragma region Line Type Test
 	//AcGePoint3d s_p(0, 0, 0);
@@ -107,6 +112,7 @@ void TestClass::Test()
 	//	insert_point.append(AcGePoint3d(i * 2500, 0, 0));
 	//}
 	//CPolaCustomPillar::BatchInsert(*pillar2, insert_point);
+
 #pragma endregion
 #pragma region MFC Test
 	//AcGePoint3d p1(0, 0, 0);
@@ -322,10 +328,9 @@ void TestClass::Test()
 		index++;
 	}*/
 	/******************************************************************************************************/
-
 	CPolaCustomBeam* beam = new CPolaCustomBeam();
-	beam->setBeamWidth(500);
-	beam->setBeamHeight(500);
+	beam->setBeamWidth(1200);
+	beam->setBeamHeight(1500);
 	beam->setBeamProperty(1);
 
 	int index = 2;
@@ -341,8 +346,8 @@ void TestClass::Test()
 	{
 		if (index == 2)
 		{
-			beam->addVertex(0, previous_point);
-			beam->addVertex(1, current_point);
+			beam->addVertexAt(0, previous_point);
+			beam->addVertexAt(1, current_point);
 			beam_id = AddToModelSpace::AddEntityToModelSpace(beam);
 		}
 		else if (index > 2)
@@ -350,10 +355,13 @@ void TestClass::Test()
 			CPolaCustomBeam* beam = nullptr;
 			if (acdbOpenObject(beam, beam_id, OpenMode::kForWrite) == Acad::eOk)
 			{
-				beam->addVertex(index - 1, current_point);
+				beam->addVertexAt(index - 1, current_point);
 				beam->close();
 			}
 		}
+		beam->recordGraphicsModified();
+		acedUpdateDisplay();
+		acutPrintf(_T("Now vertex cnt: %d\n"), beam->getVertexesNum());
 		previous_point = current_point;
 		index++;
 	}

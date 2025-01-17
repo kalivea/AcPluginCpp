@@ -70,6 +70,18 @@ Acad::ErrorStatus CPolaCustomBeam::dwgOutFields(AcDbDwgFiler * pFiler) const {
 		if (es != Acad::eOk)
 			return es;
 	}
+	for (int i = 0;i < vertexes_num_;i++)
+	{
+		es = pFiler->writeItem(top_offset_vertex_.at(i));
+		if (es != Acad::eOk)
+			return es;
+	}
+	for (int i = 0;i < vertexes_num_;i++)
+	{
+		es = pFiler->writeItem(bottom_offset_vertex_.at(i));
+		if (es != Acad::eOk)
+			return es;
+	}
 	es = pFiler->writeItem(beam_b_);
 	if (es != Acad::eOk)
 		return es;
@@ -115,6 +127,18 @@ Acad::ErrorStatus CPolaCustomBeam::dwgInFields(AcDbDwgFiler * pFiler) {
 		if (es != Acad::eOk)
 			return es;
 	}
+	for (int i = 0; i < vertexes_num_; i++)
+	{
+		es = pFiler->readItem(&top_offset_vertex_.at(i));
+		if (es != Acad::eOk)
+			return es;
+	}
+	for (int i = 0; i < vertexes_num_; i++)
+	{
+		es = pFiler->readItem(&bottom_offset_vertex_.at(i));
+		if (es != Acad::eOk)
+			return es;
+	}
 	es = pFiler->readItem(&beam_b_);
 	if (es != Acad::eOk)
 		return es;
@@ -137,15 +161,20 @@ Acad::ErrorStatus CPolaCustomBeam::dwgInFields(AcDbDwgFiler * pFiler) {
 //----- AcDbEntity protocols
 Adesk::Boolean CPolaCustomBeam::subWorldDraw(AcGiWorldDraw * mode) {
 	assertReadEnabled();
-
+	
 	UpdateOffsetLine();
+
 	mode->subEntityTraits().setLineType(StyleTools::GetLineStyleId(_T("CENTER")));
 	mode->subEntityTraits().setLineTypeScale(70);
+	mode->subEntityTraits().setColor(8);
+
 	mode->geometry().polyline(vertexes_num_, beam_vertexes_.asArrayPtr());			// center line.
 
 	mode->subEntityTraits().setLineType(StyleTools::GetLineStyleId(_T("CONTINUOUS")));
-	mode->geometry().polyline(vertexes_num_, top_offset_vertex_.asArrayPtr());
-	mode->geometry().polyline(vertexes_num_, bottom_offset_vertex_.asArrayPtr());
+	mode->subEntityTraits().setColor(2);
+	mode->geometry().polyline(vertexes_num_, top_offset_vertex_.asArrayPtr());		// top offset line
+	mode->geometry().polyline(vertexes_num_, bottom_offset_vertex_.asArrayPtr());	// bottom offset line
+
 	return (AcDbEntity::subWorldDraw(mode));
 }
 
@@ -205,12 +234,12 @@ Acad::ErrorStatus CPolaCustomBeam::subGetGripPoints(
 	//----- This method is never called unless you return eNotImplemented 
 	//----- from the new getGripPoints() method below (which is the default implementation)
 
-	//return (AcDbEntity::subGetGripPoints(gripPoints, osnapModes, geomIds));
-	for (int i = 0;i < vertexes_num_;i++)
-	{
-		gripPoints.append(beam_vertexes_.at(i));
-	}
-	return Acad::eOk;
+	return (AcDbEntity::subGetGripPoints(gripPoints, osnapModes, geomIds));
+//	for (int i = 0;i < vertexes_num_;i++)
+//	{
+//		gripPoints.append(beam_vertexes_.at(i));
+//	}
+//	return Acad::eOk;
 }
 
 Acad::ErrorStatus CPolaCustomBeam::subMoveGripPointsAt(const AcDbIntArray & indices, const AcGeVector3d & offset) {
@@ -327,10 +356,14 @@ void CPolaCustomBeam::setBeamProperty(const Adesk::Int32 & beam_property)
 	beam_property_ = beam_property;
 }
 
-void CPolaCustomBeam::addVertex(const int& index, const AcGePoint3d & vertex)
+void CPolaCustomBeam::addVertexAt(const int& index, const AcGePoint3d & vertex)
 {
 	beam_vertexes_.insertAt(index, vertex);
 	vertexes_num_++;
+	if (index > 2)
+	{
+		UpdateOffsetLine();
+	}
 }
 
 void CPolaCustomBeam::UpdateOffsetLine()

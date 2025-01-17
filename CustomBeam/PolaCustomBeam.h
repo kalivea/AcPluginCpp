@@ -132,7 +132,7 @@ public:
 	void setBeamHeight(const double& beam_h);
 	void setBeamViewable(const std::vector<Adesk::Int32>& beam_viewable);
 	void setBeamProperty(const Adesk::Int32& beam_property);
-	void addVertex(const int& index,const AcGePoint3d& vertex);
+	void addVertexAt(const int& index,const AcGePoint3d& vertex);
 	void UpdateOffsetLine();
 	//          
 

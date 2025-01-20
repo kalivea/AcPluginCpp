@@ -114,7 +114,8 @@ private:
 	Adesk::Int32 pillar_type_;					// pillar type: (int) 0 mean round pillar; (int) 1 mean rectangular pillar.
 
 	//	               auxiliary data
-	AcGePoint3dArray vertex_;					//vertex: store rectangular pillar vertex.
+	AcGePoint3dArray rect_pillar_vertex_;		// vertex: store rectangular pillar vertex.
+	Adesk::Int32 concrete_grade_;					
 
 public:
 	//					set function
@@ -125,6 +126,7 @@ public:
 	void setPillarProperty(const Adesk::Int32& prop);
 	void setSn(const Adesk::Int32& sn);
 	void setPillarType(const Adesk::Int32& type);
+	void setConcreteGrade(const Adesk::Int32& grade);
 
 	//					get function
 	AcGePoint3d getCenterPoint() const;
@@ -134,6 +136,7 @@ public:
 	Adesk::Int32 getPillarProperty() const;
 	Adesk::Int32 getPillarSn() const;
 	Adesk::Int32 getPillarType() const;
+	Adesk::Int32 getConcreteGrade() const;
 
 	//				   auxiliary data generation function
 	void CalculateVertex();

@@ -43,10 +43,10 @@ ACRX_DXF_DEFINE_MEMBERS(
 CPolaCustomPillar::CPolaCustomPillar() : AcDbEntity() {
 }
 
-CPolaCustomPillar::CPolaCustomPillar(const CPolaCustomPillar & pillar_template)
+CPolaCustomPillar::CPolaCustomPillar(const CPolaCustomPillar& pillar_template)
 	:center_point_(pillar_template.center_point_), direction_vector_(pillar_template.direction_vector_), pillar_d_(pillar_template.pillar_d_),
 	pillar_h_(pillar_template.pillar_h_), viewable_(pillar_template.viewable_), pillar_property_(pillar_template.pillar_property_),
-	pillar_serial_number_(pillar_template.pillar_serial_number_), pillar_type_(pillar_template.pillar_type_)
+	pillar_serial_number_(pillar_template.pillar_serial_number_), pillar_type_(pillar_template.pillar_type_), concrete_grade_(pillar_template.concrete_grade_)
 {
 	CalculateVertex();
 }
@@ -97,11 +97,14 @@ Acad::ErrorStatus CPolaCustomPillar::dwgOutFields(AcDbDwgFiler * pFiler) const {
 	{
 		for (int i = 0; i < 4; i++)
 		{
-			es = pFiler->writeItem(vertex_.at(i));
+			es = pFiler->writeItem(rect_pillar_vertex_.at(i));
 			if (es != Acad::eOk)
 				return es;
 		}
 	}
+	es = pFiler->writeItem(concrete_grade_);
+	if (es != Acad::eOk)
+		return es;
 	return (pFiler->filerStatus());
 }
 
@@ -149,15 +152,18 @@ Acad::ErrorStatus CPolaCustomPillar::dwgInFields(AcDbDwgFiler * pFiler) {
 		return es;
 	if (pillar_type_ == 1)
 	{
-		vertex_.removeAll();
+		rect_pillar_vertex_.removeAll();
 		CalculateVertex();
 		for (int i = 0; i < 4; i++)
 		{
-			es = pFiler->readItem(&vertex_.at(i));
+			es = pFiler->readItem(&rect_pillar_vertex_.at(i));
 			if (es != Acad::eOk)
 				return es;
 		}
 	}
+	es = pFiler->readItem(&concrete_grade_);
+	if (es != Acad::eOk)
+		return es;
 	return (pFiler->filerStatus());
 }
 
@@ -179,14 +185,14 @@ Adesk::Boolean CPolaCustomPillar::subWorldDraw(AcGiWorldDraw * mode) {
 	}
 	else if (pillar_type_ == 1)
 	{
-		if (!vertex_.isEmpty())
+		if (!rect_pillar_vertex_.isEmpty())
 		{
 			if (viewable_)
 			{
 				AcDbPolyline* pl = new AcDbPolyline();
-				for (int i = 0; i < vertex_.length(); i++)
+				for (int i = 0; i < rect_pillar_vertex_.length(); i++)
 				{
-					pl->addVertexAt(i, BasicTools::Point3dToPoint2d(vertex_.at(i)));
+					pl->addVertexAt(i, BasicTools::Point3dToPoint2d(rect_pillar_vertex_.at(i)));
 				}
 				pl->setDatabaseDefaults();
 				pl->setClosed(true);
@@ -195,8 +201,8 @@ Adesk::Boolean CPolaCustomPillar::subWorldDraw(AcGiWorldDraw * mode) {
 
 				mode->subEntityTraits().setLineType(StyleTools::GetLineStyleId(_T("DASHED")));
 				mode->subEntityTraits().setLineTypeScale(100);
-				AcDbLine(vertex_.at(0), vertex_.at(2)).worldDraw(mode);
-				AcDbLine(vertex_.at(1), vertex_.at(3)).worldDraw(mode);
+				AcDbLine(rect_pillar_vertex_.at(0), rect_pillar_vertex_.at(2)).worldDraw(mode);
+				AcDbLine(rect_pillar_vertex_.at(1), rect_pillar_vertex_.at(3)).worldDraw(mode);
 			}
 			else
 			{
@@ -204,17 +210,17 @@ Adesk::Boolean CPolaCustomPillar::subWorldDraw(AcGiWorldDraw * mode) {
 				mode->subEntityTraits().setLineTypeScale(100);
 
 				AcDbPolyline* pl = new AcDbPolyline();
-				for (int i = 0; i < vertex_.length(); i++)
+				for (int i = 0; i < rect_pillar_vertex_.length(); i++)
 				{
-					pl->addVertexAt(i, BasicTools::Point3dToPoint2d(vertex_.at(i)));
+					pl->addVertexAt(i, BasicTools::Point3dToPoint2d(rect_pillar_vertex_.at(i)));
 				}
 				pl->setDatabaseDefaults();
 				pl->setClosed(true);
 				pl->worldDraw(mode);
 				delete pl;
 
-				AcDbLine(vertex_.at(0), vertex_.at(2)).worldDraw(mode);
-				AcDbLine(vertex_.at(1), vertex_.at(3)).worldDraw(mode);
+				AcDbLine(rect_pillar_vertex_.at(0), rect_pillar_vertex_.at(2)).worldDraw(mode);
+				AcDbLine(rect_pillar_vertex_.at(1), rect_pillar_vertex_.at(3)).worldDraw(mode);
 			}
 		}
 		else
@@ -259,9 +265,9 @@ Acad::ErrorStatus CPolaCustomPillar::subGetOsnapPoints(
 	else if (pillar_type_ == 1)
 	{
 		AcDbPolyline* contour_polyline = new AcDbPolyline();
-		for (int i = 0; i < vertex_.length(); i++)
+		for (int i = 0; i < rect_pillar_vertex_.length(); i++)
 		{
-			contour_polyline->addVertexAt(i, BasicTools::Point3dToPoint2d(vertex_.at(i)));
+			contour_polyline->addVertexAt(i, BasicTools::Point3dToPoint2d(rect_pillar_vertex_.at(i)));
 		}
 		contour_polyline->setClosed(true);
 		error_status = contour_polyline->getOsnapPoints(osnapMode, gsSelectionMark, pickPoint, lastPoint, viewXform, snapPoints, geomIds);
@@ -297,9 +303,9 @@ Acad::ErrorStatus CPolaCustomPillar::subGetOsnapPoints(
 	else if (pillar_type_ == 1)
 	{
 		AcDbPolyline* contour_polyline = new AcDbPolyline();
-		for (int i = 0; i < vertex_.length(); i++)
+		for (int i = 0; i < rect_pillar_vertex_.length(); i++)
 		{
-			contour_polyline->addVertexAt(i, BasicTools::Point3dToPoint2d(vertex_.at(i)));
+			contour_polyline->addVertexAt(i, BasicTools::Point3dToPoint2d(rect_pillar_vertex_.at(i)));
 		}
 		contour_polyline->setClosed(true);
 		error_status = contour_polyline->getOsnapPoints(osnapMode, gsSelectionMark, pickPoint, lastPoint, viewXform, snapPoints, geomIds, insertionMat);
@@ -326,9 +332,9 @@ Acad::ErrorStatus CPolaCustomPillar::subGetGripPoints(
 	else if (pillar_type_ == 1)
 	{
 		gripPoints.append(center_point_);
-		for (int i = 0; i < vertex_.length(); i++)
+		for (int i = 0; i < rect_pillar_vertex_.length(); i++)
 		{
-			gripPoints.append(vertex_.at(i));
+			gripPoints.append(rect_pillar_vertex_.at(i));
 		}
 	}
 	else
@@ -428,6 +434,12 @@ void CPolaCustomPillar::setPillarType(const Adesk::Int32 & type)
 		throw;
 }
 
+void CPolaCustomPillar::setConcreteGrade(const Adesk::Int32& grade)
+{
+	assertWriteEnabled();
+	concrete_grade_ = grade;
+}
+
 AcGePoint3d CPolaCustomPillar::getCenterPoint() const
 {
 	assertReadEnabled();
@@ -471,6 +483,12 @@ Adesk::Int32 CPolaCustomPillar::getPillarType() const
 	return pillar_type_;
 }
 
+Adesk::Int32 CPolaCustomPillar::getConcreteGrade() const
+{
+	assertReadEnabled();
+	return concrete_grade_;
+}
+
 void CPolaCustomPillar::CalculateVertex()
 {
 	assertWriteEnabled();
@@ -485,7 +503,7 @@ void CPolaCustomPillar::CalculateVertex()
 			temp_vertex[3] = AcGePoint3d(center_point_.x + 0.5 * pillar_d_, center_point_.y + 0.5 * pillar_h_, 0);
 			for (int i = 0; i < 4; i++)
 			{
-				vertex_.append(temp_vertex[i]);
+				rect_pillar_vertex_.append(temp_vertex[i]);
 			}
 		}
 		else
@@ -503,7 +521,7 @@ void CPolaCustomPillar::CalculateVertex()
 				transformBy(rotate_transform_matrix);
 			for (int i = 0; i < 4; i++)
 			{
-				vertex_.append(temp_vertex[i]);
+				rect_pillar_vertex_.append(temp_vertex[i]);
 			}
 		}
 	}
@@ -523,9 +541,9 @@ Acad::ErrorStatus CPolaCustomPillar::subTransformBy(const AcGeMatrix3d & transfo
 	}
 	else if (getPillarType() == 1)
 	{
-		for (int i = 0; i < vertex_.length(); i++)
+		for (int i = 0; i < rect_pillar_vertex_.length(); i++)
 		{
-			vertex_.at(i).transformBy(transform_matrix);
+			rect_pillar_vertex_.at(i).transformBy(transform_matrix);
 		}
 		center_point_.transformBy(transform_matrix);
 		direction_vector_ = direction_vector_.transformBy(transform_matrix);
@@ -564,7 +582,7 @@ AcDbObjectIdArray CPolaCustomPillar::BatchInsert(const CPolaCustomPillar & pilla
 			for (int i = 0; i < insert_point_array.length(); i++)
 			{
 				CPolaCustomPillar* pillar = new CPolaCustomPillar(pillar_template);
-				pillar->vertex_.removeAll();
+				pillar->rect_pillar_vertex_.removeAll();
 				pillar->setCenterPoint(insert_point_array.at(i));
 				pillar_id_array.append(AddToModelSpace::AddEntityToModelSpace(pillar));
 			}
@@ -581,7 +599,7 @@ AcDbObjectIdArray CPolaCustomPillar::BatchInsert(const CPolaCustomPillar & pilla
 			for (int i = 0; i < insert_point_array.length(); i++)
 			{
 				CPolaCustomPillar* pillar = new CPolaCustomPillar(pillar_template);
-				pillar->vertex_.removeAll();
+				pillar->rect_pillar_vertex_.removeAll();
 				if (checkValue(pillar))
 				{
 					pillar->setCenterPoint(insert_point_array.at(i));
@@ -648,9 +666,9 @@ Acad::ErrorStatus CPolaCustomPillar::subGetGeomExtents(AcDbExtents & extents) co
 	else if (pillar_type_ == 1)
 	{
 		AcDbPolyline* pl = new AcDbPolyline();
-		for (int i = 0; i < vertex_.length(); i++)
+		for (int i = 0; i < rect_pillar_vertex_.length(); i++)
 		{
-			pl->addVertexAt(i, BasicTools::Point3dToPoint2d(vertex_.at(i)));
+			pl->addVertexAt(i, BasicTools::Point3dToPoint2d(rect_pillar_vertex_.at(i)));
 		}
 		pl->setDatabaseDefaults();
 		pl->setClosed(true);

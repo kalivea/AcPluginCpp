@@ -88,12 +88,12 @@ Acad::ErrorStatus CPolaCustomBeam::dwgOutFields(AcDbDwgFiler * pFiler) const {
 	es = pFiler->writeItem(beam_h_);
 	if (es != Acad::eOk)
 		return es;
-	for (int i = 0; i < vertexes_num_ - 1; i++)
-	{
-		es = pFiler->writeItem(beam_viewable_.at(i));
-		if (es != Acad::eOk)
-			return es;
-	}
+	//for (int i = 0; i < vertexes_num_ - 1; i++)
+	//{
+	//	es = pFiler->writeItem(beam_viewable_.at(i));
+	//	if (es != Acad::eOk)
+	//		return es;
+	//}
 	es = pFiler->writeItem(beam_property_);
 	if (es != Acad::eOk)
 		return es;
@@ -145,12 +145,12 @@ Acad::ErrorStatus CPolaCustomBeam::dwgInFields(AcDbDwgFiler * pFiler) {
 	es = pFiler->readItem(&beam_h_);
 	if (es != Acad::eOk)
 		return es;
-	for (int i = 0; i < vertexes_num_ - 1; i++)
-	{
-		es = pFiler->readItem(&beam_viewable_.at(i));
-		if (es != Acad::eOk)
-			return es;
-	}
+	//for (int i = 0; i < vertexes_num_ - 1; i++)
+	//{
+	//	es = pFiler->readItem(&beam_viewable_.at(i));
+	//	if (es != Acad::eOk)
+	//		return es;
+	//}
 	es = pFiler->readItem(&beam_property_);
 	if (es != Acad::eOk)
 		return es;
@@ -195,14 +195,15 @@ Acad::ErrorStatus CPolaCustomBeam::subGetOsnapPoints(
 	AcDbIntArray & geomIds) const
 {
 	assertReadEnabled();
-	Acad::ErrorStatus error_status;
-	AcDbPolyline* poly_line = new AcDbPolyline();
-	for (int i = 0;i < vertexes_num_;i++)
-	{
-		poly_line->addVertexAt(i, BasicTools::Point3dToPoint2d(beam_vertexes_.at(i)));
-	}
-	error_status = poly_line->getOsnapPoints(osnapMode, gsSelectionMark, pickPoint, lastPoint, viewXform, snapPoints, geomIds);
-	return error_status;
+	//Acad::ErrorStatus error_status;
+	//AcDbPolyline* poly_line = new AcDbPolyline();
+	//for (int i = 0;i < vertexes_num_;i++)
+	//{
+	//	poly_line->addVertexAt(i, BasicTools::Point3dToPoint2d(beam_vertexes_.at(i)));
+	//}
+	//error_status = poly_line->getOsnapPoints(osnapMode, gsSelectionMark, pickPoint, lastPoint, viewXform, snapPoints, geomIds);
+	//return error_status;
+	return Acad::eOk;
 }
 
 Acad::ErrorStatus CPolaCustomBeam::subGetOsnapPoints(
@@ -216,14 +217,15 @@ Acad::ErrorStatus CPolaCustomBeam::subGetOsnapPoints(
 	const AcGeMatrix3d & insertionMat) const
 {
 	assertReadEnabled();
-	Acad::ErrorStatus error_status;
-	AcDbPolyline* poly_line = new AcDbPolyline();
-	for (int i = 0;i < vertexes_num_;i++)
-	{
-		poly_line->addVertexAt(i, BasicTools::Point3dToPoint2d(beam_vertexes_.at(i)));
-	}
-	error_status = poly_line->getOsnapPoints(osnapMode, gsSelectionMark, pickPoint, lastPoint, viewXform, snapPoints, geomIds, insertionMat);
-	return error_status;
+	//Acad::ErrorStatus error_status;
+	//AcDbPolyline* poly_line = new AcDbPolyline();
+	//for (int i = 0;i < vertexes_num_;i++)
+	//{
+	//	poly_line->addVertexAt(i, BasicTools::Point3dToPoint2d(beam_vertexes_.at(i)));
+	//}
+	//error_status = poly_line->getOsnapPoints(osnapMode, gsSelectionMark, pickPoint, lastPoint, viewXform, snapPoints, geomIds, insertionMat);
+	//return error_status;
+	return Acad::eOk;
 }
 
 //- Grip points protocol
@@ -360,7 +362,7 @@ void CPolaCustomBeam::addVertexAt(const int& index, const AcGePoint3d & vertex)
 {
 	beam_vertexes_.insertAt(index, vertex);
 	vertexes_num_++;
-	if (index > 2)
+	if (index >= 1)
 	{
 		UpdateOffsetLine();
 	}

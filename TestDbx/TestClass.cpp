@@ -333,17 +333,32 @@ void TestClass::Test()
 	beam->setBeamHeight(1500);
 	beam->setBeamProperty(1);
 
+	const TCHAR* prompt = _T("Please enter the visibility of the beam segment: [Visible(V) Invisible(I)]");
+	const TCHAR* keyword_buff = _T("Visible Invisible");
+
+	TCHAR keyword_value[128];
+
 	int index = 2;
 	AcGePoint3d start_point;
 	if (!SelectEntitys::PickPoint(_T("pick first point:\n"), start_point))
 	{
 		throw;
 	}
+	InputValue::GetKeyword(prompt, keyword_buff, keyword_value);
+	if (wcscmp(keyword_value, TEXT("V")) == 0)
+		beam->addViewalbeAt(index - 1, 1);
+	else if (wcscmp(keyword_value, TEXT("I")) == 0)
+		beam->addViewalbeAt(index - 1, 0);
 	AcGePoint3d previous_point, current_point;
 	previous_point = start_point;
 	AcDbObjectId beam_id = AcDbObjectId::kNull;
 	while (SelectEntitys::PickPoint(_T("pick next point:\n"), start_point, current_point))
 	{
+		InputValue::GetKeyword(prompt, keyword_buff, keyword_value);
+		if (wcscmp(keyword_value, TEXT("V")) == 0)
+			beam->addViewalbeAt(index - 1, 1);
+		else if (wcscmp(keyword_value, TEXT("I")) == 0)
+			beam->addViewalbeAt(index - 1, 0);
 		if (index == 2)
 		{
 			beam->addVertexAt(0, previous_point);

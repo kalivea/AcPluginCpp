@@ -81,6 +81,7 @@
   <ItemGroup>
     <ClCompile Include="acrxEntryPoint.cpp" />
     <ClCompile Include="CoordinateSystem.cpp" />
+    <ClCompile Include="InputValue.cpp" />
     <ClCompile Include="InteractiveTools.cpp" />
     <ClCompile Include="SelectEntitys.cpp" />
     <ClCompile Include="StdAfx.cpp">
@@ -90,6 +91,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CoordinateSystem.h" />
+    <ClInclude Include="InputValue.h" />
     <ClInclude Include="InteractiveDef.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SelectEntitys.h" />

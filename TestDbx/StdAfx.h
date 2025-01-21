@@ -92,7 +92,7 @@
 #include "Grid.h"					//draw architecture grid 
 #include "PolaCustomPillar.h"
 #include "SelectEntitys.h"			//select entitys
-
+#include "InputValue.h"
 #include "PolaCustomBeam.h"
 
 	//- Declare it as an extern here so that it becomes available in all modules

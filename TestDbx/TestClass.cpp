@@ -279,6 +279,7 @@ void TestClass::Test()
 #pragma endregion
 #pragma region Beam
 	StyleTools::LoadLineType(_T("CENTER"), _T("acad.lin"));
+	StyleTools::LoadLineType(_T("DASHED"), _T("acad.lin"));
 	/*AcGePoint3dArray vertexes;
 	for (int i = 0; i < 5; i++)
 	{
@@ -328,37 +329,104 @@ void TestClass::Test()
 		index++;
 	}*/
 	/******************************************************************************************************/
-	CPolaCustomBeam* beam = new CPolaCustomBeam();
+	/*CPolaCustomBeam* beam = new CPolaCustomBeam();
 	beam->setBeamWidth(1200);
 	beam->setBeamHeight(1500);
 	beam->setBeamProperty(1);
+	int index = 2;
 
 	const TCHAR* prompt = _T("Please enter the visibility of the beam segment: [Visible(V) Invisible(I)]");
-	const TCHAR* keyword_buff = _T("Visible Invisible");
+	const TCHAR* keyword_buff[] = {_T("V"),_T("I")};
+	int keyword_num = sizeof(keyword_buff) / sizeof(keyword_buff[0]);
+	int selected_index = -1;
 
-	TCHAR keyword_value[128];
-
-	int index = 2;
+	bool get_keyword_status = InputValue::GetKeywordSelection(prompt, keyword_buff, keyword_num, selected_index);
+	if (get_keyword_status && selected_index >= 0 ? true : false && selected_index < keyword_num ? true : false)
+	{
+		if (selected_index == 0)
+			beam->addViewalbeAt(index - 1, 1);
+		else if (selected_index == 1)
+			beam->addViewalbeAt(index - 1, 0);
+		else
+			throw;
+	}
 	AcGePoint3d start_point;
 	if (!SelectEntitys::PickPoint(_T("pick first point:\n"), start_point))
 	{
 		throw;
 	}
-	InputValue::GetKeyword(prompt, keyword_buff, keyword_value);
-	if (wcscmp(keyword_value, TEXT("V")) == 0)
-		beam->addViewalbeAt(index - 1, 1);
-	else if (wcscmp(keyword_value, TEXT("I")) == 0)
-		beam->addViewalbeAt(index - 1, 0);
 	AcGePoint3d previous_point, current_point;
 	previous_point = start_point;
 	AcDbObjectId beam_id = AcDbObjectId::kNull;
 	while (SelectEntitys::PickPoint(_T("pick next point:\n"), start_point, current_point))
 	{
-		InputValue::GetKeyword(prompt, keyword_buff, keyword_value);
-		if (wcscmp(keyword_value, TEXT("V")) == 0)
-			beam->addViewalbeAt(index - 1, 1);
-		else if (wcscmp(keyword_value, TEXT("I")) == 0)
-			beam->addViewalbeAt(index - 1, 0);
+		get_keyword_status = InputValue::GetKeywordSelection(prompt, keyword_buff, keyword_num, selected_index);
+		if (get_keyword_status && selected_index >= 0 ? true : false && selected_index < keyword_num ? true : false)
+		{
+			if (selected_index == 0)
+				beam->addViewalbeAt(index - 1, 1);
+			else if (selected_index == 1)
+				beam->addViewalbeAt(index - 1, 0);
+			else
+				throw;
+		}
+		if (index == 2)
+		{
+			beam->addVertexAt(0, previous_point);
+			beam->addVertexAt(1, current_point);
+			beam_id = AddToModelSpace::AddEntityToModelSpace(beam);
+		}
+		else if (index > 2)
+		{
+			CPolaCustomBeam* beam = nullptr;
+			if (acdbOpenObject(beam, beam_id, OpenMode::kForWrite) == Acad::eOk)
+			{
+				beam->addVertexAt(index - 1, current_point);
+				beam->close();
+			}
+		}
+		beam->recordGraphicsModified();
+		acedUpdateDisplay();
+		acutPrintf(_T("Now vertex cnt: %d\n"), beam->getVertexesNum());
+		previous_point = current_point;
+		index++;
+	}*/
+
+	//TCHAR keyword[256] = { 0 };
+
+	//if (InputValue::GetKeyword(_T("\n请选择选项 [Open/Close/Exit]: "),_T("Open Close Exit"),keyword,sizeof(keyword) / sizeof(keyword[0])))
+	//{
+	//	acutPrintf(_T("\n已选择: %s"), keyword);
+	//}
+	//else
+	//{
+	//	acutPrintf(_T("\n操作已取消"));
+	//}
+
+	CPolaCustomBeam* beam = new CPolaCustomBeam();
+	beam->setBeamWidth(1200);
+	beam->setBeamHeight(1500);
+	beam->setBeamProperty(1);
+	int index = 2;
+	TCHAR keyword[256] = { 0 };
+	beam->addViewableAt(0, 0);
+	AcGePoint3d start_point;
+	if (!SelectEntitys::PickPoint(_T("pick first point:\n"), start_point))
+	{
+		throw;
+	}
+	AcGePoint3d previous_point, current_point;
+	previous_point = start_point;
+	AcDbObjectId beam_id = AcDbObjectId::kNull;
+	while (SelectEntitys::PickPoint(_T("pick next point:\n"), start_point, current_point))
+	{
+		InputValue::GetKeyword(_T("Please enter the visibility of the beam segment: [Visible/Invisible]"), _T("Visible Invisible"), keyword, sizeof(keyword) / sizeof(keyword[0]));
+		if (_tcscmp(keyword, _T("Visible")) == 0)
+			beam->addViewableAt(index - 1, 1);
+		else if (_tcscmp(keyword, _T("Invisible")) == 0)
+			beam->addViewableAt(index - 1, 0);
+		else
+			throw;
 		if (index == 2)
 		{
 			beam->addVertexAt(0, previous_point);

@@ -64,19 +64,19 @@ Acad::ErrorStatus CPolaCustomBeam::dwgOutFields(AcDbDwgFiler * pFiler) const {
 	es = pFiler->writeItem(vertexes_num_);
 	if (es != Acad::eOk)
 		return es;
-	for (int i = 0; i < vertexes_num_; i++)
+	for (int i = 0; i < vertexes_num_ - 1;i++)
 	{
 		es = pFiler->writeItem(beam_vertexes_.at(i));
 		if (es != Acad::eOk)
 			return es;
 	}
-	for (int i = 0;i < vertexes_num_;i++)
+	for (int i = 0;i < vertexes_num_ - 1;i++)
 	{
 		es = pFiler->writeItem(top_offset_vertex_.at(i));
 		if (es != Acad::eOk)
 			return es;
 	}
-	for (int i = 0;i < vertexes_num_;i++)
+	for (int i = 0;i < vertexes_num_ - 1;i++)
 	{
 		es = pFiler->writeItem(bottom_offset_vertex_.at(i));
 		if (es != Acad::eOk)
@@ -88,12 +88,12 @@ Acad::ErrorStatus CPolaCustomBeam::dwgOutFields(AcDbDwgFiler * pFiler) const {
 	es = pFiler->writeItem(beam_h_);
 	if (es != Acad::eOk)
 		return es;
-	//for (int i = 0; i < vertexes_num_ - 1; i++)
-	//{
-	//	es = pFiler->writeItem(beam_viewable_.at(i));
-	//	if (es != Acad::eOk)
-	//		return es;
-	//}
+	for (int i = 0; i < vertexes_num_ - 2;i++)
+	{
+		es = pFiler->writeItem(beam_viewable_.at(i));
+		if (es != Acad::eOk)
+			return es;
+	}
 	es = pFiler->writeItem(beam_property_);
 	if (es != Acad::eOk)
 		return es;
@@ -121,19 +121,19 @@ Acad::ErrorStatus CPolaCustomBeam::dwgInFields(AcDbDwgFiler * pFiler) {
 	es = pFiler->readItem(&vertexes_num_);
 	if (es != Acad::eOk)
 		return es;
-	for (int i = 0; i < vertexes_num_; i++)
+	for (int i = 0; i < vertexes_num_ - 1; i++)
 	{
 		es = pFiler->readItem(&beam_vertexes_.at(i));
 		if (es != Acad::eOk)
 			return es;
 	}
-	for (int i = 0; i < vertexes_num_; i++)
+	for (int i = 0; i < vertexes_num_ - 1; i++)
 	{
 		es = pFiler->readItem(&top_offset_vertex_.at(i));
 		if (es != Acad::eOk)
 			return es;
 	}
-	for (int i = 0; i < vertexes_num_; i++)
+	for (int i = 0; i < vertexes_num_ - 1; i++)
 	{
 		es = pFiler->readItem(&bottom_offset_vertex_.at(i));
 		if (es != Acad::eOk)
@@ -145,12 +145,12 @@ Acad::ErrorStatus CPolaCustomBeam::dwgInFields(AcDbDwgFiler * pFiler) {
 	es = pFiler->readItem(&beam_h_);
 	if (es != Acad::eOk)
 		return es;
-	//for (int i = 0; i < vertexes_num_ - 1; i++)
-	//{
-	//	es = pFiler->readItem(&beam_viewable_.at(i));
-	//	if (es != Acad::eOk)
-	//		return es;
-	//}
+	for (int i = 0; i < vertexes_num_ - 1; i++)
+	{
+		es = pFiler->readItem(&beam_viewable_.at(i));
+		if (es != Acad::eOk)
+			return es;
+	}
 	es = pFiler->readItem(&beam_property_);
 	if (es != Acad::eOk)
 		return es;
@@ -163,24 +163,11 @@ Adesk::Boolean CPolaCustomBeam::subWorldDraw(AcGiWorldDraw * mode) {
 	assertReadEnabled();
 	UpdateOffsetLine();
 
-	//mode->subEntityTraits().setLineType(StyleTools::GetLineStyleId(_T("CENTER")));
-	//mode->subEntityTraits().setLineTypeScale(70);
-	//mode->subEntityTraits().setColor(8);
-
-	//mode->geometry().polyline(vertexes_num_, beam_vertexes_.asArrayPtr());			// center line.
-
-	//mode->subEntityTraits().setLineType(StyleTools::GetLineStyleId(_T("CONTINUOUS")));
-	//mode->subEntityTraits().setColor(2);
-	//mode->geometry().polyline(vertexes_num_, top_offset_vertex_.asArrayPtr());		// top offset line
-	//mode->geometry().polyline(vertexes_num_, bottom_offset_vertex_.asArrayPtr());	// bottom offset line
 	for (int i = 0;i < vertexes_num_ - 1;i++)
 	{
 		AcGePoint3d center_line_segment_start = beam_vertexes_.at(i);
 		AcGePoint3d center_line_segment_end = beam_vertexes_.at(i + 1);
 		AcDbLine temp_center_line(center_line_segment_start, center_line_segment_end);
-		temp_center_line.setLinetype(StyleTools::GetLineStyleId(_T("CENTER")));
-		temp_center_line.setLinetypeScale(75);
-		temp_center_line.setColorIndex(8);
 
 		AcGePoint3d top_line_segment_start = top_offset_vertex_.at(i);
 		AcGePoint3d top_line_segment_end = top_offset_vertex_.at(i + 1);
@@ -190,29 +177,25 @@ Adesk::Boolean CPolaCustomBeam::subWorldDraw(AcGiWorldDraw * mode) {
 		AcGePoint3d bottom_line_segment_end = bottom_offset_vertex_.at(i + 1);
 		AcDbLine temp_bottom_line(bottom_line_segment_start, bottom_line_segment_end);
 
-		if (beam_viewable_.at(i) == 0)
+		if (beam_viewable_.at(i + 1) == 0)
 		{
-			temp_top_line.setLinetype(StyleTools::GetLineStyleId(_T("DASHED")));
-			temp_bottom_line.setLinetype(StyleTools::GetLineStyleId(_T("DASHED")));
-			temp_top_line.setLinetypeScale(75);
-			temp_top_line.setColorIndex(1);
-			temp_bottom_line.setLinetypeScale(75);
-			temp_bottom_line.setColorIndex(1);
-
-			temp_center_line.worldDraw(mode);
+			mode->subEntityTraits().setLineType(StyleTools::GetLineStyleId(_T("DASHED")));
+			mode->subEntityTraits().setLineTypeScale(700);
 			temp_top_line.worldDraw(mode);
 			temp_bottom_line.worldDraw(mode);
+
+			mode->subEntityTraits().setLineType(StyleTools::GetLineStyleId(_T("CENTER")));
+			temp_center_line.worldDraw(mode);
 		}
-		else if (beam_viewable_.at(i) == 1)
+		else if (beam_viewable_.at(i + 1) == 1)
 		{
-			temp_top_line.setLinetype(StyleTools::GetLineStyleId(_T("CONTINUOUS")));
-			temp_bottom_line.setLinetype(StyleTools::GetLineStyleId(_T("CONTINUOUS")));
-			temp_top_line.setColorIndex(1);
-			temp_bottom_line.setColorIndex(1);
-
-			temp_center_line.worldDraw(mode);
+			mode->subEntityTraits().setLineType(StyleTools::GetLineStyleId(_T("CONTINUOUS")));
 			temp_top_line.worldDraw(mode);
 			temp_bottom_line.worldDraw(mode);
+
+			mode->subEntityTraits().setLineType(StyleTools::GetLineStyleId(_T("CENTER")));
+			mode->subEntityTraits().setLineTypeScale(700);
+			temp_center_line.worldDraw(mode);
 		}
 		else
 		{
@@ -412,12 +395,19 @@ void CPolaCustomBeam::addVertexAt(const int& index, const AcGePoint3d & vertex)
 	}
 }
 
-void CPolaCustomBeam::addViewalbeAt(const int& index, const Adesk::Int32 viewable)
+void CPolaCustomBeam::addViewableAt(const int index, const Adesk::Int32 viewable)
 {
 	if (viewable == 0 || viewable == 1)
 	{
-		auto iterators = beam_viewable_.begin() + index;
-		beam_viewable_.insert(iterators, viewable);
+		if (index == 0)
+		{
+			beam_viewable_.push_back(viewable);
+		}
+		else
+		{
+			auto iterators = beam_viewable_.begin() + index;
+			beam_viewable_.insert(iterators, viewable);
+		}
 	}
 	else
 	{

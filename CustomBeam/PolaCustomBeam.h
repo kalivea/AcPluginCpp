@@ -135,7 +135,7 @@ public:
 
 	//			add a single centerline vertex, calculate the offset line veretx.
 	void addVertexAt(const int& index, const AcGePoint3d& vertex);
-	void addViewalbeAt(const int& index, const Adesk::Int32 viewable);
+	void addViewableAt(const int index, const Adesk::Int32 viewable);
 	void UpdateOffsetLine();
 	//          
 

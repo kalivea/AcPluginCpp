@@ -72,5 +72,8 @@
 #include "BasicTools.h"
 #include "StyleTools.h"
 #include "SelectEntitys.h"
+
+#include "InputValue.h"
+#include "AddToModelSpace.h"
 #pragma pack(pop)
 

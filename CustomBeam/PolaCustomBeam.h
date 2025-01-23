@@ -108,7 +108,7 @@ private:
 	AcGePoint3dArray top_offset_vertex_;
 	AcGePoint3dArray bottom_offset_vertex_;
 
-	Adesk::Int32 vertexes_num_ = 0;						// store number of vertexes.
+	Adesk::Int32 vertexes_num_ = 0;					// store number of vertexes.
 
 	double beam_b_;								    // store width of beam.	
 	double beam_h_;								    // store height of beam.
@@ -138,7 +138,11 @@ public:
 	void addViewableAt(const int index, const Adesk::Int32 viewable);
 	void UpdateOffsetLine();
 	//          
+	static void PickCenterPointDrawBeam(CPolaCustomBeam* beam);
+	static void PickTopPointDrawBeam(CPolaCustomBeam* beam);
+	static void PickBottomPointDrawBeam(CPolaCustomBeam* beam);
 
+	// 
 };
 
 #ifdef CUSTOMBEAM_MODULE

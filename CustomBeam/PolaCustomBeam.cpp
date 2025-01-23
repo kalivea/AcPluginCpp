@@ -168,7 +168,6 @@ Acad::ErrorStatus CPolaCustomBeam::dwgInFields(AcDbDwgFiler * pFiler) {
 //----- AcDbEntity protocols
 Adesk::Boolean CPolaCustomBeam::subWorldDraw(AcGiWorldDraw * mode) {
 	assertReadEnabled();
-	//UpdateOffsetLine();
 	if (vertexes_num_ < 2)
 	{
 		return AcDbEntity::subWorldDraw(mode);
@@ -439,5 +438,57 @@ void CPolaCustomBeam::UpdateOffsetLine()
 	{
 		top_offset_vertex_.append(temp_top.at(i));
 		bottom_offset_vertex_.append(temp_bottom.at(i));
+	}
+}
+
+void CPolaCustomBeam::PickCenterPointDrawBeam(CPolaCustomBeam* beam)
+{
+	int index = 2;
+	TCHAR keyword[256] = { 0 };
+	beam->addViewableAt(0, 0);
+	AcGePoint3d start_point;
+	if (!SelectEntitys::PickPoint(_T("pick first point:\n"), start_point))
+	{
+		throw;
+	}
+	AcGePoint3d previous_point, current_point;
+	previous_point = start_point;
+	AcDbObjectId beam_id = AcDbObjectId::kNull;
+	while (SelectEntitys::PickPoint(_T("pick next point:\n"), start_point, current_point))
+	{
+		if (index == 2)
+		{
+			beam->addVertexAt(0, previous_point);
+			beam->addVertexAt(1, current_point);
+			InputValue::GetKeyword(_T("Please enter the visibility of the beam segment: [Visible/Invisible]"), _T("Visible Invisible"), keyword, sizeof(keyword) / sizeof(keyword[0]));
+			if (_tcscmp(keyword, _T("Visible")) == 0)
+				beam->addViewableAt(index - 1, 1);
+			else if (_tcscmp(keyword, _T("Invisible")) == 0)
+				beam->addViewableAt(index - 1, 0);
+			else
+				throw;
+			beam_id = AddToModelSpace::AddEntityToModelSpace(beam);
+		}
+		else if (index > 2)
+		{
+			CPolaCustomBeam* beam = nullptr;
+			if (acdbOpenObject(beam, beam_id, OpenMode::kForWrite) == Acad::eOk)
+			{
+				beam->addVertexAt(index - 1, current_point);
+				InputValue::GetKeyword(_T("Please enter the visibility of the beam segment: [Visible/Invisible]"), _T("Visible Invisible"), keyword, sizeof(keyword) / sizeof(keyword[0]));
+				if (_tcscmp(keyword, _T("Visible")) == 0)
+					beam->addViewableAt(index - 1, 1);
+				else if (_tcscmp(keyword, _T("Invisible")) == 0)
+					beam->addViewableAt(index - 1, 0);
+				else
+					throw;
+				beam->close();
+			}
+		}
+		beam->recordGraphicsModified();
+		acedUpdateDisplay();
+		acutPrintf(_T("Now vertex cnt: %d\n"), beam->getVertexesNum());
+		previous_point = current_point;
+		index++;
 	}
 }

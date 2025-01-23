@@ -438,6 +438,13 @@ AcGeLine3d BasicTools::EntityToLine(const AcDbEntity* entity)
 		throw;
 	}
 }
+
+AcGePoint3d BasicTools::ProjectPointToLineSeg(const AcGePoint3d& point, const AcGeLineSeg3d& line_segment, const AcGeVector3d& project_dirction, const AcGeTol& tol)
+{
+	AcGePoint3d project_point = line_segment.projClosestPointTo(point, project_dirction, tol);
+	return project_point;
+}
+
 /// <summary>
 /// Grid modules: Calculate X direction point Array based on spacing.
 /// </summary>

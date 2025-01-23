@@ -20,7 +20,9 @@ bool InputValue::GetKeyword(const TCHAR* prompt, const TCHAR* keywords, TCHAR* r
 		return true;
 	}
 	case RTCAN:
+		acutPrintf(_T("\nUser cancels the operation\n"));
 	case RTNONE:
+		acutPrintf(_T("\nUser cancels the operation\n"));
 	default:
 		*result = _T('\0');
 		return false;

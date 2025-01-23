@@ -64,19 +64,19 @@ Acad::ErrorStatus CPolaCustomBeam::dwgOutFields(AcDbDwgFiler * pFiler) const {
 	es = pFiler->writeItem(vertexes_num_);
 	if (es != Acad::eOk)
 		return es;
-	for (int i = 0; i < vertexes_num_ - 1;i++)
+	for (int i = 0; i < vertexes_num_;i++)
 	{
 		es = pFiler->writeItem(beam_vertexes_.at(i));
 		if (es != Acad::eOk)
 			return es;
 	}
-	for (int i = 0;i < vertexes_num_ - 1;i++)
+	for (int i = 0;i < vertexes_num_;i++)
 	{
 		es = pFiler->writeItem(top_offset_vertex_.at(i));
 		if (es != Acad::eOk)
 			return es;
 	}
-	for (int i = 0;i < vertexes_num_ - 1;i++)
+	for (int i = 0;i < vertexes_num_;i++)
 	{
 		es = pFiler->writeItem(bottom_offset_vertex_.at(i));
 		if (es != Acad::eOk)
@@ -88,7 +88,7 @@ Acad::ErrorStatus CPolaCustomBeam::dwgOutFields(AcDbDwgFiler * pFiler) const {
 	es = pFiler->writeItem(beam_h_);
 	if (es != Acad::eOk)
 		return es;
-	for (int i = 0; i < vertexes_num_ - 2;i++)
+	for (int i = 0; i < vertexes_num_;i++)
 	{
 		es = pFiler->writeItem(beam_viewable_.at(i));
 		if (es != Acad::eOk)
@@ -118,22 +118,28 @@ Acad::ErrorStatus CPolaCustomBeam::dwgInFields(AcDbDwgFiler * pFiler) {
 	//	return (Acad::eMakeMeProxy) ;
 	//----- Read params
 	//.....
+
 	es = pFiler->readItem(&vertexes_num_);
 	if (es != Acad::eOk)
 		return es;
-	for (int i = 0; i < vertexes_num_ - 1; i++)
+	if (vertexes_num_ < 2)
+		return Acad::eInvalidInput;
+	beam_vertexes_.setLogicalLength(vertexes_num_);
+	top_offset_vertex_.setLogicalLength(vertexes_num_);
+	bottom_offset_vertex_.setLogicalLength(vertexes_num_);
+	for (int i = 0; i < vertexes_num_; i++)
 	{
 		es = pFiler->readItem(&beam_vertexes_.at(i));
 		if (es != Acad::eOk)
 			return es;
 	}
-	for (int i = 0; i < vertexes_num_ - 1; i++)
+	for (int i = 0; i < vertexes_num_; i++)
 	{
 		es = pFiler->readItem(&top_offset_vertex_.at(i));
 		if (es != Acad::eOk)
 			return es;
 	}
-	for (int i = 0; i < vertexes_num_ - 1; i++)
+	for (int i = 0; i < vertexes_num_; i++)
 	{
 		es = pFiler->readItem(&bottom_offset_vertex_.at(i));
 		if (es != Acad::eOk)
@@ -145,7 +151,8 @@ Acad::ErrorStatus CPolaCustomBeam::dwgInFields(AcDbDwgFiler * pFiler) {
 	es = pFiler->readItem(&beam_h_);
 	if (es != Acad::eOk)
 		return es;
-	for (int i = 0; i < vertexes_num_ - 1; i++)
+	beam_viewable_.resize(vertexes_num_);
+	for (int i = 0; i < vertexes_num_; i++)
 	{
 		es = pFiler->readItem(&beam_viewable_.at(i));
 		if (es != Acad::eOk)
@@ -161,8 +168,11 @@ Acad::ErrorStatus CPolaCustomBeam::dwgInFields(AcDbDwgFiler * pFiler) {
 //----- AcDbEntity protocols
 Adesk::Boolean CPolaCustomBeam::subWorldDraw(AcGiWorldDraw * mode) {
 	assertReadEnabled();
-	UpdateOffsetLine();
-
+	//UpdateOffsetLine();
+	if (vertexes_num_ < 2)
+	{
+		return AcDbEntity::subWorldDraw(mode);
+	}
 	for (int i = 0;i < vertexes_num_ - 1;i++)
 	{
 		AcGePoint3d center_line_segment_start = beam_vertexes_.at(i);
@@ -387,6 +397,7 @@ void CPolaCustomBeam::setBeamProperty(const Adesk::Int32 & beam_property)
 
 void CPolaCustomBeam::addVertexAt(const int& index, const AcGePoint3d & vertex)
 {
+	assertWriteEnabled();
 	beam_vertexes_.insertAt(index, vertex);
 	vertexes_num_++;
 	if (index > 0)
@@ -397,6 +408,7 @@ void CPolaCustomBeam::addVertexAt(const int& index, const AcGePoint3d & vertex)
 
 void CPolaCustomBeam::addViewableAt(const int index, const Adesk::Int32 viewable)
 {
+	assertWriteEnabled();
 	if (viewable == 0 || viewable == 1)
 	{
 		if (index == 0)
@@ -417,8 +429,15 @@ void CPolaCustomBeam::addViewableAt(const int index, const Adesk::Int32 viewable
 
 void CPolaCustomBeam::UpdateOffsetLine()
 {
+	assertWriteEnabled();
 	top_offset_vertex_.removeAll();
 	bottom_offset_vertex_.removeAll();
-	BasicTools::OffsetPolyLine(beam_vertexes_, 0.5 * beam_b_, top_offset_vertex_);
-	BasicTools::OffsetPolyLine(beam_vertexes_, -0.5 * beam_b_, bottom_offset_vertex_);
+	AcGePoint3dArray temp_top, temp_bottom;
+	BasicTools::OffsetPolyLine(beam_vertexes_, 0.5 * beam_b_, temp_top);
+	BasicTools::OffsetPolyLine(beam_vertexes_, -0.5 * beam_b_, temp_bottom);
+	for (int i = 0; i < temp_top.length(); i++)
+	{
+		top_offset_vertex_.append(temp_top.at(i));
+		bottom_offset_vertex_.append(temp_bottom.at(i));
+	}
 }

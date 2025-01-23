@@ -420,17 +420,17 @@ void TestClass::Test()
 	AcDbObjectId beam_id = AcDbObjectId::kNull;
 	while (SelectEntitys::PickPoint(_T("pick next point:\n"), start_point, current_point))
 	{
-		InputValue::GetKeyword(_T("Please enter the visibility of the beam segment: [Visible/Invisible]"), _T("Visible Invisible"), keyword, sizeof(keyword) / sizeof(keyword[0]));
-		if (_tcscmp(keyword, _T("Visible")) == 0)
-			beam->addViewableAt(index - 1, 1);
-		else if (_tcscmp(keyword, _T("Invisible")) == 0)
-			beam->addViewableAt(index - 1, 0);
-		else
-			throw;
 		if (index == 2)
 		{
 			beam->addVertexAt(0, previous_point);
 			beam->addVertexAt(1, current_point);
+			InputValue::GetKeyword(_T("Please enter the visibility of the beam segment: [Visible/Invisible]"), _T("Visible Invisible"), keyword, sizeof(keyword) / sizeof(keyword[0]));
+			if (_tcscmp(keyword, _T("Visible")) == 0)
+				beam->addViewableAt(index - 1, 1);
+			else if (_tcscmp(keyword, _T("Invisible")) == 0)
+				beam->addViewableAt(index - 1, 0);
+			else
+				throw;
 			beam_id = AddToModelSpace::AddEntityToModelSpace(beam);
 		}
 		else if (index > 2)
@@ -439,6 +439,13 @@ void TestClass::Test()
 			if (acdbOpenObject(beam, beam_id, OpenMode::kForWrite) == Acad::eOk)
 			{
 				beam->addVertexAt(index - 1, current_point);
+				InputValue::GetKeyword(_T("Please enter the visibility of the beam segment: [Visible/Invisible]"), _T("Visible Invisible"), keyword, sizeof(keyword) / sizeof(keyword[0]));
+				if (_tcscmp(keyword, _T("Visible")) == 0)
+					beam->addViewableAt(index - 1, 1);
+				else if (_tcscmp(keyword, _T("Invisible")) == 0)
+					beam->addViewableAt(index - 1, 0);
+				else
+					throw;
 				beam->close();
 			}
 		}

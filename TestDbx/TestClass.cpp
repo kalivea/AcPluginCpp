@@ -445,12 +445,12 @@ void TestClass::Test()
 		index++;
 	}*/
 //------------------------------------------------------------------------
-	/*CPolaCustomBeam* beam = new CPolaCustomBeam();
+	CPolaCustomBeam* beam = new CPolaCustomBeam();
 	beam->setBeamWidth(1200);
 	beam->setBeamHeight(1500);
-	beam->setBeamProperty(1);*/
+	beam->setBeamProperty(1);
 //-------------------------------------------------------------------------
-	//CPolaCustomBeam::PickCenterPointDrawBeam(beam);
+	CPolaCustomBeam::PickCenterPointDrawBeam(beam);
 	//CPolaCustomBeam::PickTopPointDrawBeam(beam);
 	//CPolaCustomBeam::PickBottomPointDrawBeam(beam);
 //---------------------------------------------------------------------------

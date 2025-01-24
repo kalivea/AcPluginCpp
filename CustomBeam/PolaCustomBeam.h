@@ -133,11 +133,11 @@ public:
 	void setBeamProperty(const Adesk::Int32& beam_property);
 
 	//			add a single centerline vertex, calculate the offset line veretx.
-private:	
+private:
 	void addVertexAt(const int& index, const AcGePoint3d& vertex);
 	void addViewableAt(const int index, const Adesk::Int32 viewable);
 	void UpdateOffsetLine(const double& distance);
-	
+
 	// 
 public:
 	static void PickCenterPointDrawBeam(CPolaCustomBeam* beam);
@@ -145,6 +145,8 @@ public:
 	static void PickBottomPointDrawBeam(CPolaCustomBeam* beam);
 
 	// 
+private:
+	static void appendOsnapPoints(AcGePoint3dArray& destination_points, AcDbIntArray& destination_ids, const AcGePoint3dArray& source_points, const AcDbIntArray& source_ids, int id_offset);
 };
 
 #ifdef CUSTOMBEAM_MODULE

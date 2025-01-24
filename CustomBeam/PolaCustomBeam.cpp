@@ -190,26 +190,26 @@ Adesk::Boolean CPolaCustomBeam::subWorldDraw(AcGiWorldDraw * mode) {
 		{
 			mode->subEntityTraits().setLineType(StyleTools::GetLineStyleId(_T("DASHED")));
 			mode->subEntityTraits().setLineTypeScale(700);
-			mode->subEntityTraits().setSelectionMarker(1);				// set top line GsMarker = 1
+			mode->subEntityTraits().setSelectionMarker(1 + i);				// set top line GsMarker = 1-2000;
 			temp_top_line.worldDraw(mode);
-			mode->subEntityTraits().setSelectionMarker(3);				// set bottom line GsMarker = 3
+			mode->subEntityTraits().setSelectionMarker(4000 + 1 + i);				// set bottom line GsMarker = 4001-6000
 			temp_bottom_line.worldDraw(mode);
 
 			mode->subEntityTraits().setLineType(StyleTools::GetLineStyleId(_T("CENTER")));
-			mode->subEntityTraits().setSelectionMarker(2);				// set center line GsMarker = 2
+			mode->subEntityTraits().setSelectionMarker(2000 + 1 + i);				// set center line GsMarker = 2001-4000
 			temp_center_line.worldDraw(mode);
 		}
 		else if (beam_viewable_.at(i + 1) == 1)
 		{
 			mode->subEntityTraits().setLineType(StyleTools::GetLineStyleId(_T("CONTINUOUS")));
-			mode->subEntityTraits().setSelectionMarker(1);				// set top line GsMarker = 1
+			mode->subEntityTraits().setSelectionMarker(1 + i);				// set top line GsMarker
 			temp_top_line.worldDraw(mode);
-			mode->subEntityTraits().setSelectionMarker(3);				// set bottom line GsMarker = 3
+			mode->subEntityTraits().setSelectionMarker(4000 + 1 + i);				// set bottom line GsMarker
 			temp_bottom_line.worldDraw(mode);
 
 			mode->subEntityTraits().setLineType(StyleTools::GetLineStyleId(_T("CENTER")));
 			mode->subEntityTraits().setLineTypeScale(700);
-			mode->subEntityTraits().setSelectionMarker(2);				// set center line GsMarker = 2
+			mode->subEntityTraits().setSelectionMarker(2000 + 1 + i);				// set center line GsMarker
 			temp_center_line.worldDraw(mode);
 		}
 		else
@@ -219,7 +219,6 @@ Adesk::Boolean CPolaCustomBeam::subWorldDraw(AcGiWorldDraw * mode) {
 	}
 	return (AcDbEntity::subWorldDraw(mode));
 }
-
 
 Adesk::UInt32 CPolaCustomBeam::subSetAttributes(AcGiDrawableTraits * traits) {
 	assertReadEnabled();
@@ -238,36 +237,43 @@ Acad::ErrorStatus CPolaCustomBeam::subGetOsnapPoints(
 {
 	assertReadEnabled();
 	Acad::ErrorStatus error_status;
-	AcDbPolyline* center_poly_line = new AcDbPolyline();
-	AcDbPolyline* top_poly_line = new AcDbPolyline();
-	AcDbPolyline* bottom_poly_line = new AcDbPolyline();
-	for (int i = 0;i < vertexes_num_;i++)
-	{
-		center_poly_line->addVertexAt(i, BasicTools::Point3dToPoint2d(beam_vertexes_.at(i)));
-	}
-	error_status = center_poly_line->getOsnapPoints(osnapMode, gsSelectionMark, pickPoint, lastPoint, viewXform, snapPoints, geomIds);
-	if (error_status != Acad::eOk)
-		return error_status;
 
-	for (int i = 0;i < vertexes_num_;i++)
-	{
-		top_poly_line->addVertexAt(i, BasicTools::Point3dToPoint2d(beam_vertexes_.at(i)));
-	}
-	error_status = top_poly_line->getOsnapPoints(osnapMode, gsSelectionMark, pickPoint, lastPoint, viewXform, snapPoints, geomIds);
-	if (error_status != Acad::eOk)
-		return error_status;
+	AcDbLine* top_line_segment = new AcDbLine();
+	AcDbLine* bottom_line_segment = new AcDbLine();
 
-	for (int i = 0;i < vertexes_num_;i++)
+	if (gsSelectionMark > 0 && gsSelectionMark < 2000)					// top line 
 	{
-		bottom_poly_line->addVertexAt(i, BasicTools::Point3dToPoint2d(beam_vertexes_.at(i)));
-	}
-	error_status = bottom_poly_line->getOsnapPoints(osnapMode, gsSelectionMark, pickPoint, lastPoint, viewXform, snapPoints, geomIds);
-	if (error_status != Acad::eOk)
-		return error_status;
+		for (int i = 0;i < vertexes_num_ - 1;i++)
+		{
+			top_line_segment->setStartPoint(top_offset_vertex_.at(i));
+			top_line_segment->setEndPoint(top_offset_vertex_.at(i + 1));
 
-	delete center_poly_line;
-	delete top_poly_line;
-	delete bottom_poly_line;
+			AcGePoint3dArray top_line_segment_points;
+			AcDbIntArray top_line_segment_geomIds;
+			error_status = top_line_segment->getOsnapPoints(osnapMode, i + 1, pickPoint, lastPoint, viewXform, top_line_segment_points, top_line_segment_geomIds);
+			if (error_status != Acad::eOk)
+				return error_status;
+			appendOsnapPoints(snapPoints, geomIds, top_line_segment_points, top_line_segment_geomIds, 0);
+
+		}
+	}
+	else if (gsSelectionMark > 4000 && gsSelectionMark < 6000)		// bottom line
+	{
+		for (int i = 0;i < vertexes_num_ - 1;i++)
+		{
+			bottom_line_segment->setStartPoint(bottom_offset_vertex_.at(i));
+			bottom_line_segment->setEndPoint(bottom_offset_vertex_.at(i + 1));
+
+			AcGePoint3dArray bottom_line_segment_points;
+			AcDbIntArray bottom_line_segment_geomIds;
+			error_status = bottom_line_segment->getOsnapPoints(osnapMode, 4000 + i + 1, pickPoint, lastPoint, viewXform, bottom_line_segment_points, bottom_line_segment_geomIds);
+			if (error_status != Acad::eOk)
+				return error_status;
+			appendOsnapPoints(snapPoints, geomIds, bottom_line_segment_points, bottom_line_segment_geomIds, 4000);
+		}
+	}
+	delete top_line_segment;
+	delete bottom_line_segment;
 
 	return Acad::eOk;
 }
@@ -632,5 +638,14 @@ void CPolaCustomBeam::PickBottomPointDrawBeam(CPolaCustomBeam * beam)
 		acutPrintf(_T("Now vertex cnt: %d\n"), beam->getVertexesNum());
 		previous_point = current_point;
 		index++;
+	}
+}
+
+void CPolaCustomBeam::appendOsnapPoints(AcGePoint3dArray & destination_points, AcDbIntArray & destination_ids, const AcGePoint3dArray & source_points, const AcDbIntArray & source_ids, int id_offset)
+{
+	for (int i = 0;i < source_points.length();i++)
+	{
+		destination_points.append(source_points.at(i));
+		destination_ids.append(source_ids.at(i) + id_offset);
 	}
 }

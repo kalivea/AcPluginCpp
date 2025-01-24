@@ -190,20 +190,26 @@ Adesk::Boolean CPolaCustomBeam::subWorldDraw(AcGiWorldDraw * mode) {
 		{
 			mode->subEntityTraits().setLineType(StyleTools::GetLineStyleId(_T("DASHED")));
 			mode->subEntityTraits().setLineTypeScale(700);
+			mode->subEntityTraits().setSelectionMarker(1);				// set top line GsMarker = 1
 			temp_top_line.worldDraw(mode);
+			mode->subEntityTraits().setSelectionMarker(3);				// set bottom line GsMarker = 3
 			temp_bottom_line.worldDraw(mode);
 
 			mode->subEntityTraits().setLineType(StyleTools::GetLineStyleId(_T("CENTER")));
+			mode->subEntityTraits().setSelectionMarker(2);				// set center line GsMarker = 2
 			temp_center_line.worldDraw(mode);
 		}
 		else if (beam_viewable_.at(i + 1) == 1)
 		{
 			mode->subEntityTraits().setLineType(StyleTools::GetLineStyleId(_T("CONTINUOUS")));
+			mode->subEntityTraits().setSelectionMarker(1);				// set top line GsMarker = 1
 			temp_top_line.worldDraw(mode);
+			mode->subEntityTraits().setSelectionMarker(3);				// set bottom line GsMarker = 3
 			temp_bottom_line.worldDraw(mode);
 
 			mode->subEntityTraits().setLineType(StyleTools::GetLineStyleId(_T("CENTER")));
 			mode->subEntityTraits().setLineTypeScale(700);
+			mode->subEntityTraits().setSelectionMarker(2);				// set center line GsMarker = 2
 			temp_center_line.worldDraw(mode);
 		}
 		else
@@ -231,14 +237,38 @@ Acad::ErrorStatus CPolaCustomBeam::subGetOsnapPoints(
 	AcDbIntArray & geomIds) const
 {
 	assertReadEnabled();
-	//Acad::ErrorStatus error_status;
-	//AcDbPolyline* poly_line = new AcDbPolyline();
-	//for (int i = 0;i < vertexes_num_;i++)
-	//{
-	//	poly_line->addVertexAt(i, BasicTools::Point3dToPoint2d(beam_vertexes_.at(i)));
-	//}
-	//error_status = poly_line->getOsnapPoints(osnapMode, gsSelectionMark, pickPoint, lastPoint, viewXform, snapPoints, geomIds);
-	//return error_status;
+	Acad::ErrorStatus error_status;
+	AcDbPolyline* center_poly_line = new AcDbPolyline();
+	AcDbPolyline* top_poly_line = new AcDbPolyline();
+	AcDbPolyline* bottom_poly_line = new AcDbPolyline();
+	for (int i = 0;i < vertexes_num_;i++)
+	{
+		center_poly_line->addVertexAt(i, BasicTools::Point3dToPoint2d(beam_vertexes_.at(i)));
+	}
+	error_status = center_poly_line->getOsnapPoints(osnapMode, gsSelectionMark, pickPoint, lastPoint, viewXform, snapPoints, geomIds);
+	if (error_status != Acad::eOk)
+		return error_status;
+
+	for (int i = 0;i < vertexes_num_;i++)
+	{
+		top_poly_line->addVertexAt(i, BasicTools::Point3dToPoint2d(beam_vertexes_.at(i)));
+	}
+	error_status = top_poly_line->getOsnapPoints(osnapMode, gsSelectionMark, pickPoint, lastPoint, viewXform, snapPoints, geomIds);
+	if (error_status != Acad::eOk)
+		return error_status;
+
+	for (int i = 0;i < vertexes_num_;i++)
+	{
+		bottom_poly_line->addVertexAt(i, BasicTools::Point3dToPoint2d(beam_vertexes_.at(i)));
+	}
+	error_status = bottom_poly_line->getOsnapPoints(osnapMode, gsSelectionMark, pickPoint, lastPoint, viewXform, snapPoints, geomIds);
+	if (error_status != Acad::eOk)
+		return error_status;
+
+	delete center_poly_line;
+	delete top_poly_line;
+	delete bottom_poly_line;
+
 	return Acad::eOk;
 }
 
@@ -493,7 +523,7 @@ void CPolaCustomBeam::PickCenterPointDrawBeam(CPolaCustomBeam * beam)
 	}
 }
 
-void CPolaCustomBeam::PickTopPointDrawBeam(CPolaCustomBeam* beam)
+void CPolaCustomBeam::PickTopPointDrawBeam(CPolaCustomBeam * beam)
 {
 	int index = 2;
 	TCHAR keyword[256] = { 0 };

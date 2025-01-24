@@ -249,6 +249,27 @@ bool BasicTools::OffsetPolyLine(const AcGePoint3dArray& center_array, const doub
 	return OffsetPolyLine(*poly_line, distance, offset_vertex_array);
 }
 
+bool BasicTools::OffsetLineSegment(const AcGePoint3d& start_point, const AcGePoint3d& end_point, const double& distance, AcGePoint3d out_point[2])
+{
+	AcGePoint3dArray temp_center_array;
+	AcGePoint3dArray temp_offset_array;
+
+	temp_center_array.append(start_point);
+	temp_center_array.append(end_point);
+
+	if (OffsetPolyLine(temp_center_array, distance, temp_offset_array))
+	{
+		out_point[0] = temp_offset_array.at(0);
+		out_point[1] = temp_offset_array.at(1);
+		return true;
+	}
+	else
+	{
+		throw;
+	}
+	return false;
+}
+
 bool BasicTools::IsIntersectRectangle(const AcGePoint3d& vertex_point1, const AcGePoint3d& vertex_point2, const AcGePoint3d& vertex_point3, const AcGePoint3d& vertex_point4)
 {
 	double rect1_min_x = BasicTools::Min(vertex_point1.x, vertex_point2.x);
@@ -439,10 +460,16 @@ AcGeLine3d BasicTools::EntityToLine(const AcDbEntity* entity)
 	}
 }
 
-AcGePoint3d BasicTools::ProjectPointToLineSeg(const AcGePoint3d& point, const AcGeLineSeg3d& line_segment, const AcGeVector3d& project_dirction, const AcGeTol& tol)
+AcGePoint3d BasicTools::ProjectPointToLineSegment(const AcGePoint3d& point, const AcGeLineSeg3d& line_segment, const AcGeVector3d& project_dirction, const AcGeTol& tol)
 {
 	AcGePoint3d project_point = line_segment.projClosestPointTo(point, project_dirction, tol);
 	return project_point;
+}
+
+AcGePoint3d BasicTools::ProjectPointToLineSegment(const AcGePoint3d& point, const AcGePoint3d& start_point, const AcGePoint3d& end_point, const AcGeVector3d& project_dirction, const AcGeTol& tol)
+{
+	AcGeLineSeg3d line_segment(start_point, end_point);
+	return ProjectPointToLineSegment(point, line_segment, project_dirction, tol);
 }
 
 /// <summary>

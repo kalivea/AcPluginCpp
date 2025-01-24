@@ -278,8 +278,8 @@ void TestClass::Test()
 	//}
 #pragma endregion
 #pragma region Beam
-	//StyleTools::LoadLineType(_T("CENTER"), _T("acad.lin"));
-	//StyleTools::LoadLineType(_T("DASHED"), _T("acad.lin"));
+	StyleTools::LoadLineType(_T("CENTER"), _T("acad.lin"));
+	StyleTools::LoadLineType(_T("DASHED"), _T("acad.lin"));
 	/*AcGePoint3dArray vertexes;
 	for (int i = 0; i < 5; i++)
 	{
@@ -392,70 +392,77 @@ void TestClass::Test()
 		index++;
 	}*/
 
-	//CPolaCustomBeam* beam = new CPolaCustomBeam();
-	//beam->setBeamWidth(1200);
-	//beam->setBeamHeight(1500);
-	//beam->setBeamProperty(1);
-	//int index = 2;
-	//TCHAR keyword[256] = { 0 };
-	//beam->addViewableAt(0, 0);
-	//AcGePoint3d start_point;
-	//if (!SelectEntitys::PickPoint(_T("pick first point:\n"), start_point))
-	//{
-	//	throw;
-	//}
-	//AcGePoint3d previous_point, current_point;
-	//previous_point = start_point;
-	//AcDbObjectId beam_id = AcDbObjectId::kNull;
-	//while (SelectEntitys::PickPoint(_T("pick next point:\n"), start_point, current_point))
-	//{
-	//	if (index == 2)
-	//	{
-	//		beam->addVertexAt(0, previous_point);
-	//		beam->addVertexAt(1, current_point);
-	//		InputValue::GetKeyword(_T("Please enter the visibility of the beam segment: [Visible/Invisible]"), _T("Visible Invisible"), keyword, sizeof(keyword) / sizeof(keyword[0]));
-	//		if (_tcscmp(keyword, _T("Visible")) == 0)
-	//			beam->addViewableAt(index - 1, 1);
-	//		else if (_tcscmp(keyword, _T("Invisible")) == 0)
-	//			beam->addViewableAt(index - 1, 0);
-	//		else
-	//			throw;
-	//		beam_id = AddToModelSpace::AddEntityToModelSpace(beam);
-	//	}
-	//	else if (index > 2)
-	//	{
-	//		CPolaCustomBeam* beam = nullptr;
-	//		if (acdbOpenObject(beam, beam_id, OpenMode::kForWrite) == Acad::eOk)
-	//		{
-	//			beam->addVertexAt(index - 1, current_point);
-	//			InputValue::GetKeyword(_T("Please enter the visibility of the beam segment: [Visible/Invisible]"), _T("Visible Invisible"), keyword, sizeof(keyword) / sizeof(keyword[0]));
-	//			if (_tcscmp(keyword, _T("Visible")) == 0)
-	//				beam->addViewableAt(index - 1, 1);
-	//			else if (_tcscmp(keyword, _T("Invisible")) == 0)
-	//				beam->addViewableAt(index - 1, 0);
-	//			else
-	//				throw;
-	//			beam->close();
-	//		}
-	//	}
-	//	beam->recordGraphicsModified();
-	//	acedUpdateDisplay();
-	//	acutPrintf(_T("Now vertex cnt: %d\n"), beam->getVertexesNum());
-	//	previous_point = current_point;
-	//	index++;
-	//}
-	//CPolaCustomBeam* beam = new CPolaCustomBeam();
-	//beam->setBeamWidth(1200);
-	//beam->setBeamHeight(1500);
-	//beam->setBeamProperty(1);
+	/*CPolaCustomBeam* beam = new CPolaCustomBeam();
+	beam->setBeamWidth(1200);
+	beam->setBeamHeight(1500);
+	beam->setBeamProperty(1);
+	int index = 2;
+	TCHAR keyword[256] = { 0 };
+	beam->addViewableAt(0, 0);
+	AcGePoint3d start_point;
+	if (!SelectEntitys::PickPoint(_T("pick first point:\n"), start_point))
+	{
+		throw;
+	}
+	AcGePoint3d previous_point, current_point;
+	previous_point = start_point;
+	AcDbObjectId beam_id = AcDbObjectId::kNull;
+	while (SelectEntitys::PickPoint(_T("pick next point:\n"), start_point, current_point))
+	{
+		if (index == 2)
+		{
+			beam->addVertexAt(0, previous_point);
+			beam->addVertexAt(1, current_point);
+			InputValue::GetKeyword(_T("Please enter the visibility of the beam segment: [Visible/Invisible]"), _T("Visible Invisible"), keyword, sizeof(keyword) / sizeof(keyword[0]));
+			if (_tcscmp(keyword, _T("Visible")) == 0)
+				beam->addViewableAt(index - 1, 1);
+			else if (_tcscmp(keyword, _T("Invisible")) == 0)
+				beam->addViewableAt(index - 1, 0);
+			else
+				throw;
+			beam_id = AddToModelSpace::AddEntityToModelSpace(beam);
+		}
+		else if (index > 2)
+		{
+			CPolaCustomBeam* beam = nullptr;
+			if (acdbOpenObject(beam, beam_id, OpenMode::kForWrite) == Acad::eOk)
+			{
+				beam->addVertexAt(index - 1, current_point);
+				InputValue::GetKeyword(_T("Please enter the visibility of the beam segment: [Visible/Invisible]"), _T("Visible Invisible"), keyword, sizeof(keyword) / sizeof(keyword[0]));
+				if (_tcscmp(keyword, _T("Visible")) == 0)
+					beam->addViewableAt(index - 1, 1);
+				else if (_tcscmp(keyword, _T("Invisible")) == 0)
+					beam->addViewableAt(index - 1, 0);
+				else
+					throw;
+				beam->close();
+			}
+		}
+		beam->recordGraphicsModified();
+		acedUpdateDisplay();
+		acutPrintf(_T("Now vertex cnt: %d\n"), beam->getVertexesNum());
+		previous_point = current_point;
+		index++;
+	}*/
+//------------------------------------------------------------------------
+	/*CPolaCustomBeam* beam = new CPolaCustomBeam();
+	beam->setBeamWidth(1200);
+	beam->setBeamHeight(1500);
+	beam->setBeamProperty(1);*/
+//-------------------------------------------------------------------------
 	//CPolaCustomBeam::PickCenterPointDrawBeam(beam);
+	//CPolaCustomBeam::PickTopPointDrawBeam(beam);
+	//CPolaCustomBeam::PickBottomPointDrawBeam(beam);
+//---------------------------------------------------------------------------
 #pragma endregion
 #pragma region proj
-	AcGePoint3d start_point(0, 0, 0);
-	AcGePoint3d end_point(100, 100, 0);
-	AcGeLineSeg3d line_seg(start_point, end_point);
+	//AcGePoint3d start_point(0, 0, 0);
+	//AcGePoint3d end_point(100, 100, 0);
+	//AcGeLineSeg3d line_seg(start_point, end_point);
 
-	AcGePoint3d pt(80, 10, 0);
-	EditEntity::SetColor(DrawEntity::DrawLine(start_point, end_point), 8);
-	EditEntity::SetColor(DrawEntity::DrawLine(pt, BasicTools::ProjectPointToLineSeg(pt, line_seg)), 1);
+	//AcGePoint3d pt(80, 10, 0);
+	//EditEntity::SetColor(DrawEntity::DrawLine(start_point, end_point), 8);
+	//EditEntity::SetColor(DrawEntity::DrawLine(pt, BasicTools::ProjectPointToLineSeg(pt, line_seg, AcGeVector3d(0, 1, 0))), 1);
+#pragma endregion
+
 }

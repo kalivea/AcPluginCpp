@@ -116,7 +116,6 @@ private:
 	std::vector<Adesk::Int32> beam_viewable_;		// store viewable of beam.
 	Adesk::Int32 beam_property_;					// store property of beam.
 
-
 public:
 	//           get functions
 	AcGePoint3dArray getBeamVertexes() const;
@@ -134,10 +133,13 @@ public:
 	void setBeamProperty(const Adesk::Int32& beam_property);
 
 	//			add a single centerline vertex, calculate the offset line veretx.
+private:	
 	void addVertexAt(const int& index, const AcGePoint3d& vertex);
 	void addViewableAt(const int index, const Adesk::Int32 viewable);
-	void UpdateOffsetLine();
-	//          
+	void UpdateOffsetLine(const double& distance);
+	
+	// 
+public:
 	static void PickCenterPointDrawBeam(CPolaCustomBeam* beam);
 	static void PickTopPointDrawBeam(CPolaCustomBeam* beam);
 	static void PickBottomPointDrawBeam(CPolaCustomBeam* beam);

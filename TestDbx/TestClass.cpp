@@ -450,9 +450,10 @@ void TestClass::Test()
 	beam->setBeamHeight(1500);
 	beam->setBeamProperty(1);
 //-------------------------------------------------------------------------
-	CPolaCustomBeam::PickCenterPointDrawBeam(beam);
+	//CPolaCustomBeam::PickCenterPointDrawBeam(beam);
 	//CPolaCustomBeam::PickTopPointDrawBeam(beam);
-	//CPolaCustomBeam::PickBottomPointDrawBeam(beam);
+	CPolaCustomBeam::PickBottomPointDrawBeam(beam);
+
 //---------------------------------------------------------------------------
 #pragma endregion
 #pragma region proj

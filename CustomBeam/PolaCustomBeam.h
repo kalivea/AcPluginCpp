@@ -137,7 +137,7 @@ private:
 	void addVertexAt(const int& index, const AcGePoint3d& vertex);
 	void addViewableAt(const int index, const Adesk::Int32 viewable);
 	void UpdateOffsetLine(const double& distance);
-
+	static void DrawBeamWithOffset(CPolaCustomBeam* beam,const double offset_distance);
 	// 
 public:
 	static void PickCenterPointDrawBeam(CPolaCustomBeam* beam);
@@ -147,6 +147,7 @@ public:
 	// 
 public:
 	virtual Acad::ErrorStatus subTransformBy(const AcGeMatrix3d& xfrom);
+	virtual Acad::ErrorStatus subGetGeomExtents(AcDbExtents& extents) const;
 };
 
 #ifdef CUSTOMBEAM_MODULE

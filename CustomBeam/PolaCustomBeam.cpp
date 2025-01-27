@@ -490,168 +490,103 @@ void CPolaCustomBeam::UpdateOffsetLine(const double& distance)
 	}
 }
 
-void CPolaCustomBeam::PickCenterPointDrawBeam(CPolaCustomBeam * beam)
+void CPolaCustomBeam::DrawBeamWithOffset(CPolaCustomBeam * beam, const double offset_distance)
 {
 	int index = 2;
 	TCHAR keyword[256] = { 0 };
 	beam->addViewableAt(0, 0);
 	AcGePoint3d start_point;
-	if (!SelectEntitys::PickPoint(_T("pick first point:\n"), start_point))
+
+	if (!SelectEntitys::PickPoint(_T("Pick first point:\n"), start_point))
 	{
 		throw;
 	}
-	AcGePoint3d previous_point, current_point;
-	previous_point = start_point;
+
+	AcGePoint3d previous_point = start_point;
+	AcGePoint3d current_point;
 	AcDbObjectId beam_id = AcDbObjectId::kNull;
-	while (SelectEntitys::PickPoint(_T("pick next point:\n"), start_point, current_point))
+
+	while (SelectEntitys::PickPoint(_T("Pick next point:\n"), start_point, current_point))
 	{
 		if (index == 2)
 		{
-			beam->addVertexAt(0, previous_point);
-			beam->addVertexAt(1, current_point);
-			InputValue::GetKeyword(_T("Please enter the visibility of the beam segment: [Visible/Invisible]"), _T("Visible Invisible"), keyword, sizeof(keyword) / sizeof(keyword[0]));
+			if (offset_distance != 0.0)
+			{
+				AcGePoint3d temp_point[2];
+				BasicTools::OffsetLineSegment(start_point, current_point, offset_distance, temp_point);
+				beam->addVertexAt(0, temp_point[0]);
+				beam->addVertexAt(1, temp_point[1]);
+			}
+			else
+			{
+				beam->addVertexAt(0, previous_point);
+				beam->addVertexAt(1, current_point);
+			}
+
+			InputValue::GetKeyword(
+				_T("Please enter the visibility of the beam segment: [Visible/Invisible]"),
+				_T("Visible Invisible"), keyword, sizeof(keyword) / sizeof(TCHAR));
+
 			if (_tcscmp(keyword, _T("Visible")) == 0)
 				beam->addViewableAt(index - 1, 1);
 			else if (_tcscmp(keyword, _T("Invisible")) == 0)
 				beam->addViewableAt(index - 1, 0);
 			else
 				throw;
+
 			beam_id = AddToModelSpace::AddEntityToModelSpace(beam);
 		}
 		else if (index > 2)
 		{
 			CPolaCustomBeam* beam = nullptr;
-			if (acdbOpenObject(beam, beam_id, OpenMode::kForWrite) == Acad::eOk)
+			if (acdbOpenObject(beam, beam_id, AcDb::kForWrite) == Acad::eOk)
 			{
-				beam->addVertexAt(index - 1, current_point);
-				InputValue::GetKeyword(_T("Please enter the visibility of the beam segment: [Visible/Invisible]"), _T("Visible Invisible"), keyword, sizeof(keyword) / sizeof(keyword[0]));
+				if (offset_distance != 0.0)
+				{
+					AcGePoint3d temp_point[2];
+					BasicTools::OffsetLineSegment(previous_point, current_point, offset_distance, temp_point);
+					beam->addVertexAt(index - 1, temp_point[1]);
+				}
+				else
+				{
+					beam->addVertexAt(index - 1, current_point);
+				}
+
+				InputValue::GetKeyword(
+					_T("Please enter the visibility of the beam segment: [Visible/Invisible]"),
+					_T("Visible Invisible"), keyword, sizeof(keyword) / sizeof(TCHAR));
+
 				if (_tcscmp(keyword, _T("Visible")) == 0)
 					beam->addViewableAt(index - 1, 1);
 				else if (_tcscmp(keyword, _T("Invisible")) == 0)
 					beam->addViewableAt(index - 1, 0);
 				else
 					throw;
+
 				beam->close();
 			}
 		}
 		beam->recordGraphicsModified();
 		acedUpdateDisplay();
-		acutPrintf(_T("Now vertex cnt: %d\n"), beam->getVertexesNum());
+
 		previous_point = current_point;
 		index++;
 	}
+}
+
+void CPolaCustomBeam::PickCenterPointDrawBeam(CPolaCustomBeam * beam)
+{
+	DrawBeamWithOffset(beam, 0);
 }
 
 void CPolaCustomBeam::PickTopPointDrawBeam(CPolaCustomBeam * beam)
 {
-	int index = 2;
-	TCHAR keyword[256] = { 0 };
-	beam->addViewableAt(0, 0);
-	AcGePoint3d start_point;
-	if (!SelectEntitys::PickPoint(_T("pick first point:\n"), start_point))
-	{
-		throw;
-	}
-	AcGePoint3d previous_point, current_point;
-	previous_point = start_point;
-	AcDbObjectId beam_id = AcDbObjectId::kNull;
-	while (SelectEntitys::PickPoint(_T("pick next point:\n"), start_point, current_point))
-	{
-		if (index == 2)
-		{
-			AcGePoint3d temp_point[2];
-			BasicTools::OffsetLineSegment(start_point, current_point, beam->getBeamWidth() * 0.5, temp_point);
-			beam->addVertexAt(0, temp_point[0]);
-			beam->addVertexAt(1, temp_point[1]);
-			InputValue::GetKeyword(_T("Please enter the visibility of the beam segment: [Visible/Invisible]"), _T("Visible Invisible"), keyword, sizeof(keyword) / sizeof(keyword[0]));
-			if (_tcscmp(keyword, _T("Visible")) == 0)
-				beam->addViewableAt(index - 1, 1);
-			else if (_tcscmp(keyword, _T("Invisible")) == 0)
-				beam->addViewableAt(index - 1, 0);
-			else
-				throw;
-			beam_id = AddToModelSpace::AddEntityToModelSpace(beam);
-		}
-		else if (index > 2)
-		{
-			CPolaCustomBeam* beam = nullptr;
-			if (acdbOpenObject(beam, beam_id, OpenMode::kForWrite) == Acad::eOk)
-			{
-				AcGePoint3d temp_point[2];
-				BasicTools::OffsetLineSegment(previous_point, current_point, beam->getBeamWidth() * 0.5, temp_point);
-				beam->addVertexAt(index - 1, temp_point[1]);
-				InputValue::GetKeyword(_T("Please enter the visibility of the beam segment: [Visible/Invisible]"), _T("Visible Invisible"), keyword, sizeof(keyword) / sizeof(keyword[0]));
-				if (_tcscmp(keyword, _T("Visible")) == 0)
-					beam->addViewableAt(index - 1, 1);
-				else if (_tcscmp(keyword, _T("Invisible")) == 0)
-					beam->addViewableAt(index - 1, 0);
-				else
-					throw;
-				beam->close();
-			}
-		}
-		beam->recordGraphicsModified();
-		acedUpdateDisplay();
-		acutPrintf(_T("Now vertex cnt: %d\n"), beam->getVertexesNum());
-		previous_point = current_point;
-		index++;
-	}
+	DrawBeamWithOffset(beam, beam->getBeamWidth() * 0.5);
 }
 
 void CPolaCustomBeam::PickBottomPointDrawBeam(CPolaCustomBeam * beam)
 {
-	int index = 2;
-	TCHAR keyword[256] = { 0 };
-	beam->addViewableAt(0, 0);
-	AcGePoint3d start_point;
-	if (!SelectEntitys::PickPoint(_T("pick first point:\n"), start_point))
-	{
-		throw;
-	}
-	AcGePoint3d previous_point, current_point;
-	previous_point = start_point;
-	AcDbObjectId beam_id = AcDbObjectId::kNull;
-	while (SelectEntitys::PickPoint(_T("pick next point:\n"), start_point, current_point))
-	{
-		if (index == 2)
-		{
-			AcGePoint3d temp_point[2];
-			BasicTools::OffsetLineSegment(start_point, current_point, beam->getBeamWidth() * -0.5, temp_point);
-			beam->addVertexAt(0, temp_point[0]);
-			beam->addVertexAt(1, temp_point[1]);
-			InputValue::GetKeyword(_T("Please enter the visibility of the beam segment: [Visible/Invisible]"), _T("Visible Invisible"), keyword, sizeof(keyword) / sizeof(keyword[0]));
-			if (_tcscmp(keyword, _T("Visible")) == 0)
-				beam->addViewableAt(index - 1, 1);
-			else if (_tcscmp(keyword, _T("Invisible")) == 0)
-				beam->addViewableAt(index - 1, 0);
-			else
-				throw;
-			beam_id = AddToModelSpace::AddEntityToModelSpace(beam);
-		}
-		else if (index > 2)
-		{
-			CPolaCustomBeam* beam = nullptr;
-			if (acdbOpenObject(beam, beam_id, OpenMode::kForWrite) == Acad::eOk)
-			{
-				AcGePoint3d temp_point[2];
-				BasicTools::OffsetLineSegment(previous_point, current_point, beam->getBeamWidth() * -0.5, temp_point);
-				beam->addVertexAt(index - 1, temp_point[1]);
-				InputValue::GetKeyword(_T("Please enter the visibility of the beam segment: [Visible/Invisible]"), _T("Visible Invisible"), keyword, sizeof(keyword) / sizeof(keyword[0]));
-				if (_tcscmp(keyword, _T("Visible")) == 0)
-					beam->addViewableAt(index - 1, 1);
-				else if (_tcscmp(keyword, _T("Invisible")) == 0)
-					beam->addViewableAt(index - 1, 0);
-				else
-					throw;
-				beam->close();
-			}
-		}
-		beam->recordGraphicsModified();
-		acedUpdateDisplay();
-		acutPrintf(_T("Now vertex cnt: %d\n"), beam->getVertexesNum());
-		previous_point = current_point;
-		index++;
-	}
+	DrawBeamWithOffset(beam, -beam->getBeamWidth() * 0.5);
 }
 
 Acad::ErrorStatus CPolaCustomBeam::subTransformBy(const AcGeMatrix3d & xfrom)
@@ -663,6 +598,24 @@ Acad::ErrorStatus CPolaCustomBeam::subTransformBy(const AcGeMatrix3d & xfrom)
 		top_offset_vertex_.at(i).transformBy(xfrom);
 		bottom_offset_vertex_.at(i).transformBy(xfrom);
 	}
+	return Acad::eOk;
+}
+
+Acad::ErrorStatus CPolaCustomBeam::subGetGeomExtents(AcDbExtents & extents) const
+{
+	assertReadEnabled();
+	extents = AcDbExtents();
+	const auto addPointsToExtents = [&extents](const AcGePoint3dArray& vertices)
+		{
+			for (const auto& vertex : vertices)
+			{
+				extents.addPoint(vertex);
+			}
+		};
+
+	addPointsToExtents(beam_vertexes_);
+	addPointsToExtents(top_offset_vertex_);
+	addPointsToExtents(bottom_offset_vertex_);
 	return Acad::eOk;
 }
 

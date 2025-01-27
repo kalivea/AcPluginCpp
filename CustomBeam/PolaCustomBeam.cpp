@@ -186,30 +186,32 @@ Adesk::Boolean CPolaCustomBeam::subWorldDraw(AcGiWorldDraw * mode) {
 		AcGePoint3d bottom_line_segment_end = bottom_offset_vertex_.at(i + 1);
 		AcDbLine temp_bottom_line(bottom_line_segment_start, bottom_line_segment_end);
 
+		Adesk::GsMarker base_marker = i * 3;
+
 		if (beam_viewable_.at(i + 1) == 0)
 		{
 			mode->subEntityTraits().setLineType(StyleTools::GetLineStyleId(_T("DASHED")));
 			mode->subEntityTraits().setLineTypeScale(700);
-			mode->subEntityTraits().setSelectionMarker(1 + i);				// set top line GsMarker = 1-2000;
+			mode->subEntityTraits().setSelectionMarker(base_marker);
 			temp_top_line.worldDraw(mode);
-			mode->subEntityTraits().setSelectionMarker(4000 + 1 + i);				// set bottom line GsMarker = 4001-6000
+			mode->subEntityTraits().setSelectionMarker(base_marker + 2);
 			temp_bottom_line.worldDraw(mode);
 
 			mode->subEntityTraits().setLineType(StyleTools::GetLineStyleId(_T("CENTER")));
-			mode->subEntityTraits().setSelectionMarker(2000 + 1 + i);				// set center line GsMarker = 2001-4000
+			mode->subEntityTraits().setSelectionMarker(base_marker + 1);
 			temp_center_line.worldDraw(mode);
 		}
 		else if (beam_viewable_.at(i + 1) == 1)
 		{
 			mode->subEntityTraits().setLineType(StyleTools::GetLineStyleId(_T("CONTINUOUS")));
-			mode->subEntityTraits().setSelectionMarker(1 + i);				// set top line GsMarker
+			mode->subEntityTraits().setSelectionMarker(base_marker);
 			temp_top_line.worldDraw(mode);
-			mode->subEntityTraits().setSelectionMarker(4000 + 1 + i);				// set bottom line GsMarker
+			mode->subEntityTraits().setSelectionMarker(base_marker + 2);
 			temp_bottom_line.worldDraw(mode);
 
 			mode->subEntityTraits().setLineType(StyleTools::GetLineStyleId(_T("CENTER")));
 			mode->subEntityTraits().setLineTypeScale(700);
-			mode->subEntityTraits().setSelectionMarker(2000 + 1 + i);				// set center line GsMarker
+			mode->subEntityTraits().setSelectionMarker(base_marker + 1);
 			temp_center_line.worldDraw(mode);
 		}
 		else
@@ -236,45 +238,34 @@ Acad::ErrorStatus CPolaCustomBeam::subGetOsnapPoints(
 	AcDbIntArray & geomIds) const
 {
 	assertReadEnabled();
+	if (gsSelectionMark == -1)
+	{
+		AcDbEntity::subGetOsnapPoints(osnapMode, gsSelectionMark, pickPoint, lastPoint, viewXform, snapPoints, geomIds);
+	}
+
+	int segment_index = static_cast<int>(gsSelectionMark / 3);
+	int subordinate_line_type = gsSelectionMark % 3;
+
 	Acad::ErrorStatus error_status;
+	AcDbLine* subordinate_line_segment = nullptr;
 
-	AcDbLine* top_line_segment = new AcDbLine();
-	AcDbLine* bottom_line_segment = new AcDbLine();
-
-	if (gsSelectionMark > 0 && gsSelectionMark < 2000)					// top line 
+	switch (subordinate_line_type)
 	{
-		for (int i = 0;i < vertexes_num_ - 1;i++)
-		{
-			top_line_segment->setStartPoint(top_offset_vertex_.at(i));
-			top_line_segment->setEndPoint(top_offset_vertex_.at(i + 1));
-
-			AcGePoint3dArray top_line_segment_points;
-			AcDbIntArray top_line_segment_geomIds;
-			error_status = top_line_segment->getOsnapPoints(osnapMode, i + 1, pickPoint, lastPoint, viewXform, top_line_segment_points, top_line_segment_geomIds);
-			if (error_status != Acad::eOk)
-				return error_status;
-			appendOsnapPoints(snapPoints, geomIds, top_line_segment_points, top_line_segment_geomIds, 0);
-
-		}
+	case 0:
+		subordinate_line_segment = new AcDbLine(top_offset_vertex_.at(segment_index), top_offset_vertex_.at(segment_index + 1));
+		break;
+	case 1:
+		subordinate_line_segment = new AcDbLine(beam_vertexes_.at(segment_index), beam_vertexes_.at(segment_index + 1));
+		break;
+	case 2:
+		subordinate_line_segment = new AcDbLine(bottom_offset_vertex_.at(segment_index), bottom_offset_vertex_.at(segment_index + 1));
+		break;
+	default:
+		return Acad::eInvalidInput;
 	}
-	else if (gsSelectionMark > 4000 && gsSelectionMark < 6000)		// bottom line
-	{
-		for (int i = 0;i < vertexes_num_ - 1;i++)
-		{
-			bottom_line_segment->setStartPoint(bottom_offset_vertex_.at(i));
-			bottom_line_segment->setEndPoint(bottom_offset_vertex_.at(i + 1));
-
-			AcGePoint3dArray bottom_line_segment_points;
-			AcDbIntArray bottom_line_segment_geomIds;
-			error_status = bottom_line_segment->getOsnapPoints(osnapMode, 4000 + i + 1, pickPoint, lastPoint, viewXform, bottom_line_segment_points, bottom_line_segment_geomIds);
-			if (error_status != Acad::eOk)
-				return error_status;
-			appendOsnapPoints(snapPoints, geomIds, bottom_line_segment_points, bottom_line_segment_geomIds, 4000);
-		}
-	}
-	delete top_line_segment;
-	delete bottom_line_segment;
-
+	error_status = subordinate_line_segment->getOsnapPoints(osnapMode, -1, pickPoint, lastPoint, viewXform, snapPoints, geomIds);
+	if (error_status != Acad::eOk)
+		return error_status;
 	return Acad::eOk;
 }
 
@@ -289,14 +280,35 @@ Acad::ErrorStatus CPolaCustomBeam::subGetOsnapPoints(
 	const AcGeMatrix3d & insertionMat) const
 {
 	assertReadEnabled();
-	//Acad::ErrorStatus error_status;
-	//AcDbPolyline* poly_line = new AcDbPolyline();
-	//for (int i = 0;i < vertexes_num_;i++)
-	//{
-	//	poly_line->addVertexAt(i, BasicTools::Point3dToPoint2d(beam_vertexes_.at(i)));
-	//}
-	//error_status = poly_line->getOsnapPoints(osnapMode, gsSelectionMark, pickPoint, lastPoint, viewXform, snapPoints, geomIds, insertionMat);
-	//return error_status;
+	if (gsSelectionMark == -1)
+	{
+		AcDbEntity::subGetOsnapPoints(osnapMode, gsSelectionMark, pickPoint, lastPoint, viewXform, snapPoints, geomIds, insertionMat);
+	}
+
+	int segment_index = static_cast<int>(gsSelectionMark / 3);
+	int subordinate_line_type = gsSelectionMark % 3;
+
+	Acad::ErrorStatus error_status;
+	AcDbLine* subordinate_line_segment = nullptr;
+
+	switch (subordinate_line_type)
+	{
+	case 0:
+		subordinate_line_segment = new AcDbLine(top_offset_vertex_.at(segment_index), top_offset_vertex_.at(segment_index + 1));
+		break;
+	case 1:
+		subordinate_line_segment = new AcDbLine(beam_vertexes_.at(segment_index), beam_vertexes_.at(segment_index + 1));
+		break;
+	case 2:
+		subordinate_line_segment = new AcDbLine(bottom_offset_vertex_.at(segment_index), bottom_offset_vertex_.at(segment_index + 1));
+		break;
+	default:
+		return Acad::eInvalidInput;
+	}
+	error_status = subordinate_line_segment->getOsnapPoints(osnapMode, -1, pickPoint, lastPoint, viewXform, snapPoints, geomIds, insertionMat);
+	if (error_status != Acad::eOk)
+		return error_status;
+
 	return Acad::eOk;
 }
 
@@ -308,12 +320,12 @@ Acad::ErrorStatus CPolaCustomBeam::subGetGripPoints(
 	//----- This method is never called unless you return eNotImplemented 
 	//----- from the new getGripPoints() method below (which is the default implementation)
 
-	return (AcDbEntity::subGetGripPoints(gripPoints, osnapModes, geomIds));
-	//	for (int i = 0;i < vertexes_num_;i++)
-	//	{
-	//		gripPoints.append(beam_vertexes_.at(i));
-	//	}
-	//	return Acad::eOk;
+	//return (AcDbEntity::subGetGripPoints(gripPoints, osnapModes, geomIds));
+	for (int i = 0;i < vertexes_num_;i++)
+	{
+		gripPoints.append(beam_vertexes_.at(i));
+	}
+	return Acad::eOk;
 }
 
 Acad::ErrorStatus CPolaCustomBeam::subMoveGripPointsAt(const AcDbIntArray & indices, const AcGeVector3d & offset) {
@@ -333,6 +345,7 @@ Acad::ErrorStatus CPolaCustomBeam::subGetGripPoints(
 	//----- If you return eNotImplemented here, that will force AutoCAD to call
 	//----- the older getGripPoints() implementation. The call below may return
 	//----- eNotImplemented depending of your base class.
+
 	return (AcDbEntity::subGetGripPoints(grips, curViewUnitSize, gripSize, curViewDir, bitflags));
 }
 
@@ -641,11 +654,15 @@ void CPolaCustomBeam::PickBottomPointDrawBeam(CPolaCustomBeam * beam)
 	}
 }
 
-void CPolaCustomBeam::appendOsnapPoints(AcGePoint3dArray & destination_points, AcDbIntArray & destination_ids, const AcGePoint3dArray & source_points, const AcDbIntArray & source_ids, int id_offset)
+Acad::ErrorStatus CPolaCustomBeam::subTransformBy(const AcGeMatrix3d & xfrom)
 {
-	for (int i = 0;i < source_points.length();i++)
+	assertReadEnabled();
+	for (int i = 0;i < vertexes_num_;i++)
 	{
-		destination_points.append(source_points.at(i));
-		destination_ids.append(source_ids.at(i) + id_offset);
+		beam_vertexes_.at(i).transformBy(xfrom);
+		top_offset_vertex_.at(i).transformBy(xfrom);
+		bottom_offset_vertex_.at(i).transformBy(xfrom);
 	}
+	return Acad::eOk;
 }
+

@@ -145,8 +145,8 @@ public:
 	static void PickBottomPointDrawBeam(CPolaCustomBeam* beam);
 
 	// 
-private:
-	static void appendOsnapPoints(AcGePoint3dArray& destination_points, AcDbIntArray& destination_ids, const AcGePoint3dArray& source_points, const AcDbIntArray& source_ids, int id_offset);
+public:
+	virtual Acad::ErrorStatus subTransformBy(const AcGeMatrix3d& xfrom);
 };
 
 #ifdef CUSTOMBEAM_MODULE

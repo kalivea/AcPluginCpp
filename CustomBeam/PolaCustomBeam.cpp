@@ -240,7 +240,8 @@ Acad::ErrorStatus CPolaCustomBeam::subGetOsnapPoints(
 	assertReadEnabled();
 	if (gsSelectionMark == -1)
 	{
-		AcDbEntity::subGetOsnapPoints(osnapMode, gsSelectionMark, pickPoint, lastPoint, viewXform, snapPoints, geomIds);
+		AcDbEntity::subGetOsnapPoints(
+			osnapMode, gsSelectionMark, pickPoint, lastPoint, viewXform, snapPoints, geomIds);
 	}
 
 	int segment_index = static_cast<int>(gsSelectionMark / 3);
@@ -252,18 +253,22 @@ Acad::ErrorStatus CPolaCustomBeam::subGetOsnapPoints(
 	switch (subordinate_line_type)
 	{
 	case 0:
-		subordinate_line_segment = new AcDbLine(top_offset_vertex_.at(segment_index), top_offset_vertex_.at(segment_index + 1));
+		subordinate_line_segment = new AcDbLine(
+			top_offset_vertex_.at(segment_index), top_offset_vertex_.at(segment_index + 1));
 		break;
 	case 1:
-		subordinate_line_segment = new AcDbLine(beam_vertexes_.at(segment_index), beam_vertexes_.at(segment_index + 1));
+		subordinate_line_segment = new AcDbLine(
+			beam_vertexes_.at(segment_index), beam_vertexes_.at(segment_index + 1));
 		break;
 	case 2:
-		subordinate_line_segment = new AcDbLine(bottom_offset_vertex_.at(segment_index), bottom_offset_vertex_.at(segment_index + 1));
+		subordinate_line_segment = new AcDbLine(
+			bottom_offset_vertex_.at(segment_index), bottom_offset_vertex_.at(segment_index + 1));
 		break;
 	default:
 		return Acad::eInvalidInput;
 	}
-	error_status = subordinate_line_segment->getOsnapPoints(osnapMode, -1, pickPoint, lastPoint, viewXform, snapPoints, geomIds);
+	error_status = subordinate_line_segment->getOsnapPoints(
+		osnapMode, -1, pickPoint, lastPoint, viewXform, snapPoints, geomIds);
 	if (error_status != Acad::eOk)
 		return error_status;
 	return Acad::eOk;
@@ -282,7 +287,8 @@ Acad::ErrorStatus CPolaCustomBeam::subGetOsnapPoints(
 	assertReadEnabled();
 	if (gsSelectionMark == -1)
 	{
-		AcDbEntity::subGetOsnapPoints(osnapMode, gsSelectionMark, pickPoint, lastPoint, viewXform, snapPoints, geomIds, insertionMat);
+		AcDbEntity::subGetOsnapPoints(
+			osnapMode, gsSelectionMark, pickPoint, lastPoint, viewXform, snapPoints, geomIds, insertionMat);
 	}
 
 	int segment_index = static_cast<int>(gsSelectionMark / 3);
@@ -294,18 +300,22 @@ Acad::ErrorStatus CPolaCustomBeam::subGetOsnapPoints(
 	switch (subordinate_line_type)
 	{
 	case 0:
-		subordinate_line_segment = new AcDbLine(top_offset_vertex_.at(segment_index), top_offset_vertex_.at(segment_index + 1));
+		subordinate_line_segment = new AcDbLine(
+			top_offset_vertex_.at(segment_index), top_offset_vertex_.at(segment_index + 1));
 		break;
 	case 1:
-		subordinate_line_segment = new AcDbLine(beam_vertexes_.at(segment_index), beam_vertexes_.at(segment_index + 1));
+		subordinate_line_segment = new AcDbLine(
+			beam_vertexes_.at(segment_index), beam_vertexes_.at(segment_index + 1));
 		break;
 	case 2:
-		subordinate_line_segment = new AcDbLine(bottom_offset_vertex_.at(segment_index), bottom_offset_vertex_.at(segment_index + 1));
+		subordinate_line_segment = new AcDbLine(
+			bottom_offset_vertex_.at(segment_index), bottom_offset_vertex_.at(segment_index + 1));
 		break;
 	default:
 		return Acad::eInvalidInput;
 	}
-	error_status = subordinate_line_segment->getOsnapPoints(osnapMode, -1, pickPoint, lastPoint, viewXform, snapPoints, geomIds, insertionMat);
+	error_status = subordinate_line_segment->getOsnapPoints(
+		osnapMode, -1, pickPoint, lastPoint, viewXform, snapPoints, geomIds, insertionMat);
 	if (error_status != Acad::eOk)
 		return error_status;
 
@@ -617,5 +627,52 @@ Acad::ErrorStatus CPolaCustomBeam::subGetGeomExtents(AcDbExtents & extents) cons
 	addPointsToExtents(top_offset_vertex_);
 	addPointsToExtents(bottom_offset_vertex_);
 	return Acad::eOk;
+}
+
+AcDbObjectIdArray CPolaCustomBeam::GetIntersectingPillar() const
+{
+	AcDbObjectIdArray intersecting_pillar_ids;
+
+	AcDbExtents beam_extents;					// get beam extents
+	if (getGeomExtents(beam_extents) != Acad::eOk)
+	{
+		acutPrintf(_T("Can't get beam extents!\n"));
+		return intersecting_pillar_ids;
+	}
+
+	AcDbObjectIdArray pillar_ids_all;			// get all pillar ids in database
+	if (!SelectEntitys::GetAllEntitysByType(CPolaCustomPillar::desc(), pillar_ids_all))
+	{
+		acutPrintf(_T("Cant't get pillar list!\n"));
+		return intersecting_pillar_ids;
+	}
+
+	AcDbObjectPointer<AcDbEntity> pillar_entity;		// check weather intersect
+	AcDbExtents pillar_extents;
+
+	for (AcDbObjectId pillar_id : pillar_ids_all)
+	{
+		if (pillar_entity.open(pillar_id, AcDb::kForRead) != Acad::eOk)
+		{
+			acutPrintf(_T("Can't open pillar entity: %lu\n"), pillar_id.handle());
+			continue;
+		}
+
+		if (pillar_entity->getGeomExtents(pillar_extents) != Acad::eOk)
+		{
+			acutPrintf(_T("Pillar(ID: %lu) get extents failure\n"), pillar_id.handle());
+			continue;
+		}
+
+		AcDbBlockReference* block_reference = AcDbBlockReference::cast(pillar_entity);
+		if (block_reference) {
+			pillar_extents.transformBy(block_reference->blockTransform());
+		}
+
+		if (BasicTools::IsIntersectRectangle(beam_extents, pillar_extents)) {
+			intersecting_pillar_ids.append(pillar_id);
+		}
+	}
+	return intersecting_pillar_ids;
 }
 

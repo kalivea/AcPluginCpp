@@ -292,6 +292,16 @@ bool BasicTools::IsIntersectRectangle(const AcGePoint3d& vertex_point1, const Ac
 	}
 }
 
+bool BasicTools::IsIntersectRectangle(const AcDbExtents& ext1, const AcDbExtents& ext2)
+{
+	const AcGePoint3d& min1 = ext1.minPoint();
+	const AcGePoint3d& max1 = ext1.maxPoint();
+	const AcGePoint3d& min2 = ext2.minPoint();
+	const AcGePoint3d& max2 = ext2.maxPoint();
+
+	return IsIntersectRectangle(min1, max1, min2, max2);
+}
+
 bool BasicTools::IsLineThroughRectangle(const AcGePoint3d& line_point1, const AcGePoint3d& line_point2, const AcGePoint3d vertex_point1, const AcGePoint3d vertex_point2)
 {
 	if (!CanDrawRect(vertex_point1, vertex_point2))
@@ -375,6 +385,7 @@ AcDbObjectIdArray BasicTools::GetAllEntityIdsInDatabase(const TCHAR* layer_name,
 
 	return all_entity_ids;
 }
+
 /// <summary>
 /// Determine whether two points intersect.
 /// </summary>

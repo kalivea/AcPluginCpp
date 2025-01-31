@@ -25,7 +25,7 @@
 #pragma once
 
 #ifdef CUSTOMPILLAR_MODULE
-#define DLLIMPEXP __declspec(dllexport)
+#define PILLAR_DLLIMPEXP __declspec(dllexport)
 #else
 //----- Note: we don't use __declspec(dllimport) here, because of the
 //----- "local vtable" problem with msvc. If you use __declspec(dllimport),
@@ -41,14 +41,14 @@
 //----- the ctor. And, since we expect the server dll to remain in
 //----- memory indefinitely, there is no problem with vtables unexpectedly
 //----- going away.
-#define DLLIMPEXP
+#define PILLAR_DLLIMPEXP
 #endif
 
 //-----------------------------------------------------------------------------
 #include "dbmain.h"
 
 //-----------------------------------------------------------------------------
-class DLLIMPEXP CPolaCustomPillar : public AcDbEntity {
+class PILLAR_DLLIMPEXP CPolaCustomPillar : public AcDbEntity {
 
 public:
 	ACRX_DECLARE_MEMBERS(CPolaCustomPillar);
@@ -151,6 +151,8 @@ public:
 	static AcDbObjectIdArray BatchInsert(const CPolaCustomPillar& pillar_template, const AcGePoint3dArray& insert_point_array);
 	static AcDbObjectId SingleInsert(const CPolaCustomPillar& pillar_template, const AcGePoint3d& insert_point);
 	static void AddPillarLeader(const CPolaCustomPillar* pillar);
+
+	//
 };
 
 #ifdef CUSTOMPILLAR_MODULE

@@ -25,7 +25,7 @@
 #pragma once
 
 #ifdef CUSTOMBEAM_MODULE
-#define DLLIMPEXP __declspec(dllexport)
+#define BEAM_DLLIMPEXP __declspec(dllexport)
 #else
 //----- Note: we don't use __declspec(dllimport) here, because of the
 //----- "local vtable" problem with msvc. If you use __declspec(dllimport),
@@ -41,14 +41,14 @@
 //----- the ctor. And, since we expect the server dll to remain in
 //----- memory indefinitely, there is no problem with vtables unexpectedly
 //----- going away.
-#define DLLIMPEXP
+#define BEAM_DLLIMPEXP
 #endif
 
 //-----------------------------------------------------------------------------
 #include "dbmain.h"
 
 //-----------------------------------------------------------------------------
-class DLLIMPEXP CPolaCustomBeam : public AcDbEntity {
+class BEAM_DLLIMPEXP CPolaCustomBeam : public AcDbEntity {
 
 public:
 	ACRX_DECLARE_MEMBERS(CPolaCustomBeam);
@@ -137,7 +137,7 @@ private:
 	void addVertexAt(const int& index, const AcGePoint3d& vertex);
 	void addViewableAt(const int index, const Adesk::Int32 viewable);
 	void UpdateOffsetLine(const double& distance);
-	static void DrawBeamWithOffset(CPolaCustomBeam* beam,const double offset_distance);
+	static void DrawBeamWithOffset(CPolaCustomBeam* beam, const double offset_distance);
 	// 
 public:
 	static void PickCenterPointDrawBeam(CPolaCustomBeam* beam);
@@ -148,6 +148,9 @@ public:
 public:
 	virtual Acad::ErrorStatus subTransformBy(const AcGeMatrix3d& xfrom);
 	virtual Acad::ErrorStatus subGetGeomExtents(AcDbExtents& extents) const;
+	//
+public:
+	AcDbObjectIdArray GetIntersectingPillar() const;
 };
 
 #ifdef CUSTOMBEAM_MODULE

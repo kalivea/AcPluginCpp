@@ -13,5 +13,8 @@ public:
 	// select points
 	static bool PickPoint(const TCHAR* prompt, AcGePoint3d& point);
 	static bool PickPoint(const TCHAR* prompt, const AcGePoint3d& base_point, AcGePoint3d& point);
+
+	//
+	static bool GetAllEntitysByType(const AcRxClass* class_describe, AcDbObjectIdArray& entity_id_array);
 };
 

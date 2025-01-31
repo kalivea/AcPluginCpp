@@ -444,17 +444,20 @@ void TestClass::Test()
 		previous_point = current_point;
 		index++;
 	}*/
-//------------------------------------------------------------------------
+	//------------------------------------------------------------------------
 	CPolaCustomBeam* beam = new CPolaCustomBeam();
 	beam->setBeamWidth(1200);
 	beam->setBeamHeight(1500);
 	beam->setBeamProperty(1);
-//-------------------------------------------------------------------------
-	//CPolaCustomBeam::PickCenterPointDrawBeam(beam);
+	//-------------------------------------------------------------------------
+	CPolaCustomBeam::PickCenterPointDrawBeam(beam);
 	//CPolaCustomBeam::PickTopPointDrawBeam(beam);
-	CPolaCustomBeam::PickBottomPointDrawBeam(beam);
+//CPolaCustomBeam::PickBottomPointDrawBeam(beam);
 
-//---------------------------------------------------------------------------
+	AcDbObjectIdArray beam_array = beam->GetIntersectingPillar();
+	acutPrintf(_T("Total %d pillar\n"), beam_array.length());
+	EditEntity::SetColor(beam_array, 1);
+	//---------------------------------------------------------------------------
 #pragma endregion
 #pragma region proj
 	//AcGePoint3d start_point(0, 0, 0);

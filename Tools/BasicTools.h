@@ -33,6 +33,7 @@ public:
 
 	// math tools: Rectangle Tools
 	static bool IsIntersectRectangle(const AcGePoint3d& vertex_point1, const AcGePoint3d& vertex_point2, const AcGePoint3d& vertex_point3, const AcGePoint3d& vertex_point4);
+	static bool IsIntersectRectangle(const AcDbExtents& ext1, const AcDbExtents& ext2);
 	static bool IsLineThroughRectangle(const AcGePoint3d& line_point1, const AcGePoint3d& line_point2, const AcGePoint3d vertex_point1, const AcGePoint3d vertex_point2);
 
 	// math tools: Line Tools

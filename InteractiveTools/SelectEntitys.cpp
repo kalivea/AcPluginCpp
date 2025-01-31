@@ -152,3 +152,51 @@ bool SelectEntitys::PickPoint(const TCHAR* prompt, const AcGePoint3d& base_point
 		return false;
 	}
 }
+
+bool SelectEntitys::GetAllEntitysByType(const AcRxClass* class_describe, AcDbObjectIdArray& entity_id_array)
+{
+	entity_id_array.removeAll();
+	AcDbDatabase* database = nullptr;
+	database = acdbHostApplicationServices()->workingDatabase();
+	if (!database)
+		return false;
+	AcDbBlockTable* block_table = nullptr;
+	if (database->getBlockTable(block_table, OpenMode::kForRead) != Acad::eOk)
+		return false;
+	AcDbBlockTableIterator* block_table_iterator = nullptr;
+	if (block_table->newIterator(block_table_iterator) != Acad::eOk)
+	{
+		block_table->close();
+		return false;
+	}
+	for (; !block_table_iterator->done(); block_table_iterator->step())
+	{
+		AcDbBlockTableRecord* block_table_record = nullptr;
+		if (block_table_iterator->getRecord(block_table_record, AcDb::kForRead) != Acad::eOk)
+			continue;
+		AcDbBlockTableRecordIterator* entity_iterator = nullptr;
+		if (block_table_record->newIterator(entity_iterator) != Acad::eOk)
+		{
+			block_table_record->close();
+			continue;
+		}
+
+		for (; !entity_iterator->done(); entity_iterator->step())
+		{
+			AcDbEntity* entity = nullptr;
+			if (entity_iterator->getEntity(entity, AcDb::kForRead) == Acad::eOk)
+			{
+				if (entity->isA() == class_describe)
+				{
+					entity_id_array.append(entity->objectId());
+				}
+				entity->close();
+			}
+		}
+		delete entity_iterator;
+		block_table_record->close();
+	}
+	delete block_table_iterator;
+	block_table->close();
+	return !entity_id_array.isEmpty();
+}

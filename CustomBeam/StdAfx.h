@@ -75,5 +75,6 @@
 
 #include "InputValue.h"
 #include "AddToModelSpace.h"
+#include "PolaCustomPillar.h"
 #pragma pack(pop)
 

@@ -500,7 +500,7 @@ void CPolaCustomBeam::UpdateOffsetLine(const double& distance)
 	}
 }
 
-void CPolaCustomBeam::DrawBeamWithOffset(CPolaCustomBeam * beam, const double offset_distance)
+AcDbObjectId CPolaCustomBeam::DrawBeamWithOffset(CPolaCustomBeam * beam, const double offset_distance)
 {
 	int index = 2;
 	TCHAR keyword[256] = { 0 };
@@ -582,21 +582,22 @@ void CPolaCustomBeam::DrawBeamWithOffset(CPolaCustomBeam * beam, const double of
 		previous_point = current_point;
 		index++;
 	}
+	return beam_id;
 }
 
-void CPolaCustomBeam::PickCenterPointDrawBeam(CPolaCustomBeam * beam)
+AcDbObjectId CPolaCustomBeam::PickCenterPointDrawBeam(CPolaCustomBeam * beam)
 {
-	DrawBeamWithOffset(beam, 0);
+	return DrawBeamWithOffset(beam, 0);
 }
 
-void CPolaCustomBeam::PickTopPointDrawBeam(CPolaCustomBeam * beam)
+AcDbObjectId CPolaCustomBeam::PickTopPointDrawBeam(CPolaCustomBeam * beam)
 {
-	DrawBeamWithOffset(beam, beam->getBeamWidth() * 0.5);
+	return DrawBeamWithOffset(beam, beam->getBeamWidth() * 0.5);
 }
 
-void CPolaCustomBeam::PickBottomPointDrawBeam(CPolaCustomBeam * beam)
+AcDbObjectId CPolaCustomBeam::PickBottomPointDrawBeam(CPolaCustomBeam * beam)
 {
-	DrawBeamWithOffset(beam, -beam->getBeamWidth() * 0.5);
+	return DrawBeamWithOffset(beam, -beam->getBeamWidth() * 0.5);
 }
 
 Acad::ErrorStatus CPolaCustomBeam::subTransformBy(const AcGeMatrix3d & xfrom)
@@ -647,7 +648,7 @@ AcDbObjectIdArray CPolaCustomBeam::GetIntersectingPillar() const
 		return intersecting_pillar_ids;
 	}
 
-	AcDbObjectPointer<AcDbEntity> pillar_entity;		// check weather intersect
+	AcDbObjectPointer<AcDbEntity> pillar_entity;		// check weather intersect  [new] smart pointer!
 	AcDbExtents pillar_extents;
 
 	for (AcDbObjectId pillar_id : pillar_ids_all)
@@ -665,11 +666,13 @@ AcDbObjectIdArray CPolaCustomBeam::GetIntersectingPillar() const
 		}
 
 		AcDbBlockReference* block_reference = AcDbBlockReference::cast(pillar_entity);
-		if (block_reference) {
+		if (block_reference) 
+		{
 			pillar_extents.transformBy(block_reference->blockTransform());
 		}
 
-		if (BasicTools::IsIntersectRectangle(beam_extents, pillar_extents)) {
+		if (BasicTools::IsIntersectRectangle(beam_extents, pillar_extents)) 
+		{
 			intersecting_pillar_ids.append(pillar_id);
 		}
 	}

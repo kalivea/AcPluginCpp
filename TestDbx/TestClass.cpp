@@ -450,13 +450,14 @@ void TestClass::Test()
 	beam->setBeamHeight(1500);
 	beam->setBeamProperty(1);
 	//-------------------------------------------------------------------------
-	CPolaCustomBeam::PickCenterPointDrawBeam(beam);
+	AcDbObjectId beam_id = CPolaCustomBeam::PickCenterPointDrawBeam(beam);
 	//CPolaCustomBeam::PickTopPointDrawBeam(beam);
 //CPolaCustomBeam::PickBottomPointDrawBeam(beam);
 
 	AcDbObjectIdArray beam_array = beam->GetIntersectingPillar();
 	acutPrintf(_T("Total %d pillar\n"), beam_array.length());
 	EditEntity::SetColor(beam_array, 1);
+	EditEntity::SetColor(beam_id, 2);
 	//---------------------------------------------------------------------------
 #pragma endregion
 #pragma region proj

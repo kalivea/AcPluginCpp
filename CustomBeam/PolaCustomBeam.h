@@ -137,12 +137,12 @@ private:
 	void addVertexAt(const int& index, const AcGePoint3d& vertex);
 	void addViewableAt(const int index, const Adesk::Int32 viewable);
 	void UpdateOffsetLine(const double& distance);
-	static void DrawBeamWithOffset(CPolaCustomBeam* beam, const double offset_distance);
+	static AcDbObjectId DrawBeamWithOffset(CPolaCustomBeam* beam, const double offset_distance);
 	// 
 public:
-	static void PickCenterPointDrawBeam(CPolaCustomBeam* beam);
-	static void PickTopPointDrawBeam(CPolaCustomBeam* beam);
-	static void PickBottomPointDrawBeam(CPolaCustomBeam* beam);
+	static AcDbObjectId PickCenterPointDrawBeam(CPolaCustomBeam* beam);
+	static AcDbObjectId PickTopPointDrawBeam(CPolaCustomBeam* beam);
+	static AcDbObjectId PickBottomPointDrawBeam(CPolaCustomBeam* beam);
 
 	// 
 public:

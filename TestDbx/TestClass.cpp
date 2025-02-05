@@ -455,9 +455,10 @@ void TestClass::Test()
 //CPolaCustomBeam::PickBottomPointDrawBeam(beam);
 
 	AcDbObjectIdArray beam_array = beam->GetIntersectingPillar();
-	acutPrintf(_T("Total %d pillar\n"), beam_array.length());
-	EditEntity::SetColor(beam_array, 1);
-	EditEntity::SetColor(beam_id, 2);
+	//acutPrintf(_T("Total %d pillar\n"), beam_array.length());
+	//EditEntity::SetColor(beam_array, 1);
+	//EditEntity::SetColor(beam_id, 2);
+	beam->addJoint(800);
 	//---------------------------------------------------------------------------
 #pragma endregion
 #pragma region proj

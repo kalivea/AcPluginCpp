@@ -666,16 +666,99 @@ AcDbObjectIdArray CPolaCustomBeam::GetIntersectingPillar() const
 		}
 
 		AcDbBlockReference* block_reference = AcDbBlockReference::cast(pillar_entity);
-		if (block_reference) 
+		if (block_reference)
 		{
 			pillar_extents.transformBy(block_reference->blockTransform());
 		}
 
-		if (BasicTools::IsIntersectRectangle(beam_extents, pillar_extents)) 
+		if (BasicTools::IsIntersectRectangle(beam_extents, pillar_extents))
 		{
 			intersecting_pillar_ids.append(pillar_id);
 		}
 	}
 	return intersecting_pillar_ids;
+}
+
+void CPolaCustomBeam::addJoint(const double slab_thickness)
+{
+	AcDbObjectIdArray intersecting_pillar_ids = GetIntersectingPillar();
+	if (vertexes_num_ < 2)
+	{
+		acutPrintf(_T("Beam vertexes number less than 2, can't add joint.\n"));
+		return;
+	}
+	for (int i = 1;i < beam_vertexes_.length() - 1;i++)
+	{
+		if (beam_viewable_.at(i) == beam_viewable_.at(i + 1))
+			continue;
+		for (const auto& pillar_id : intersecting_pillar_ids)
+		{
+			AcDbEntity* pillar_entity = nullptr;
+			if (acdbOpenObject(pillar_entity, pillar_id, OpenMode::kForRead) != Acad::eOk)
+				continue;
+			CPolaCustomPillar* pillar = CPolaCustomPillar::cast(pillar_entity);
+			const AcGePoint3d& temp_pillar_center_point = pillar->getCenterPoint();
+
+			if (temp_pillar_center_point != beam_vertexes_.at(i))
+			{
+				pillar_entity->close();
+				continue;
+			}
+			AcDbLine* joint_line1 = new AcDbLine();
+			AcDbLine* joint_line2 = new AcDbLine();
+			AcDbLine* joint_line3 = new AcDbLine();
+			AcDbLine* joint_line4 = new AcDbLine();
+			double pillar_b, pillar_h;
+			pillar->getDiameter(pillar_b, pillar_h);
+
+			joint_line1->setStartPoint(AcGePoint3d(temp_pillar_center_point.x - pillar_b / 2.0 - 100 - beam_h_ + slab_thickness, temp_pillar_center_point.y + beam_b_ / 2, 0));
+			joint_line1->setEndPoint(AcGePoint3d(temp_pillar_center_point.x - pillar_b / 2.0 - 100 - beam_h_ + slab_thickness, temp_pillar_center_point.y - beam_b_ / 2, 0));
+
+			joint_line2->setStartPoint(AcGePoint3d(temp_pillar_center_point.x - pillar_b / 2.0 - 100, temp_pillar_center_point.y + beam_b_ / 2, 0));
+			joint_line2->setEndPoint(AcGePoint3d(temp_pillar_center_point.x - pillar_b / 2.0 - 100, temp_pillar_center_point.y - beam_b_ / 2, 0));
+
+			joint_line3->setStartPoint(AcGePoint3d(temp_pillar_center_point.x + pillar_b / 2.0 + 100, temp_pillar_center_point.y + beam_b_ / 2, 0));
+			joint_line3->setEndPoint(AcGePoint3d(temp_pillar_center_point.x + pillar_b / 2.0 + 100, temp_pillar_center_point.y - beam_b_ / 2, 0));
+
+			joint_line4->setStartPoint(AcGePoint3d(temp_pillar_center_point.x + pillar_b / 2.0 + 100 + beam_h_ - slab_thickness, temp_pillar_center_point.y + beam_b_ / 2, 0));
+			joint_line4->setEndPoint(AcGePoint3d(temp_pillar_center_point.x + pillar_b / 2.0 + 100 + beam_h_ - slab_thickness, temp_pillar_center_point.y - beam_b_ / 2, 0));
+			if (beam_viewable_.at(i) == 1)
+			{
+				joint_line1->setLinetype(StyleTools::GetLineStyleId(_T("DASHED")));
+				joint_line1->setLinetypeScale(700);
+				joint_line2->setLinetype(StyleTools::GetLineStyleId(_T("DASHED")));
+				joint_line2->setLinetypeScale(700);
+				joint_line3->setLinetype(StyleTools::GetLineStyleId(_T("CONTINUOUS")));
+				joint_line4->setLinetype(StyleTools::GetLineStyleId(_T("CONTINUOUS")));
+				AcDbLine* temp_line1 = new AcDbLine(joint_line2->startPoint(), joint_line4->startPoint());
+				AcDbLine* temp_line2 = new AcDbLine(joint_line2->endPoint(), joint_line4->endPoint());
+				AddToModelSpace::AddEntityToModelSpace(joint_line1);
+				AddToModelSpace::AddEntityToModelSpace(joint_line2);
+				AddToModelSpace::AddEntityToModelSpace(joint_line3);
+				AddToModelSpace::AddEntityToModelSpace(joint_line4);
+				AddToModelSpace::AddEntityToModelSpace(temp_line1);
+				AddToModelSpace::AddEntityToModelSpace(temp_line2);
+			}
+			else
+			{
+				joint_line3->setLinetype(StyleTools::GetLineStyleId(_T("DASHED")));
+				joint_line3->setLinetypeScale(700);
+				joint_line4->setLinetype(StyleTools::GetLineStyleId(_T("DASHED")));
+				joint_line4->setLinetypeScale(700);
+				joint_line1->setLinetype(StyleTools::GetLineStyleId(_T("CONTINUOUS")));
+				joint_line2->setLinetype(StyleTools::GetLineStyleId(_T("CONTINUOUS")));
+
+				AcDbLine* temp_line1 = new AcDbLine(joint_line1->startPoint(), joint_line3->startPoint());
+				AcDbLine* temp_line2 = new AcDbLine(joint_line1->endPoint(), joint_line3->endPoint());
+
+				AddToModelSpace::AddEntityToModelSpace(joint_line1);
+				AddToModelSpace::AddEntityToModelSpace(joint_line2);
+				AddToModelSpace::AddEntityToModelSpace(joint_line3);
+				AddToModelSpace::AddEntityToModelSpace(joint_line4);
+				AddToModelSpace::AddEntityToModelSpace(temp_line1);
+				AddToModelSpace::AddEntityToModelSpace(temp_line2);
+			}
+		}
+	}
 }
 

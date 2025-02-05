@@ -151,6 +151,7 @@ public:
 	//
 public:
 	AcDbObjectIdArray GetIntersectingPillar() const;
+	void addJoint(const double slab_thickness);
 };
 
 #ifdef CUSTOMBEAM_MODULE

@@ -406,6 +406,82 @@ Adesk::Int32 CPolaCustomBeam::getVertexesNum() const
 	return beam_vertexes_.length();
 }
 
+double CPolaCustomBeam::getBeamLength() const
+{
+	double length = 0;
+	for (int i = 0;i < vertexes_num_ - 1;i++)
+	{
+		length += beam_vertexes_.at(i).distanceTo(beam_vertexes_.at(i + 1));
+	}
+	return length;
+}
+
+AcGePoint3d CPolaCustomBeam::getHorizontalMidPoint() const
+{
+	AcGePoint3dArray vertices = beam_vertexes_;
+	if (vertices.length() < 2) {
+		return AcGePoint3d::kOrigin;
+	}
+	std::vector<double> segLengths;
+	double totalLength = 0.0;
+	for (int i = 0; i < vertices.length() - 1; ++i) {
+		double len = vertices[i].distanceTo(vertices[i + 1]);
+		segLengths.push_back(len);
+		totalLength += len;
+	}
+	double midPos = totalLength / 2.0;
+	double currentSum = 0.0;
+	AcGePoint3d pathMidPoint;
+	bool isMidOnHorizontal = false;
+	int midSegIndex = -1;
+	for (int i = 0; i < segLengths.size(); ++i) {
+		double segLen = segLengths[i];
+		if (currentSum + segLen >= midPos) {
+			double remain = midPos - currentSum;
+			AcGePoint3d start = vertices[i];
+			AcGePoint3d end = vertices[i + 1];
+			double ratio = remain / segLen;
+			pathMidPoint = start + (end - start) * ratio;
+
+
+			isMidOnHorizontal = (fabs(start.y - end.y) < 1e-6);
+			midSegIndex = i;
+			break;
+		}
+		currentSum += segLen;
+	}
+	if (isMidOnHorizontal) {
+		return pathMidPoint;
+	}
+	std::vector<std::pair<double, AcGePoint3d>> horizontalSegments;
+	currentSum = 0.0;
+	for (int i = 0; i < segLengths.size(); ++i) {
+		AcGePoint3d start = vertices[i];
+		AcGePoint3d end = vertices[i + 1];
+		double segLen = segLengths[i];
+		if (fabs(start.y - end.y) < 1e-6) { 
+			double midPathPos = currentSum + segLen / 2.0;
+			AcGePoint3d midPoint = (start + end) / 2.0;
+			horizontalSegments.emplace_back(midPathPos, midPoint);
+		}
+		currentSum += segLen;
+	}
+	if (horizontalSegments.empty()) {
+		return pathMidPoint;
+	}
+	double minDiff = std::numeric_limits<double>::max();
+	AcGePoint3d bestPoint = pathMidPoint;
+	for (const auto& hs : horizontalSegments) {
+		double diff = fabs(hs.first - midPos);
+		if (diff < minDiff) {
+			minDiff = diff;
+			bestPoint = hs.second;
+		}
+	}
+
+	return bestPoint;
+}
+
 void CPolaCustomBeam::setBeamVertexes(const AcGePoint3dArray & beam_vertexes)
 {
 	assertWriteEnabled();
@@ -760,5 +836,10 @@ void CPolaCustomBeam::addJoint(const double slab_thickness)
 			}
 		}
 	}
+}
+
+void CPolaCustomBeam::addBeamSnInfo()
+{
+	AcGePoint3d insert_point = AcGePoint3d(getHorizontalMidPoint().x, getHorizontalMidPoint().y + beam_b_ / 2 + 800, 0);
 }
 

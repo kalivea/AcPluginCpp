@@ -104,7 +104,7 @@ public:
 
 private:
 	// save to dwg files.
-	AcGePoint3dArray beam_vertexes_;				// store bertexes of beam.
+	AcGePoint3dArray beam_vertexes_;				// store  vertexes of beam.
 	AcGePoint3dArray top_offset_vertex_;
 	AcGePoint3dArray bottom_offset_vertex_;
 
@@ -114,7 +114,7 @@ private:
 	double beam_h_;								    // store height of beam.
 
 	std::vector<Adesk::Int32> beam_viewable_;		// store viewable of beam.
-	Adesk::Int32 beam_property_;					// store property of beam.
+	Adesk::Int32 beam_property_;					// store property of beam. The sn of beam.
 
 public:
 	//           get functions
@@ -124,8 +124,12 @@ public:
 	std::vector<Adesk::Int32> getBeamViewable() const;
 	Adesk::Int32 getBeamProperty() const;
 	Adesk::Int32 getVertexesNum() const;
-
+	//
+	double getBeamLength() const;
+private:
+	AcGePoint3d getHorizontalMidPoint() const;
 	//           set functions
+public:
 	void setBeamVertexes(const AcGePoint3dArray& beam_vertexes);
 	void setBeamWidth(const double& beam_b);
 	void setBeamHeight(const double& beam_h);
@@ -143,7 +147,6 @@ public:
 	static AcDbObjectId PickCenterPointDrawBeam(CPolaCustomBeam* beam);
 	static AcDbObjectId PickTopPointDrawBeam(CPolaCustomBeam* beam);
 	static AcDbObjectId PickBottomPointDrawBeam(CPolaCustomBeam* beam);
-
 	// 
 public:
 	virtual Acad::ErrorStatus subTransformBy(const AcGeMatrix3d& xfrom);
@@ -152,6 +155,7 @@ public:
 public:
 	AcDbObjectIdArray GetIntersectingPillar() const;
 	void addJoint(const double slab_thickness);
+	void addBeamSnInfo();						// TODO
 };
 
 #ifdef CUSTOMBEAM_MODULE

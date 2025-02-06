@@ -459,6 +459,7 @@ void TestClass::Test()
 	//EditEntity::SetColor(beam_array, 1);
 	//EditEntity::SetColor(beam_id, 2);
 	beam->addJoint(800);
+	beam->addBeamSnInfo();
 	acutPrintf(_T("beam length= %f\n"), beam->getBeamLength());
 	//---------------------------------------------------------------------------
 #pragma endregion

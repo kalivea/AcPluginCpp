@@ -418,94 +418,90 @@ double CPolaCustomBeam::getBeamLength() const
 
 AcGePoint3d CPolaCustomBeam::getHorizontalMidPoint() const
 {
-	AcGePoint3dArray vertices = beam_vertexes_;
-
-	if (vertices.length() < 2) 
+	if (beam_vertexes_.length() < 2) 
 	{
 		return AcGePoint3d::kOrigin;
 	}
 
-	std::vector<double> segLengths;
-	double totalLength = 0.0;
-	for (int i = 0; i < vertices.length() - 1; ++i) 
+	std::vector<double> segment_lengths;
+	double total_length = 0.0;
+	for (int i = 0; i < beam_vertexes_.length() - 1; ++i) 
 	{
-		double len = vertices[i].distanceTo(vertices[i + 1]);
-		segLengths.push_back(len);
-		totalLength += len;
+		double len = beam_vertexes_[i].distanceTo(beam_vertexes_[i + 1]);
+		segment_lengths.push_back(len);
+		total_length += len;
 	}
-	double midPos = totalLength / 2.0;
+	double middle_position = total_length / 2.0;
 
-	double currentSum = 0.0;
-	AcGePoint3d pathMidPoint;
+	double current_sum = 0.0;
+	AcGePoint3d path_mid_point;
 	bool isMidOnHorizontal = false;
-	int midSegIndex = -1;
+	int middle_segment_index = -1;
 
-	for (int i = 0; i < segLengths.size(); ++i) 
+	for (int i = 0; i < segment_lengths.size(); ++i) 
 	{
-		double segLen = segLengths[i];
-		if (currentSum + segLen >= midPos) 
+		double segment_length = segment_lengths[i];
+		if (current_sum + segment_length >= middle_position) 
 		{
-			double remain = midPos - currentSum;
-			AcGePoint3d start = vertices[i];
-			AcGePoint3d end = vertices[i + 1];
-			double ratio = remain / segLen;
-
+			double remain = middle_position - current_sum;
+			AcGePoint3d start = beam_vertexes_[i];
+			AcGePoint3d end = beam_vertexes_[i + 1];
+			double ratio = remain / segment_length;
 			AcGeVector3d vec = end - start;
 			vec *= ratio;
-			pathMidPoint = start + vec;
+			path_mid_point = start + vec;
 
-			isMidOnHorizontal = (fabs(start.y - end.y) < 1e-6);
-			midSegIndex = i;
+			isMidOnHorizontal = (fabs(start.y - end.y) < 1e-10);
+			middle_segment_index = i;
 			break;
 		}
-		currentSum += segLen;
+		current_sum += segment_length;
 	}
 
 	if (isMidOnHorizontal) 
 	{
-		return pathMidPoint;
+		return path_mid_point;
 	}
 
-	std::vector<std::pair<double, AcGePoint3d>> horizontalSegments;
-	currentSum = 0.0;
-	for (int i = 0; i < segLengths.size(); ++i) 
+	std::vector<std::pair<double, AcGePoint3d>> horizontal_segments;
+	current_sum = 0.0;
+	for (int i = 0; i < segment_lengths.size(); ++i) 
 	{
-		AcGePoint3d start = vertices[i];
-		AcGePoint3d end = vertices[i + 1];
-		double segLen = segLengths[i];
+		AcGePoint3d start = beam_vertexes_[i];
+		AcGePoint3d end = beam_vertexes_[i + 1];
+		double segment_len = segment_lengths[i];
 
-		if (fabs(start.y - end.y) < 1e-6) 
+		if (fabs(start.y - end.y) < 1e-10)
 		{
-
-			AcGePoint3d midPoint(
+			AcGePoint3d mid_point(
 				(start.x + end.x) / 2.0,
 				(start.y + end.y) / 2.0,
 				(start.z + end.z) / 2.0
 			);
-			double midPathPos = currentSum + segLen / 2.0;
-			horizontalSegments.emplace_back(midPathPos, midPoint);
+			double mid_path_position = current_sum + segment_len / 2.0;
+			horizontal_segments.emplace_back(mid_path_position, mid_point);
 		}
-		currentSum += segLen;
+		current_sum += segment_len;
 	}
 
-	if (horizontalSegments.empty()) 
+	if (horizontal_segments.empty()) 
 	{
-		return pathMidPoint;
+		return path_mid_point;
 	}
 
-	double minDiff = (std::numeric_limits<double>::max)();
+	double min_difference = (std::numeric_limits<double>::max)();
 
-	AcGePoint3d bestPoint = pathMidPoint;
-	for (const auto& hs : horizontalSegments) 
+	AcGePoint3d horizontal_mid_point = path_mid_point;
+	for (const auto& horizontal_segment_data : horizontal_segments) 
 	{
-		double diff = fabs(hs.first - midPos);
-		if (diff < minDiff) 
+		double diff = fabs(horizontal_segment_data.first - middle_position);
+		if (diff < min_difference) 
 		{
-			minDiff = diff;
-			bestPoint = hs.second;
+			min_difference = diff;
+			horizontal_mid_point = horizontal_segment_data.second;
 		}
 	}
-	return bestPoint;
+	return horizontal_mid_point;
 }
 
 void CPolaCustomBeam::setBeamVertexes(const AcGePoint3dArray & beam_vertexes)

@@ -115,7 +115,7 @@ private:
 
 	//	               auxiliary data
 	AcGePoint3dArray rect_pillar_vertex_;		// vertex: store rectangular pillar vertex.
-	Adesk::Int32 concrete_grade_;					
+	Adesk::Int32 concrete_grade_;
 
 public:
 	//					set function
@@ -150,8 +150,8 @@ public:
 	static bool checkValue(const CPolaCustomPillar* pillar);
 	static AcDbObjectIdArray BatchInsert(const CPolaCustomPillar& pillar_template, const AcGePoint3dArray& insert_point_array);
 	static AcDbObjectId SingleInsert(const CPolaCustomPillar& pillar_template, const AcGePoint3d& insert_point);
-	static void AddPillarLeader(const CPolaCustomPillar* pillar);
-	
+	AcDbObjectId AddPillarLeader();
+
 	//
 };
 

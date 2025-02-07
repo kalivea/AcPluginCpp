@@ -24,7 +24,7 @@
 //-----------------------------------------------------------------------------
 #include "StdAfx.h"
 #include "PolaCustomPillar.h"
-
+#include <sstream> 
 //-----------------------------------------------------------------------------
 Adesk::UInt32 CPolaCustomPillar::kCurrentVersionNumber = 1;
 
@@ -43,7 +43,7 @@ ACRX_DXF_DEFINE_MEMBERS(
 CPolaCustomPillar::CPolaCustomPillar() : AcDbEntity() {
 }
 
-CPolaCustomPillar::CPolaCustomPillar(const CPolaCustomPillar& pillar_template)
+CPolaCustomPillar::CPolaCustomPillar(const CPolaCustomPillar & pillar_template)
 	:center_point_(pillar_template.center_point_), direction_vector_(pillar_template.direction_vector_), pillar_d_(pillar_template.pillar_d_),
 	pillar_h_(pillar_template.pillar_h_), viewable_(pillar_template.viewable_), pillar_property_(pillar_template.pillar_property_),
 	pillar_serial_number_(pillar_template.pillar_serial_number_), pillar_type_(pillar_template.pillar_type_), concrete_grade_(pillar_template.concrete_grade_)
@@ -434,7 +434,7 @@ void CPolaCustomPillar::setPillarType(const Adesk::Int32 & type)
 		throw;
 }
 
-void CPolaCustomPillar::setConcreteGrade(const Adesk::Int32& grade)
+void CPolaCustomPillar::setConcreteGrade(const Adesk::Int32 & grade)
 {
 	assertWriteEnabled();
 	concrete_grade_ = grade;
@@ -632,26 +632,27 @@ AcDbObjectId CPolaCustomPillar::SingleInsert(const CPolaCustomPillar & pillar_te
 	return BatchInsert(pillar_template, tmp_array).at(0);
 }
 
-void CPolaCustomPillar::AddPillarLeader(const CPolaCustomPillar * pillar)
+AcDbObjectId CPolaCustomPillar::AddPillarLeader()
 {
-	AcGePoint3d point_on_leader = AcGePoint3d(pillar->getCenterPoint().x - 900, pillar->getCenterPoint().y - 900, pillar->getCenterPoint().z);
-	CString info;
-	double b, h;
-	pillar->getDiameter(b, h);
-	if (pillar->getPillarType() == 1)
+	AcGePoint3d point_on_leader = AcGePoint3d(center_point_.x + 900, center_point_.y - 900, center_point_.z);
+
+	std::wstring info;
+	std::wstringstream info_stream;
+	if (pillar_type_ == 1)
 	{
-		info.Format(_T("Z%d\n%.0f*%.0f"), pillar->getPillarSn(), b, h);
-		DrawEntity::AddMLeader(pillar->getCenterPoint(), point_on_leader, point_on_leader, info);
+		info_stream << _T("Z") << pillar_serial_number_ << _T("\n") << static_cast<int>(pillar_d_) << _T("*") << static_cast<int>(pillar_h_);
+		info = info_stream.str();
 	}
-	else if (pillar->getPillarType() == 0)
+	else if (pillar_type_ == 0)
 	{
-		info.Format(_T("Z%d\n %%%%c %.0f"), pillar->getPillarSn(), b);
-		DrawEntity::AddMLeader(pillar->getCenterPoint(), point_on_leader, point_on_leader, info);
+		info_stream << _T("Z") << pillar_serial_number_ << _T("\n%%c") << static_cast<int>(pillar_d_);
+		info = info_stream.str();
 	}
 	else
 	{
-		throw;
+		throw std::invalid_argument("Invalid pillar type");
 	}
+	return DrawEntity::AddMLeader(center_point_, point_on_leader, point_on_leader, info.c_str());
 }
 
 Acad::ErrorStatus CPolaCustomPillar::subGetGeomExtents(AcDbExtents & extents) const

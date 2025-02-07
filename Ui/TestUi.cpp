@@ -32,6 +32,6 @@ void TestUi::Test()
 	pillar->setSn(1);
 	pillar->setCenterPoint(AcGePoint3d(ui.x, ui.y, 0));
 	pillar->CalculateVertex();
-	CPolaCustomPillar::AddPillarLeader(pillar);
+	pillar->AddPillarLeader();
 	AddToModelSpace::AddEntityToModelSpace(pillar);
 }

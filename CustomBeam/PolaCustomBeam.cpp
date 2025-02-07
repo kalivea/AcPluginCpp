@@ -857,11 +857,15 @@ void CPolaCustomBeam::addJoint(const double slab_thickness)
 	}
 }
 
-void CPolaCustomBeam::addBeamSnInfo()
+AcDbObjectId CPolaCustomBeam::addBeamSnInfo()
 {
-	AcGePoint3d insert_point = AcGePoint3d(getHorizontalMidPoint().x - 1000, getHorizontalMidPoint().y + beam_b_ / 2 + 800, 0);
-	CString info;
-	info.Format(_T("KL%d %.0f*%.0f"), beam_property_, beam_b_, beam_h_);
-	DrawEntity::AddText(insert_point, info, StyleTools::InitTextStyle(), 450);
+	AcGePoint3d insert_point = AcGePoint3d(getHorizontalMidPoint().x - 3000, getHorizontalMidPoint().y + beam_b_ / 2 + 500, 0);
+	std::wstring info;
+	std::wstringstream info_stream;
+
+	info_stream << _T("KL") << beam_property_ << _T(" ") << static_cast<int>(beam_b_) << _T("*") << static_cast<int>(beam_h_);
+	info = info_stream.str();
+
+	return DrawEntity::AddText(insert_point, info.c_str(), StyleTools::InitTextStyle(), 450);
 }
 

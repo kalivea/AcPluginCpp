@@ -46,7 +46,7 @@
 
 //-----------------------------------------------------------------------------
 #include "dbmain.h"
-
+#include <sstream> 
 //-----------------------------------------------------------------------------
 class BEAM_DLLIMPEXP CPolaCustomBeam : public AcDbEntity {
 
@@ -155,7 +155,7 @@ public:
 public:
 	AcDbObjectIdArray GetIntersectingPillar() const;
 	void addJoint(const double slab_thickness);
-	void addBeamSnInfo();						// TODO
+	AcDbObjectId addBeamSnInfo();						
 };
 
 #ifdef CUSTOMBEAM_MODULE

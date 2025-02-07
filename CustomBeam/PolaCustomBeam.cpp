@@ -219,6 +219,11 @@ Adesk::Boolean CPolaCustomBeam::subWorldDraw(AcGiWorldDraw * mode) {
 			throw;
 		}
 	}
+	
+	AcDbLine left_side_line(top_offset_vertex_.first(), bottom_offset_vertex_.first());
+	AcDbLine right_side_line(top_offset_vertex_.last(), bottom_offset_vertex_.last());
+	left_side_line.worldDraw(mode);
+	right_side_line.worldDraw(mode);
 	return (AcDbEntity::subWorldDraw(mode));
 }
 
@@ -859,6 +864,8 @@ void CPolaCustomBeam::addJoint(const double slab_thickness)
 
 AcDbObjectId CPolaCustomBeam::addBeamSnInfo()
 {
+	if (beam_vertexes_.isEmpty())
+		return AcDbObjectId::kNull;
 	AcGePoint3d insert_point = AcGePoint3d(getHorizontalMidPoint().x - 3000, getHorizontalMidPoint().y + beam_b_ / 2 + 500, 0);
 	std::wstring info;
 	std::wstringstream info_stream;

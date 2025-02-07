@@ -151,7 +151,7 @@ public:
 	static AcDbObjectIdArray BatchInsert(const CPolaCustomPillar& pillar_template, const AcGePoint3dArray& insert_point_array);
 	static AcDbObjectId SingleInsert(const CPolaCustomPillar& pillar_template, const AcGePoint3d& insert_point);
 	static void AddPillarLeader(const CPolaCustomPillar* pillar);
-
+	
 	//
 };
 

@@ -45,7 +45,7 @@ public:
 	static AcGeLine3d EntityToLine(const AcDbEntity* entity);
 	static AcGePoint3d ProjectPointToLineSegment(const AcGePoint3d& point, const AcGeLineSeg3d& line_segment, const AcGeVector3d& project_dirction = AcGeVector3d::kIdentity, const AcGeTol& tol = AcGeContext::gTol);
 	static AcGePoint3d ProjectPointToLineSegment(const AcGePoint3d& point, const AcGePoint3d& start_point, const AcGePoint3d& end_point, const AcGeVector3d& project_dirction = AcGeVector3d::kIdentity, const AcGeTol& tol = AcGeContext::gTol);
-	
+
 	// math tools: Numerical tools
 	static double Max(const double& num1, const double& num2);
 	static double Min(const double& num1, const double& num2);

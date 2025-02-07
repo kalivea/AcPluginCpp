@@ -462,6 +462,8 @@ void TestClass::Test()
 	beam->addBeamSnInfo();
 	acutPrintf(_T("beam length= %f\n"), beam->getBeamLength());
 	//---------------------------------------------------------------------------
+
+
 #pragma endregion
 #pragma region proj
 	//AcGePoint3d start_point(0, 0, 0);

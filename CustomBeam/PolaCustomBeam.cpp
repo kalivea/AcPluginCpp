@@ -418,14 +418,14 @@ double CPolaCustomBeam::getBeamLength() const
 
 AcGePoint3d CPolaCustomBeam::getHorizontalMidPoint() const
 {
-	if (beam_vertexes_.length() < 2) 
+	if (beam_vertexes_.length() < 2)
 	{
 		return AcGePoint3d::kOrigin;
 	}
 
 	std::vector<double> segment_lengths;
 	double total_length = 0.0;
-	for (int i = 0; i < beam_vertexes_.length() - 1; ++i) 
+	for (int i = 0; i < beam_vertexes_.length() - 1; ++i)
 	{
 		double len = beam_vertexes_[i].distanceTo(beam_vertexes_[i + 1]);
 		segment_lengths.push_back(len);
@@ -438,10 +438,10 @@ AcGePoint3d CPolaCustomBeam::getHorizontalMidPoint() const
 	bool isMidOnHorizontal = false;
 	int middle_segment_index = -1;
 
-	for (int i = 0; i < segment_lengths.size(); ++i) 
+	for (int i = 0; i < segment_lengths.size(); ++i)
 	{
 		double segment_length = segment_lengths[i];
-		if (current_sum + segment_length >= middle_position) 
+		if (current_sum + segment_length >= middle_position)
 		{
 			double remain = middle_position - current_sum;
 			AcGePoint3d start = beam_vertexes_[i];
@@ -458,14 +458,14 @@ AcGePoint3d CPolaCustomBeam::getHorizontalMidPoint() const
 		current_sum += segment_length;
 	}
 
-	if (isMidOnHorizontal) 
+	if (isMidOnHorizontal)
 	{
 		return path_mid_point;
 	}
 
 	std::vector<std::pair<double, AcGePoint3d>> horizontal_segments;
 	current_sum = 0.0;
-	for (int i = 0; i < segment_lengths.size(); ++i) 
+	for (int i = 0; i < segment_lengths.size(); ++i)
 	{
 		AcGePoint3d start = beam_vertexes_[i];
 		AcGePoint3d end = beam_vertexes_[i + 1];
@@ -484,7 +484,7 @@ AcGePoint3d CPolaCustomBeam::getHorizontalMidPoint() const
 		current_sum += segment_len;
 	}
 
-	if (horizontal_segments.empty()) 
+	if (horizontal_segments.empty())
 	{
 		return path_mid_point;
 	}
@@ -492,10 +492,10 @@ AcGePoint3d CPolaCustomBeam::getHorizontalMidPoint() const
 	double min_difference = (std::numeric_limits<double>::max)();
 
 	AcGePoint3d horizontal_mid_point = path_mid_point;
-	for (const auto& horizontal_segment_data : horizontal_segments) 
+	for (const auto& horizontal_segment_data : horizontal_segments)
 	{
 		double diff = fabs(horizontal_segment_data.first - middle_position);
-		if (diff < min_difference) 
+		if (diff < min_difference)
 		{
 			min_difference = diff;
 			horizontal_mid_point = horizontal_segment_data.second;
@@ -606,10 +606,7 @@ AcDbObjectId CPolaCustomBeam::DrawBeamWithOffset(CPolaCustomBeam * beam, const d
 	AcGePoint3d start_point;
 
 	if (!SelectEntitys::PickPoint(_T("Pick first point:\n"), start_point))
-	{
-		throw;
-	}
-
+		return AcDbObjectId::kNull;
 	AcGePoint3d previous_point = start_point;
 	AcGePoint3d current_point;
 	AcDbObjectId beam_id = AcDbObjectId::kNull;
@@ -862,11 +859,9 @@ void CPolaCustomBeam::addJoint(const double slab_thickness)
 
 void CPolaCustomBeam::addBeamSnInfo()
 {
-	AcGePoint3d insert_point = AcGePoint3d(getHorizontalMidPoint().x, getHorizontalMidPoint().y + beam_b_ / 2 + 800, 0);
-	AcDbText* text = new AcDbText();
-	text->setTextString(_T("Beam"));
-	text->setHeight(500);
-	text->setPosition(insert_point);
-	AddToModelSpace::AddEntityToModelSpace(text);
+	AcGePoint3d insert_point = AcGePoint3d(getHorizontalMidPoint().x - 1000, getHorizontalMidPoint().y + beam_b_ / 2 + 800, 0);
+	CString info;
+	info.Format(_T("KL%d %.0f*%.0f"), beam_property_, beam_b_, beam_h_);
+	DrawEntity::AddText(insert_point, info, StyleTools::InitTextStyle(), 450);
 }
 

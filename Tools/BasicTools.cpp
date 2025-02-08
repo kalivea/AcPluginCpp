@@ -550,3 +550,4 @@ AcDbObjectId BasicTools::GetBlockId(const TCHAR* block_name)
 	}
 	return block_object_id;
 }
+test;

@@ -80,6 +80,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="acrxEntryPoint.cpp" />
+    <ClCompile Include="BeamTools.cpp" />
     <ClCompile Include="CustomBeam.cpp" />
     <ClCompile Include="PolaCustomBeam.cpp" />
     <ClCompile Include="StdAfx.cpp">
@@ -88,6 +89,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BeamTools.h" />
     <ClInclude Include="PolaCustomBeam.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="StdAfx.h" />

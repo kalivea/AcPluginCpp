@@ -114,8 +114,9 @@ private:
 	double beam_h_;								    // store height of beam.
 
 	std::vector<Adesk::Int32> beam_viewable_;		// store viewable of beam.
-	Adesk::Int32 beam_property_;					// store property of beam. The sn of beam.
 
+	Adesk::Int32 beam_property_;					// store property of beam. The sn of beam.
+	AcGeVector3dArray beam_segment_direction;		// store beam segment direction.
 public:
 	//           get functions
 	AcGePoint3dArray getBeamVertexes() const;
@@ -124,6 +125,7 @@ public:
 	std::vector<Adesk::Int32> getBeamViewable() const;
 	Adesk::Int32 getBeamProperty() const;
 	Adesk::Int32 getVertexesNum() const;
+	AcGeVector3dArray getBeamSegmentDirection() const;
 	//
 	double getBeamLength() const;
 private:
@@ -135,12 +137,13 @@ public:
 	void setBeamHeight(const double& beam_h);
 	void setBeamViewable(const std::vector<Adesk::Int32>& beam_viewable);
 	void setBeamProperty(const Adesk::Int32& beam_property);
-
+	void setBeamSegmentDireciton(const AcGeVector3dArray& segment_direction);
 	//			add a single centerline vertex, calculate the offset line veretx.
 private:
 	void addVertexAt(const int& index, const AcGePoint3d& vertex);
 	void addViewableAt(const int index, const Adesk::Int32 viewable);
 	void UpdateOffsetLine(const double& distance);
+	void GenerateBeamSegmentDirection();
 	static AcDbObjectId DrawBeamWithOffset(CPolaCustomBeam* beam, const double offset_distance);
 	// 
 public:
@@ -155,7 +158,7 @@ public:
 public:
 	AcDbObjectIdArray GetIntersectingPillar() const;
 	void addJoint(const double slab_thickness);
-	AcDbObjectId addBeamSnInfo();						
+	AcDbObjectId addBeamSnInfo();
 };
 
 #ifdef CUSTOMBEAM_MODULE

@@ -25,6 +25,8 @@
 #include "StdAfx.h"
 #include "PolaCustomBeam.h"
 
+//
+#include "PillarTools.h"
 //-----------------------------------------------------------------------------
 Adesk::UInt32 CPolaCustomBeam::kCurrentVersionNumber = 1;
 
@@ -219,7 +221,7 @@ Adesk::Boolean CPolaCustomBeam::subWorldDraw(AcGiWorldDraw * mode) {
 			throw;
 		}
 	}
-	
+
 	AcDbLine left_side_line(top_offset_vertex_.first(), bottom_offset_vertex_.first());
 	AcDbLine right_side_line(top_offset_vertex_.last(), bottom_offset_vertex_.last());
 	left_side_line.worldDraw(mode);
@@ -323,7 +325,7 @@ Acad::ErrorStatus CPolaCustomBeam::subGetOsnapPoints(
 		osnapMode, -1, pickPoint, lastPoint, viewXform, snapPoints, geomIds, insertionMat);
 	if (error_status != Acad::eOk)
 		return error_status;
-
+	delete subordinate_line_segment;
 	return Acad::eOk;
 }
 
@@ -408,11 +410,13 @@ Adesk::Int32 CPolaCustomBeam::getBeamProperty() const
 
 Adesk::Int32 CPolaCustomBeam::getVertexesNum() const
 {
+	assertReadEnabled();
 	return beam_vertexes_.length();
 }
 
 double CPolaCustomBeam::getBeamLength() const
 {
+	assertReadEnabled();
 	double length = 0;
 	for (int i = 0;i < vertexes_num_ - 1;i++)
 	{
@@ -421,11 +425,18 @@ double CPolaCustomBeam::getBeamLength() const
 	return length;
 }
 
+AcGeVector3dArray CPolaCustomBeam::getBeamSegmentDirection() const
+{
+	assertReadEnabled();
+	return beam_segment_direction;
+}
+
 AcGePoint3d CPolaCustomBeam::getHorizontalMidPoint() const
 {
+	assertReadEnabled();
 	if (beam_vertexes_.length() < 2)
 	{
-		return AcGePoint3d::kOrigin;
+		return AcGePoint3d(6496, 6496, 6496);
 	}
 
 	std::vector<double> segment_lengths;
@@ -456,7 +467,7 @@ AcGePoint3d CPolaCustomBeam::getHorizontalMidPoint() const
 			vec *= ratio;
 			path_mid_point = start + vec;
 
-			isMidOnHorizontal = (fabs(start.y - end.y) < 1e-10);
+			isMidOnHorizontal = (fabs(start.y - end.y) < AcGeContext::gTol.equalPoint());
 			middle_segment_index = i;
 			break;
 		}
@@ -476,13 +487,9 @@ AcGePoint3d CPolaCustomBeam::getHorizontalMidPoint() const
 		AcGePoint3d end = beam_vertexes_[i + 1];
 		double segment_len = segment_lengths[i];
 
-		if (fabs(start.y - end.y) < 1e-10)
+		if (fabs(start.y - end.y) < AcGeContext::gTol.equalPoint())
 		{
-			AcGePoint3d mid_point(
-				(start.x + end.x) / 2.0,
-				(start.y + end.y) / 2.0,
-				(start.z + end.z) / 2.0
-			);
+			AcGePoint3d mid_point((start.x + end.x) / 2.0, (start.y + end.y) / 2.0, (start.z + end.z) / 2.0);
 			double mid_path_position = current_sum + segment_len / 2.0;
 			horizontal_segments.emplace_back(mid_path_position, mid_point);
 		}
@@ -556,6 +563,12 @@ void CPolaCustomBeam::setBeamProperty(const Adesk::Int32 & beam_property)
 	beam_property_ = beam_property;
 }
 
+void CPolaCustomBeam::setBeamSegmentDireciton(const AcGeVector3dArray & segment_direction)
+{
+	assertWriteEnabled();
+	beam_segment_direction = segment_direction;
+}
+
 void CPolaCustomBeam::addVertexAt(const int& index, const AcGePoint3d & vertex)
 {
 	assertWriteEnabled();
@@ -600,6 +613,16 @@ void CPolaCustomBeam::UpdateOffsetLine(const double& distance)
 	{
 		top_offset_vertex_.append(temp_top.at(i));
 		bottom_offset_vertex_.append(temp_bottom.at(i));
+	}
+}
+
+void CPolaCustomBeam::GenerateBeamSegmentDirection()
+{
+	assertWriteEnabled();
+	beam_segment_direction.removeAll();
+	for (int i = 0;i < beam_vertexes_.length() - 1;i++)
+	{
+		beam_segment_direction.append(BasicTools::GetVectorBetweenTwoPoint(beam_vertexes_.at(i), beam_vertexes_.at(i + 1)));
 	}
 }
 

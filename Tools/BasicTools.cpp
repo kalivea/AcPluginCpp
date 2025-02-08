@@ -333,6 +333,21 @@ bool BasicTools::IsLineThroughRectangle(const AcGePoint3d& line_point1, const Ac
 	}
 }
 
+bool BasicTools::IsPointInRectangle(const AcGePoint3d& point, const AcGePoint3d& vertex_1, const AcGePoint3d& vertex_2)
+{
+	double min_X = BasicTools::Min(vertex_1.x, vertex_2.x);
+	double max_X = BasicTools::Max(vertex_1.x, vertex_1.x);
+	double min_Y = BasicTools::Min(vertex_1.y, vertex_2.y);
+	double max_Y = BasicTools::Max(vertex_1.y, vertex_2.y);
+
+	return (point.x >= min_X && point.x <= max_X) && (point.y >= min_Y && point.y <= max_Y);
+}
+
+bool BasicTools::IsPointInRectangle(const AcGePoint3d& point, const AcDbExtents& extents)
+{
+	return IsPointInRectangle(point, extents.maxPoint(), extents.minPoint());
+}
+
 AcDbObjectIdArray BasicTools::GetAllEntityIdsInDatabase(const TCHAR* layer_name, AcDbDatabase* database)
 {
 	AcDbObjectIdArray all_entity_ids;

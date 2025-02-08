@@ -27,6 +27,9 @@
     <ClCompile Include="PolaCustomPillar.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="PillarTools.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="StdAfx.h">
@@ -36,6 +39,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PolaCustomPillar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PillarTools.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -145,11 +145,6 @@ void TestClass::Test()
 
 
 #pragma endregion
-	/*EditEntity::SetColor(DrawEntity::DrawArc(AcGePoint3d(900, 500, 0), AcGePoint3d(480, 690, 0), AcGePoint3d(0, 0, 0)), 1);
-	EditEntity::SetColor(DrawEntity::DrawArc(AcGePoint3d(0, 0, 0), AcGePoint3d(400, 400, 0), 45, 0), 2);
-	EditEntity::SetColor(DrawEntity::DrawArc(AcGePoint3d(100, 100, 0), AcGePoint3d(200, 100, 0), AcGePoint3d(0, 100, 0), 1), 3);*/
-	//EditEntity::SetColor(DrawEntity::DrawPolyLine(BasicTools::DistanceToPointArrayX(AcGePoint3d(0, 0, 0), 100, 10), 0.5, true), 1);
-
 #pragma region ss--------------------------------------------
 	//StyleTools::LoadLineType(_T("DASHED"), _T("acad.lin"));
 	//AcDbObjectIdArray line_array;
@@ -278,190 +273,27 @@ void TestClass::Test()
 	//}
 #pragma endregion
 #pragma region Beam
-	StyleTools::LoadLineType(_T("CENTER"), _T("acad.lin"));
-	StyleTools::LoadLineType(_T("DASHED"), _T("acad.lin"));
-	/*AcGePoint3dArray vertexes;
-	for (int i = 0; i < 5; i++)
-	{
-		vertexes.append(AcGePoint3d(i * 1000, i * 1000 + 50, 0));
-	}
-	CPolaCustomBeam* beam = new CPolaCustomBeam();
-
-	beam->setBeamWidth(500);
-	beam->setBeamHeight(500);
-	beam->setBeamProperty(1);
-	beam->setBeamVertexes(vertexes);
-	beam->addVertex(AcGePoint3d(0, 6000, 0));
-	beam->UpdateOffsetLine();
-	AddToModelSpace::AddEntityToModelSpace(beam);*/
-
-
-
-	/******************************************************************************************************/
-	/*int index = 2;
-	AcGePoint3d start_point;
-	if (!SelectEntitys::PickPoint(_T("pick first point:\n"), start_point))
-	{
-		throw;
-	}
-	AcGePoint3d previous_point, current_point;
-	previous_point = start_point;
-	AcDbObjectId pl_id = AcDbObjectId::kNull;
-	while (SelectEntitys::PickPoint(_T("pick next point:\n"), start_point, current_point))
-	{
-		if (index == 2)
-		{
-			AcDbPolyline* pl = new AcDbPolyline();
-			pl->addVertexAt(0, BasicTools::Point3dToPoint2d(previous_point));
-			pl->addVertexAt(1, BasicTools::Point3dToPoint2d(current_point));
-			pl_id = AddToModelSpace::AddEntityToModelSpace(pl);
-		}
-		else if (index > 2)
-		{
-			AcDbPolyline* pl = nullptr;
-			if (acdbOpenObject(pl, pl_id, OpenMode::kForWrite) == Acad::eOk)
-			{
-				pl->addVertexAt(index - 1, BasicTools::Point3dToPoint2d(current_point));
-				pl->close();
-			}
-		}
-		previous_point = current_point;
-		index++;
-	}*/
-	/******************************************************************************************************/
-	/*CPolaCustomBeam* beam = new CPolaCustomBeam();
-	beam->setBeamWidth(1200);
-	beam->setBeamHeight(1500);
-	beam->setBeamProperty(1);
-	int index = 2;
-
-	const TCHAR* prompt = _T("Please enter the visibility of the beam segment: [Visible(V) Invisible(I)]");
-	const TCHAR* keyword_buff[] = {_T("V"),_T("I")};
-	int keyword_num = sizeof(keyword_buff) / sizeof(keyword_buff[0]);
-	int selected_index = -1;
-
-	bool get_keyword_status = InputValue::GetKeywordSelection(prompt, keyword_buff, keyword_num, selected_index);
-	if (get_keyword_status && selected_index >= 0 ? true : false && selected_index < keyword_num ? true : false)
-	{
-		if (selected_index == 0)
-			beam->addViewalbeAt(index - 1, 1);
-		else if (selected_index == 1)
-			beam->addViewalbeAt(index - 1, 0);
-		else
-			throw;
-	}
-	AcGePoint3d start_point;
-	if (!SelectEntitys::PickPoint(_T("pick first point:\n"), start_point))
-	{
-		throw;
-	}
-	AcGePoint3d previous_point, current_point;
-	previous_point = start_point;
-	AcDbObjectId beam_id = AcDbObjectId::kNull;
-	while (SelectEntitys::PickPoint(_T("pick next point:\n"), start_point, current_point))
-	{
-		get_keyword_status = InputValue::GetKeywordSelection(prompt, keyword_buff, keyword_num, selected_index);
-		if (get_keyword_status && selected_index >= 0 ? true : false && selected_index < keyword_num ? true : false)
-		{
-			if (selected_index == 0)
-				beam->addViewalbeAt(index - 1, 1);
-			else if (selected_index == 1)
-				beam->addViewalbeAt(index - 1, 0);
-			else
-				throw;
-		}
-		if (index == 2)
-		{
-			beam->addVertexAt(0, previous_point);
-			beam->addVertexAt(1, current_point);
-			beam_id = AddToModelSpace::AddEntityToModelSpace(beam);
-		}
-		else if (index > 2)
-		{
-			CPolaCustomBeam* beam = nullptr;
-			if (acdbOpenObject(beam, beam_id, OpenMode::kForWrite) == Acad::eOk)
-			{
-				beam->addVertexAt(index - 1, current_point);
-				beam->close();
-			}
-		}
-		beam->recordGraphicsModified();
-		acedUpdateDisplay();
-		acutPrintf(_T("Now vertex cnt: %d\n"), beam->getVertexesNum());
-		previous_point = current_point;
-		index++;
-	}*/
-
-	/*CPolaCustomBeam* beam = new CPolaCustomBeam();
-	beam->setBeamWidth(1200);
-	beam->setBeamHeight(1500);
-	beam->setBeamProperty(1);
-	int index = 2;
-	TCHAR keyword[256] = { 0 };
-	beam->addViewableAt(0, 0);
-	AcGePoint3d start_point;
-	if (!SelectEntitys::PickPoint(_T("pick first point:\n"), start_point))
-	{
-		throw;
-	}
-	AcGePoint3d previous_point, current_point;
-	previous_point = start_point;
-	AcDbObjectId beam_id = AcDbObjectId::kNull;
-	while (SelectEntitys::PickPoint(_T("pick next point:\n"), start_point, current_point))
-	{
-		if (index == 2)
-		{
-			beam->addVertexAt(0, previous_point);
-			beam->addVertexAt(1, current_point);
-			InputValue::GetKeyword(_T("Please enter the visibility of the beam segment: [Visible/Invisible]"), _T("Visible Invisible"), keyword, sizeof(keyword) / sizeof(keyword[0]));
-			if (_tcscmp(keyword, _T("Visible")) == 0)
-				beam->addViewableAt(index - 1, 1);
-			else if (_tcscmp(keyword, _T("Invisible")) == 0)
-				beam->addViewableAt(index - 1, 0);
-			else
-				throw;
-			beam_id = AddToModelSpace::AddEntityToModelSpace(beam);
-		}
-		else if (index > 2)
-		{
-			CPolaCustomBeam* beam = nullptr;
-			if (acdbOpenObject(beam, beam_id, OpenMode::kForWrite) == Acad::eOk)
-			{
-				beam->addVertexAt(index - 1, current_point);
-				InputValue::GetKeyword(_T("Please enter the visibility of the beam segment: [Visible/Invisible]"), _T("Visible Invisible"), keyword, sizeof(keyword) / sizeof(keyword[0]));
-				if (_tcscmp(keyword, _T("Visible")) == 0)
-					beam->addViewableAt(index - 1, 1);
-				else if (_tcscmp(keyword, _T("Invisible")) == 0)
-					beam->addViewableAt(index - 1, 0);
-				else
-					throw;
-				beam->close();
-			}
-		}
-		beam->recordGraphicsModified();
-		acedUpdateDisplay();
-		acutPrintf(_T("Now vertex cnt: %d\n"), beam->getVertexesNum());
-		previous_point = current_point;
-		index++;
-	}*/
-	//------------------------------------------------------------------------
-	CPolaCustomBeam* beam = new CPolaCustomBeam();
-	beam->setBeamWidth(1200);
-	beam->setBeamHeight(1500);
-	beam->setBeamProperty(1);
-	//-------------------------------------------------------------------------
-	AcDbObjectId beam_id = CPolaCustomBeam::PickCenterPointDrawBeam(beam);
-	//CPolaCustomBeam::PickTopPointDrawBeam(beam);
-//CPolaCustomBeam::PickBottomPointDrawBeam(beam);
-
-	AcDbObjectIdArray beam_array = beam->GetIntersectingPillar();
-	//acutPrintf(_T("Total %d pillar\n"), beam_array.length());
-	//EditEntity::SetColor(beam_array, 1);
-	//EditEntity::SetColor(beam_id, 2);
-	beam->addJoint(800);
-	beam->addBeamSnInfo();
-	acutPrintf(_T("beam length= %f\n"), beam->getBeamLength());
-	//---------------------------------------------------------------------------
+//	StyleTools::LoadLineType(_T("CENTER"), _T("acad.lin"));
+//	StyleTools::LoadLineType(_T("DASHED"), _T("acad.lin"));
+//
+//	//------------------------------------------------------------------------
+//	CPolaCustomBeam* beam = new CPolaCustomBeam();
+//	beam->setBeamWidth(1200);
+//	beam->setBeamHeight(1500);
+//	beam->setBeamProperty(1);
+//	//-------------------------------------------------------------------------
+//	AcDbObjectId beam_id = CPolaCustomBeam::PickCenterPointDrawBeam(beam);
+//	//CPolaCustomBeam::PickTopPointDrawBeam(beam);
+////CPolaCustomBeam::PickBottomPointDrawBeam(beam);
+//
+//	AcDbObjectIdArray beam_array = beam->GetIntersectingPillar();
+//	//acutPrintf(_T("Total %d pillar\n"), beam_array.length());
+//	//EditEntity::SetColor(beam_array, 1);
+//	//EditEntity::SetColor(beam_id, 2);
+//	beam->addJoint(800);
+//	beam->addBeamSnInfo();
+//	acutPrintf(_T("beam length= %f\n"), beam->getBeamLength());
+//	//---------------------------------------------------------------------------
 
 
 #pragma endregion
@@ -474,5 +306,28 @@ void TestClass::Test()
 	//EditEntity::SetColor(DrawEntity::DrawLine(start_point, end_point), 8);
 	//EditEntity::SetColor(DrawEntity::DrawLine(pt, BasicTools::ProjectPointToLineSeg(pt, line_seg, AcGeVector3d(0, 1, 0))), 1);
 #pragma endregion
+#pragma region pillar tools test
+	//StyleTools::LoadLineType(_T("CENTER"), _T("acad.lin"));
+	//StyleTools::LoadLineType(_T("DASHED"), _T("acad.lin"));
+	//CPolaCustomPillar* pillar_test = new CPolaCustomPillar();
+	//pillar_test->setCenterPoint(AcGePoint3d(100, 100, 0));
+	//pillar_test->setPillarProperty(0);
+	//pillar_test->setViewable(1);
+	//pillar_test->setSn(1);
+	//pillar_test->setPillarType(1);
+	//pillar_test->setDiameter(1000, 1000);
+	//CPolaCustomPillar::SingleInsert(*pillar_test, AcGePoint3d(100, 100, 0));
 
+	AcGePoint3d point;
+	SelectEntitys::PickPoint(_T("Click a point\n"), point);
+	AcDbObjectId pillar_id;
+	double d;
+	if (PillarTools::detectPillar(point, pillar_id, d))
+	{
+		EditEntity::SetColor(pillar_id, 1);
+	}
+	else
+		acutPrintf(_T("no"));
+
+#pragma endregion
 }

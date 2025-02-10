@@ -332,44 +332,44 @@ void TestClass::Test()
 #pragma region 20250210
 
 	//-------------------- Draw Beam -------------------------------------------
-	StyleTools::LoadLineType(_T("CENTER"), _T("acad.lin"));
-	StyleTools::LoadLineType(_T("DASHED"), _T("acad.lin"));
+	//StyleTools::LoadLineType(_T("CENTER"), _T("acad.lin"));
+	//StyleTools::LoadLineType(_T("DASHED"), _T("acad.lin"));
 
-	CPolaCustomBeam* top_beam = new CPolaCustomBeam();
-	top_beam->setBeamWidth(1200);
-	top_beam->setBeamHeight(1500);
+	//CPolaCustomBeam* top_beam = new CPolaCustomBeam();
+	//top_beam->setBeamWidth(1200);
+	//top_beam->setBeamHeight(1500);
 
-	CPolaCustomBeam* center_beam = new CPolaCustomBeam();
-	center_beam->setBeamWidth(1200);
-	center_beam->setBeamHeight(1500);
+	//CPolaCustomBeam* center_beam = new CPolaCustomBeam();
+	//center_beam->setBeamWidth(1200);
+	//center_beam->setBeamHeight(1500);
 
-	CPolaCustomBeam* bottom_beam = new CPolaCustomBeam();
-	bottom_beam->setBeamWidth(1200);
-	bottom_beam->setBeamHeight(1500);
+	//CPolaCustomBeam* bottom_beam = new CPolaCustomBeam();
+	//bottom_beam->setBeamWidth(1200);
+	//bottom_beam->setBeamHeight(1500);
 
-	AcDbObjectId top_beam_id = CPolaCustomBeam::PickTopPointDrawBeam(top_beam);
-	AcDbObjectId center_beam_id = CPolaCustomBeam::PickCenterPointDrawBeam(center_beam);
-	AcDbObjectId bottom_beam_id = CPolaCustomBeam::PickBottomPointDrawBeam(bottom_beam);
+	//AcDbObjectId top_beam_id = CPolaCustomBeam::PickTopPointDrawBeam(top_beam);
+	//AcDbObjectId center_beam_id = CPolaCustomBeam::PickCenterPointDrawBeam(center_beam);
+	//AcDbObjectId bottom_beam_id = CPolaCustomBeam::PickBottomPointDrawBeam(bottom_beam);
 
-	const auto addJoint = [](AcDbObjectId& beam_object_id)
-		{
-			AcDbEntity* beam_entity = nullptr;
-			acdbOpenObject(beam_entity, beam_object_id, OpenMode::kForWrite);
-			CPolaCustomBeam* beam = CPolaCustomBeam::cast(beam_entity);
-			beam->addJoint(800);
-			beam->close();
-		};
-	addJoint(center_beam_id);
+	//const auto addJoint = [](AcDbObjectId& beam_object_id)
+	//	{
+	//		AcDbEntity* beam_entity = nullptr;
+	//		acdbOpenObject(beam_entity, beam_object_id, OpenMode::kForWrite);
+	//		CPolaCustomBeam* beam = CPolaCustomBeam::cast(beam_entity);
+	//		beam->addJoint(800);
+	//		beam->close();
+	//	};
+	//addJoint(center_beam_id);
 
-	AcGePoint3d point;
-	SelectEntitys::PickPoint(_T("Click a point\n"), point);
-	AcDbObjectId pillar_id;
-	double d;
-	if (PillarTools::detectPillar(point, pillar_id, d))
-	{
-		EditEntity::SetColor(pillar_id, 1);
-	}
-	else
-		acutPrintf(_T("no"));
+	//AcGePoint3d point;
+	//SelectEntitys::PickPoint(_T("Click a point\n"), point);
+	//AcDbObjectId pillar_id;
+	//double d;
+	//if (PillarTools::detectPillar(point, pillar_id, d))
+	//{
+	//	EditEntity::SetColor(pillar_id, 1);
+	//}
+	//else
+	//	acutPrintf(_T("no"));
 #pragma endregion
 }

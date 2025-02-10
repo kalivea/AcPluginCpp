@@ -338,9 +338,13 @@ Acad::ErrorStatus CPolaCustomBeam::subGetGripPoints(
 	//----- from the new getGripPoints() method below (which is the default implementation)
 
 	//return (AcDbEntity::subGetGripPoints(gripPoints, osnapModes, geomIds));
-	for (int i = 0;i < vertexes_num_;i++)
+	//for (int i = 0;i < vertexes_num_;i++)
+	//{
+	//	gripPoints.append(beam_vertexes_.at(i));
+	//}
+	for (const auto& vertex : beam_vertexes_)
 	{
-		gripPoints.append(beam_vertexes_.at(i));
+		gripPoints.append(vertex);
 	}
 	return Acad::eOk;
 }
@@ -350,7 +354,19 @@ Acad::ErrorStatus CPolaCustomBeam::subMoveGripPointsAt(const AcDbIntArray & indi
 	//----- This method is never called unless you return eNotImplemented 
 	//----- from the new moveGripPointsAt() method below (which is the default implementation)
 
-	return (AcDbEntity::subMoveGripPointsAt(indices, offset));
+	//return (AcDbEntity::subMoveGripPointsAt(indices, offset));
+	for (int i = 0; i < indices.length(); ++i)
+	{
+		int index = indices[i];
+		if (index >= 0 && index < beam_vertexes_.length())
+		{
+			beam_vertexes_[index] += offset;
+		}
+	}
+	UpdateOffsetLine(0.5 * beam_b_);
+	GenerateBeamSegmentDirection();
+	recordGraphicsModified(true);
+	return Acad::eOk;
 }
 
 Acad::ErrorStatus CPolaCustomBeam::subGetGripPoints(
@@ -705,6 +721,7 @@ AcDbObjectId CPolaCustomBeam::DrawBeamWithOffset(CPolaCustomBeam * beam, const d
 		previous_point = current_point;
 		index++;
 	}
+	beam->close();
 	return beam_id;
 }
 

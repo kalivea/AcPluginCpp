@@ -90,6 +90,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PillarTools.h" />
+    <ClInclude Include="PillarToolsDef.h" />
     <ClInclude Include="PolaCustomPillar.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="StdAfx.h" />

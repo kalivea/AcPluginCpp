@@ -37,6 +37,7 @@ public:
 	static bool IsLineThroughRectangle(const AcGePoint3d& line_point1, const AcGePoint3d& line_point2, const AcGePoint3d vertex_point1, const AcGePoint3d vertex_point2);
 	static bool IsPointInRectangle(const AcGePoint3d& point, const AcGePoint3d& vertex_1, const AcGePoint3d& vertex_2);
 	static bool IsPointInRectangle(const AcGePoint3d& point, const AcDbExtents& extents);
+	
 	// math tools: Line Tools
 	static bool IsIntersectLine(const AcGeLineSeg3d& line_1, const AcGeLineSeg3d& line_2);
 	static bool IsIntersectLine(const AcGePoint3d& line1_point1, const AcGePoint3d& line1_point2, const AcGePoint3d& line2_point1, const AcGePoint3d& line2_point2);
@@ -46,7 +47,10 @@ public:
 	static AcGeLine3d EntityToLine(const AcDbEntity* entity);
 	static AcGePoint3d ProjectPointToLineSegment(const AcGePoint3d& point, const AcGeLineSeg3d& line_segment, const AcGeVector3d& project_dirction = AcGeVector3d::kIdentity, const AcGeTol& tol = AcGeContext::gTol);
 	static AcGePoint3d ProjectPointToLineSegment(const AcGePoint3d& point, const AcGePoint3d& start_point, const AcGePoint3d& end_point, const AcGeVector3d& project_dirction = AcGeVector3d::kIdentity, const AcGeTol& tol = AcGeContext::gTol);
-
+	
+	static double GetDistancePointToLineSegment(const AcGePoint3d& point, const AcGePoint3d& line_segment_start, const AcGePoint3d& line_segment_end);
+	static double GetDistancePointToLine(const AcGePoint3d& point, const AcGePoint3d& line_segment_start, const AcGePoint3d& line_segment_end);
+	
 	// math tools: Numerical tools
 	static double Max(const double& num1, const double& num2);
 	static double Min(const double& num1, const double& num2);

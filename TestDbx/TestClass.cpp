@@ -372,4 +372,39 @@ void TestClass::Test()
 	//else
 	//	acutPrintf(_T("no"));
 #pragma endregion
+
+#pragma region insert point test
+
+	////-------------------- Draw Beam -------------------------------------------
+	//StyleTools::LoadLineType(_T("CENTER"), _T("acad.lin"));
+	//StyleTools::LoadLineType(_T("DASHED"), _T("acad.lin"));
+
+
+	//CPolaCustomBeam* center_beam = new CPolaCustomBeam();
+	//center_beam->setBeamWidth(300);
+	//center_beam->setBeamHeight(500);
+
+	//AcDbObjectId center_beam_id = CPolaCustomBeam::PickCenterPointDrawBeam(center_beam);
+
+	//AcDbEntity* beam_entity = nullptr;
+	//acdbOpenObject(beam_entity, center_beam_id, OpenMode::kForWrite);
+	//CPolaCustomBeam* beam = CPolaCustomBeam::cast(beam_entity);
+
+	//beam->InsertVertex(AcGePoint3d(5000, 0, 0));
+	//beam->close();
+	//--------------------------------------------------------------------
+	StyleTools::LoadLineType(_T("CENTER"), _T("acad.lin"));
+	StyleTools::LoadLineType(_T("DASHED"), _T("acad.lin"));
+	AcDbObjectId beam_id = CPolaCustomBeam::genbeam();
+
+	//AcDbPolyline* pl = new AcDbPolyline();
+	//for (int i = 0;i < 5;i++)
+	//{
+	//	pl->addVertexAt(i, AcGePoint2d(i * 500, 100));
+	//}
+	//AddToModelSpace::AddEntityToModelSpace(pl);
+	//AcGePoint3dArray of_pt;
+	//BasicTools::OffsetPolyLine(*pl, 300, of_pt);
+	//EditEntity::SetColor(DrawEntity::DrawPolyLine(BasicTools::Point3dToPoint2d(of_pt), 0, 0), 1);
+#pragma endregion
 }

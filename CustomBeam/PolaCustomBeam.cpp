@@ -916,3 +916,60 @@ AcDbObjectId CPolaCustomBeam::addBeamSnInfo()
 	return DrawEntity::AddText(insert_point, info.c_str(), StyleTools::InitTextStyle(), 450);
 }
 
+Acad::ErrorStatus CPolaCustomBeam::InsertVertex(const AcGePoint3d & insert_point, const AcGeTol tol)
+{
+	assertWriteEnabled();
+	if (beam_vertexes_.isEmpty())
+	{
+		return Acad::eInvalidInput;
+	}
+
+	int vertexes_num = beam_vertexes_.length();
+	for (int i = 0; i < vertexes_num - 1; ++i)
+	{
+		const AcGePoint3d& start_vertex_ = beam_vertexes_[i];
+		const AcGePoint3d& end_vertex = beam_vertexes_[i + 1];
+
+		if (start_vertex_.isEqualTo(insert_point, tol) || end_vertex.isEqualTo(insert_point, tol))
+		{
+			continue;
+		}
+
+		AcGeVector3d v1 = end_vertex - start_vertex_;
+		v1.normalize();
+		AcGeVector3d v2 = insert_point - start_vertex_;
+		v2.normalize();
+
+		if (v1.isCodirectionalTo(v2, tol))
+		{
+			double param = v1.dotProduct(v2);
+			if (param >= 0 && param <= 1)
+			{
+				addVertexAt(i + 1, insert_point);
+				addViewableAt(i + 1, 1);				//TODO add viewable logic need improve
+				return Acad::eOk;
+			}
+		}
+	}
+	return Acad::eInvalidInput; // Point does not lie on any segment within tolerance
+}
+
+AcDbObjectId CPolaCustomBeam::genbeam()
+{
+	CPolaCustomBeam* beam = new CPolaCustomBeam();
+	AcGePoint3dArray beam_vertex;
+	beam_vertex.append(AcGePoint3d(0, 0, 0));
+	beam_vertex.append(AcGePoint3d(10000, 0, 0));
+	
+	std::vector<Adesk::Int32> viewable;
+	viewable.push_back(1);
+	viewable.push_back(1);
+
+	beam->setBeamWidth(300);
+	beam->setBeamHeight(500);
+	beam->setBeamVertexes(beam_vertex);
+	beam->setBeamViewable(viewable);
+	beam->UpdateOffsetLine(0.5 * beam->getBeamWidth());
+	return AddToModelSpace::AddEntityToModelSpace(beam);
+}
+

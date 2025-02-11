@@ -150,7 +150,7 @@ AcGePoint2dArray BasicTools::Point3dToPoint2d(const AcGePoint3dArray& point3d_ar
 	AcGePoint2dArray point2d_array;
 	for (int i = 0; i < point3d_array.length(); i++)
 	{
-		point2d_array[i] = Point3dToPoint2d(point3d_array.at(i));
+		point2d_array.append(Point3dToPoint2d(point3d_array.at(i)));
 	}
 	return point2d_array;
 }
@@ -230,10 +230,6 @@ bool BasicTools::OffsetPolyLine(const AcDbPolyline& center_line, const double& d
 				offset_vertex_array.append(BasicTools::Point2dToPoint3d(temp));
 			}
 			delete pl;
-		}
-		else
-		{
-			throw;
 		}
 	}
 	return true;
@@ -496,6 +492,37 @@ AcGePoint3d BasicTools::ProjectPointToLineSegment(const AcGePoint3d& point, cons
 {
 	AcGeLineSeg3d line_segment(start_point, end_point);
 	return ProjectPointToLineSegment(point, line_segment, project_dirction, tol);
+}
+
+double BasicTools::GetDistancePointToLineSegment(const AcGePoint3d& point, const AcGePoint3d& line_segment_start, const AcGePoint3d& line_segment_end)
+{
+	AcGeVector3d v(line_segment_end - line_segment_start);
+	double len = v.length();
+	if (len == 0.0)
+		return point.distanceTo(line_segment_start);
+	v.normalize();
+	AcGeVector3d w(point - line_segment_start);
+	double c1 = w.dotProduct(v);
+	if (c1 <= 0)
+		return point.distanceTo(line_segment_start);
+	if (c1 >= len)
+		return point.distanceTo(line_segment_end);
+	v *= c1;
+	AcGePoint3d closest_point = line_segment_start + v;
+	return point.distanceTo(closest_point);
+}
+
+double BasicTools::GetDistancePointToLine(const AcGePoint3d& point, const AcGePoint3d& line_segment_start, const AcGePoint3d& line_segment_end)
+{
+	AcGeVector3d v(line_segment_end - line_segment_start);
+	double len = v.length();
+	if (len == 0.0)
+		return point.distanceTo(line_segment_start);
+
+	v.normalize();
+	AcGeVector3d w(point - line_segment_start);
+	AcGeVector3d perp = w.crossProduct(v);
+	return perp.length();
 }
 
 /// <summary>

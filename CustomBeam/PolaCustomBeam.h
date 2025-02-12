@@ -156,7 +156,7 @@ public:
 	//
 public:
 	AcDbObjectIdArray GetIntersectingPillar() const;
-	void addJoint(const double slab_thickness);
+	void addJoint(const double slab_thickness, const double offset_length = 100);
 	AcDbObjectId addBeamSnInfo();
 	Acad::ErrorStatus InsertVertex(const AcGePoint3d& insert_point, const AcGeTol tol = AcGeContext::gTol);
 	static AcDbObjectId genbeam();

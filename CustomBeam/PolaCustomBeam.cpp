@@ -850,7 +850,7 @@ AcDbObjectIdArray CPolaCustomBeam::GetIntersectingPillar() const
 	return intersecting_pillar_ids;
 }
 
-void CPolaCustomBeam::addJoint(const double slab_thickness)
+void CPolaCustomBeam::addJoint(const double slab_thickness, const double offset_length)
 {
 	AcDbObjectIdArray intersecting_pillar_ids = GetIntersectingPillar();
 	if (vertexes_num_ < 2)
@@ -882,17 +882,17 @@ void CPolaCustomBeam::addJoint(const double slab_thickness)
 			double pillar_b, pillar_h;
 			pillar->getDiameter(pillar_b, pillar_h);
 
-			joint_line1->setStartPoint(AcGePoint3d(temp_pillar_center_point.x - pillar_b / 2.0 - 100 - beam_h_ + slab_thickness, temp_pillar_center_point.y + beam_b_ / 2, 0));
-			joint_line1->setEndPoint(AcGePoint3d(temp_pillar_center_point.x - pillar_b / 2.0 - 100 - beam_h_ + slab_thickness, temp_pillar_center_point.y - beam_b_ / 2, 0));
+			joint_line1->setStartPoint(AcGePoint3d(temp_pillar_center_point.x - pillar_b / 2.0 - offset_length - beam_h_ + slab_thickness, temp_pillar_center_point.y + beam_b_ / 2, 0));
+			joint_line1->setEndPoint(AcGePoint3d(temp_pillar_center_point.x - pillar_b / 2.0 - offset_length - beam_h_ + slab_thickness, temp_pillar_center_point.y - beam_b_ / 2, 0));
 
-			joint_line2->setStartPoint(AcGePoint3d(temp_pillar_center_point.x - pillar_b / 2.0 - 100, temp_pillar_center_point.y + beam_b_ / 2, 0));
-			joint_line2->setEndPoint(AcGePoint3d(temp_pillar_center_point.x - pillar_b / 2.0 - 100, temp_pillar_center_point.y - beam_b_ / 2, 0));
+			joint_line2->setStartPoint(AcGePoint3d(temp_pillar_center_point.x - pillar_b / 2.0 - offset_length, temp_pillar_center_point.y + beam_b_ / 2, 0));
+			joint_line2->setEndPoint(AcGePoint3d(temp_pillar_center_point.x - pillar_b / 2.0 - offset_length, temp_pillar_center_point.y - beam_b_ / 2, 0));
 
-			joint_line3->setStartPoint(AcGePoint3d(temp_pillar_center_point.x + pillar_b / 2.0 + 100, temp_pillar_center_point.y + beam_b_ / 2, 0));
-			joint_line3->setEndPoint(AcGePoint3d(temp_pillar_center_point.x + pillar_b / 2.0 + 100, temp_pillar_center_point.y - beam_b_ / 2, 0));
+			joint_line3->setStartPoint(AcGePoint3d(temp_pillar_center_point.x + pillar_b / 2.0 + offset_length, temp_pillar_center_point.y + beam_b_ / 2, 0));
+			joint_line3->setEndPoint(AcGePoint3d(temp_pillar_center_point.x + pillar_b / 2.0 + offset_length, temp_pillar_center_point.y - beam_b_ / 2, 0));
 
-			joint_line4->setStartPoint(AcGePoint3d(temp_pillar_center_point.x + pillar_b / 2.0 + 100 + beam_h_ - slab_thickness, temp_pillar_center_point.y + beam_b_ / 2, 0));
-			joint_line4->setEndPoint(AcGePoint3d(temp_pillar_center_point.x + pillar_b / 2.0 + 100 + beam_h_ - slab_thickness, temp_pillar_center_point.y - beam_b_ / 2, 0));
+			joint_line4->setStartPoint(AcGePoint3d(temp_pillar_center_point.x + pillar_b / 2.0 + offset_length + beam_h_ - slab_thickness, temp_pillar_center_point.y + beam_b_ / 2, 0));
+			joint_line4->setEndPoint(AcGePoint3d(temp_pillar_center_point.x + pillar_b / 2.0 + offset_length + beam_h_ - slab_thickness, temp_pillar_center_point.y - beam_b_ / 2, 0));
 			if (beam_viewable_.at(i) == 1)
 			{
 				joint_line1->setLinetype(StyleTools::GetLineStyleId(_T("DASHED")));

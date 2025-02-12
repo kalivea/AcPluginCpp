@@ -356,7 +356,7 @@ void TestClass::Test()
 	//		AcDbEntity* beam_entity = nullptr;
 	//		acdbOpenObject(beam_entity, beam_object_id, OpenMode::kForWrite);
 	//		CPolaCustomBeam* beam = CPolaCustomBeam::cast(beam_entity);
-	//		beam->addJoint(800);
+	//		beam->addJoint(800,150);
 	//		beam->close();
 	//	};
 	//addJoint(center_beam_id);
@@ -393,9 +393,9 @@ void TestClass::Test()
 	//beam->InsertVertex(AcGePoint3d(5000, 0, 0));
 	//beam->close();
 	//--------------------------------------------------------------------
-	StyleTools::LoadLineType(_T("CENTER"), _T("acad.lin"));
-	StyleTools::LoadLineType(_T("DASHED"), _T("acad.lin"));
-	AcDbObjectId beam_id = CPolaCustomBeam::genbeam();
+	//StyleTools::LoadLineType(_T("CENTER"), _T("acad.lin"));
+	//StyleTools::LoadLineType(_T("DASHED"), _T("acad.lin"));
+	//AcDbObjectId beam_id = CPolaCustomBeam::genbeam();
 
 	//AcDbPolyline* pl = new AcDbPolyline();
 	//for (int i = 0;i < 5;i++)

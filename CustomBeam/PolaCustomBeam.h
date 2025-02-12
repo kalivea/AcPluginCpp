@@ -98,7 +98,6 @@ public:
 		AcDbGripDataPtrArray& grips, const double curViewUnitSize, const int gripSize,
 		const AcGeVector3d& curViewDir, const int bitflags) const;
 	virtual Acad::ErrorStatus subMoveGripPointsAt(const AcDbVoidPtrArray& gripAppData, const AcGeVector3d& offset, const int bitflags);
-
 	//-----------------------------------------------------------------------------
 	// custom define pillar part             ------Pola
 

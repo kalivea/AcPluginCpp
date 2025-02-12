@@ -379,26 +379,8 @@ Acad::ErrorStatus CPolaCustomBeam::subGetGripPoints(
 	//----- the older getGripPoints() implementation. The call below may return
 	//----- eNotImplemented depending of your base class.
 
-	//return (AcDbEntity::subGetGripPoints(grips, curViewUnitSize, gripSize, curViewDir, bitflags));
-	for (int i = 0; i < beam_vertexes_.length(); ++i)
-	{
-		AcDbGripData* grip = new AcDbGripData();
-		grip->setGripPoint(beam_vertexes_.at(i));
-		grip->setAppData((void*)1);
+	return (AcDbEntity::subGetGripPoints(grips, curViewUnitSize, gripSize, curViewDir, bitflags));
 
-		grips.append(grip);
-	}
-
-	for (int i = 0; i < beam_vertexes_.length() - 1; ++i)
-	{
-		AcGePoint3d mid_point = BasicTools::GetMidPoint(beam_vertexes_.at(i), beam_vertexes_.at(i + 1));
-		AcDbGripData* pGrip = new AcDbGripData();
-		pGrip->setGripPoint(mid_point);
-		pGrip->setAppData((void*)2);
-		grips.append(pGrip);
-	}
-
-	return Acad::eOk;
 }
 
 Acad::ErrorStatus CPolaCustomBeam::subMoveGripPointsAt(
@@ -410,37 +392,38 @@ Acad::ErrorStatus CPolaCustomBeam::subMoveGripPointsAt(
 	//----- If you return eNotImplemented here, that will force AutoCAD to call
 	//----- the older getGripPoints() implementation. The call below may return
 	//----- eNotImplemented depending of your base class.
-	//return (AcDbEntity::subMoveGripPointsAt(gripAppData, offset, bitflags));
-	for (int i = 0; i < gripAppData.length(); ++i) 
-	{
-		AcDbGripData* pGrip = static_cast<AcDbGripData*>(gripAppData[i]);
-		void* appData = pGrip->appData();
+	return (AcDbEntity::subMoveGripPointsAt(gripAppData, offset, bitflags));
+	//for (int i = 0; i < gripAppData.length(); ++i)
+	//{
+	//	AcDbGripData* grip_data = static_cast<AcDbGripData*>(gripAppData[i]);
+	//	void* app_data = grip_data->appData();
 
-		if (appData == (void*)2) 
-		{
-			AcGePoint3d originalPoint = pGrip->gripPoint();
-			AcGePoint3d newPoint = originalPoint + offset;
-			int insertIndex = -1;
-			for (int j = 0; j < beam_vertexes_.length() - 1; ++j) 
-			{
-				AcGeLineSeg3d seg(beam_vertexes_[j], beam_vertexes_[j + 1]);
-				if (seg.isOn(originalPoint, AcGeContext::gTol)) 
-				{
-					insertIndex = j + 1;
-					break;
-				}
-			}
-			if (insertIndex != -1)
-			{
-				beam_vertexes_.insertAt(insertIndex, newPoint);
-				vertexes_num_++;
-				UpdateOffsetLine(0.5*beam_b_);          
-				GenerateBeamSegmentDirection();     
-			}
-		}
-	}
-	return Acad::eOk;
+	//	if (app_data == (void*)2)
+	//	{
+	//		AcGePoint3d original_point = grip_data->gripPoint();
+	//		AcGePoint3d new_point = original_point + offset;
+	//		int insert_index = -1;
+	//		for (int j = 0; j < beam_vertexes_.length() - 1; ++j)
+	//		{
+	//			AcGeLineSeg3d seg(beam_vertexes_[j], beam_vertexes_[j + 1]);
+	//			if (seg.isOn(original_point, AcGeContext::gTol))
+	//			{
+	//				insert_index = j + 1;
+	//				break;
+	//			}
+	//		}
+	//		if (insert_index != -1)
+	//		{
+	//			beam_vertexes_.insertAt(insert_index, new_point);
+	//			vertexes_num_++;
+	//			UpdateOffsetLine(0.5 * beam_b_);
+	//			GenerateBeamSegmentDirection();
+	//		}
+	//	}
+	//}
+	//return Acad::eOk;
 }
+
 
 AcGePoint3dArray CPolaCustomBeam::getBeamVertexes() const
 {

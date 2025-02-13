@@ -616,7 +616,7 @@ void CPolaCustomBeam::setBeamSegmentDireciton(const AcGeVector3dArray & segment_
 	beam_segment_direction = segment_direction;
 }
 
-void CPolaCustomBeam::addVertexAt(const int& index, const AcGePoint3d & vertex)
+void CPolaCustomBeam::addVertexAt(const int index, const AcGePoint3d & vertex)
 {
 	assertWriteEnabled();
 	beam_vertexes_.insertAt(index, vertex);
@@ -648,6 +648,14 @@ void CPolaCustomBeam::addViewableAt(const int index, const Adesk::Int32 viewable
 	}
 }
 
+void CPolaCustomBeam::resetViewableAt(const int index, const Adesk::Int32 viewable)
+{
+	assertWriteEnabled();
+	if (index <= 0 || index >= beam_viewable_.size())
+		throw;
+	beam_viewable_.at(index) = viewable;
+}
+
 void CPolaCustomBeam::UpdateOffsetLine(const double& distance)
 {
 	assertWriteEnabled();
@@ -675,6 +683,7 @@ void CPolaCustomBeam::GenerateBeamSegmentDirection()
 
 AcDbObjectId CPolaCustomBeam::DrawBeamWithOffset(CPolaCustomBeam * beam, const double offset_distance)
 {
+
 	int index = 2;
 	TCHAR keyword[256] = { 0 };
 	beam->addViewableAt(0, 0);
@@ -769,6 +778,49 @@ AcDbObjectId CPolaCustomBeam::PickTopPointDrawBeam(CPolaCustomBeam * beam)
 AcDbObjectId CPolaCustomBeam::PickBottomPointDrawBeam(CPolaCustomBeam * beam)
 {
 	return DrawBeamWithOffset(beam, -beam->getBeamWidth() * 0.5);
+}
+
+void CPolaCustomBeam::ModifyViewable(CPolaCustomBeam * beam, int index,Adesk::Int32 viewable)
+{
+	beam->resetViewableAt(index, viewable);
+	beam->recordGraphicsModified();
+	acedUpdateDisplay();
+}
+
+void CPolaCustomBeam::ModifyViewable(AcDbObjectId beam_id, int index, Adesk::Int32 viewable)
+{
+	AcDbEntity* beam_entity = nullptr;
+	acdbOpenObject(beam_entity, beam_id, OpenMode::kForWrite);
+	CPolaCustomBeam* beam = CPolaCustomBeam::cast(beam_entity);
+	beam->resetViewableAt(index, viewable);
+	beam->close();
+	beam_entity->close();
+}
+
+AcDbObjectId CPolaCustomBeam::SelectPillarDrawBeam(CPolaCustomBeam * beam)
+{
+	AcDbObjectIdArray selected_pillar;
+	AcGePoint3dArray vertex_array;
+	AcGePoint3dArray sort_vertex_array;
+	std::vector<Adesk::Int32> viewable;
+	viewable.push_back(1);
+
+	SelectEntitys::PickEntitys(_T("Select pillar\n"), CPolaCustomPillar::desc(), selected_pillar);
+	for (const auto& pillar : selected_pillar)
+	{
+		AcDbEntity* current_pillar_entity = nullptr;
+		acdbOpenObject(current_pillar_entity, pillar, OpenMode::kForRead);
+		CPolaCustomPillar* current_pillar = CPolaCustomPillar::cast(current_pillar_entity);
+		vertex_array.append(current_pillar->getCenterPoint());
+		viewable.push_back(1);
+		current_pillar->close();
+		current_pillar_entity->close();
+	}
+	BasicTools::SortPointFromLeftToRight(vertex_array, sort_vertex_array);
+	beam->setBeamVertexes(sort_vertex_array);
+	beam->setBeamViewable(viewable);
+	beam->UpdateOffsetLine(0.5 * beam->getBeamWidth());
+	return AddToModelSpace::AddEntityToModelSpace(beam);
 }
 
 Acad::ErrorStatus CPolaCustomBeam::subTransformBy(const AcGeMatrix3d & xfrom)
@@ -990,9 +1042,11 @@ AcDbObjectId CPolaCustomBeam::genbeam()
 	CPolaCustomBeam* beam = new CPolaCustomBeam();
 	AcGePoint3dArray beam_vertex;
 	beam_vertex.append(AcGePoint3d(0, 0, 0));
+	beam_vertex.append(AcGePoint3d(5000, 0, 0));
 	beam_vertex.append(AcGePoint3d(10000, 0, 0));
 
 	std::vector<Adesk::Int32> viewable;
+	viewable.push_back(1);
 	viewable.push_back(1);
 	viewable.push_back(1);
 

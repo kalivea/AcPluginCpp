@@ -139,8 +139,9 @@ public:
 	void setBeamSegmentDireciton(const AcGeVector3dArray& segment_direction);
 	//			add a single centerline vertex, calculate the offset line veretx.
 private:
-	void addVertexAt(const int& index, const AcGePoint3d& vertex);
+	void addVertexAt(const int index, const AcGePoint3d& vertex);
 	void addViewableAt(const int index, const Adesk::Int32 viewable);
+	void resetViewableAt(const int index, const Adesk::Int32 viewable);
 	void UpdateOffsetLine(const double& distance);
 	void GenerateBeamSegmentDirection();
 	static AcDbObjectId DrawBeamWithOffset(CPolaCustomBeam* beam, const double offset_distance);
@@ -149,6 +150,10 @@ public:
 	static AcDbObjectId PickCenterPointDrawBeam(CPolaCustomBeam* beam);
 	static AcDbObjectId PickTopPointDrawBeam(CPolaCustomBeam* beam);
 	static AcDbObjectId PickBottomPointDrawBeam(CPolaCustomBeam* beam);
+	static AcDbObjectId SelectPillarDrawBeam(CPolaCustomBeam* beam);				//TODO
+
+	static void ModifyViewable(CPolaCustomBeam* beam, int index, Adesk::Int32 viewable);
+	static void ModifyViewable(AcDbObjectId beam_id, int index, Adesk::Int32 viewable);
 	// 
 public:
 	virtual Acad::ErrorStatus subTransformBy(const AcGeMatrix3d& xfrom);

@@ -393,10 +393,12 @@ void TestClass::Test()
 	//beam->InsertVertex(AcGePoint3d(5000, 0, 0));
 	//beam->close();
 	//--------------------------------------------------------------------
-	//StyleTools::LoadLineType(_T("CENTER"), _T("acad.lin"));
-	//StyleTools::LoadLineType(_T("DASHED"), _T("acad.lin"));
-	//AcDbObjectId beam_id = CPolaCustomBeam::genbeam();
+	/*StyleTools::LoadLineType(_T("CENTER"), _T("acad.lin"));
+	StyleTools::LoadLineType(_T("DASHED"), _T("acad.lin"));
+	AcDbObjectId beam_id = CPolaCustomBeam::genbeam();
 
+	CPolaCustomBeam::ModifyViewable(beam_id, 2, 0);*/
+	
 	//AcDbPolyline* pl = new AcDbPolyline();
 	//for (int i = 0;i < 5;i++)
 	//{
@@ -406,5 +408,12 @@ void TestClass::Test()
 	//AcGePoint3dArray of_pt;
 	//BasicTools::OffsetPolyLine(*pl, 300, of_pt);
 	//EditEntity::SetColor(DrawEntity::DrawPolyLine(BasicTools::Point3dToPoint2d(of_pt), 0, 0), 1);
+
+
+	CPolaCustomBeam* beam = new CPolaCustomBeam();
+	beam->setBeamWidth(1200);
+	beam->setBeamHeight(1500);
+
+	beam->SelectPillarDrawBeam(beam);
 #pragma endregion
 }

@@ -780,7 +780,7 @@ AcDbObjectId CPolaCustomBeam::PickBottomPointDrawBeam(CPolaCustomBeam * beam)
 	return DrawBeamWithOffset(beam, -beam->getBeamWidth() * 0.5);
 }
 
-void CPolaCustomBeam::ModifyViewable(CPolaCustomBeam * beam, int index,Adesk::Int32 viewable)
+void CPolaCustomBeam::ModifyViewable(CPolaCustomBeam * beam, int index, Adesk::Int32 viewable)
 {
 	beam->resetViewableAt(index, viewable);
 	beam->recordGraphicsModified();
@@ -900,6 +900,24 @@ AcDbObjectIdArray CPolaCustomBeam::GetIntersectingPillar() const
 		}
 	}
 	return intersecting_pillar_ids;
+}
+
+int CPolaCustomBeam::GetSegmentIndexFromPoint(const AcGePoint3d & point) const
+{
+	for (int i = 0; i < beam_vertexes_.length() - 1; ++i)
+	{
+		AcGePoint3d start = beam_vertexes_[i];
+		AcGePoint3d end = beam_vertexes_[i + 1];
+
+		AcGeLineSeg3d segment(start, end);
+		AcGePoint3d projected_point = BasicTools::ProjectPointToLineSegment(point, segment, AcGeVector3d::kYAxis);
+		if (segment.isOn(projected_point))
+		{
+			DrawEntity::DrawLine(projected_point, point);
+			return i;
+		}
+	}
+	return -1;								// Projected point not found on any segment
 }
 
 void CPolaCustomBeam::addJoint(const double slab_thickness, const double offset_length)
@@ -1042,10 +1060,12 @@ AcDbObjectId CPolaCustomBeam::genbeam()
 	CPolaCustomBeam* beam = new CPolaCustomBeam();
 	AcGePoint3dArray beam_vertex;
 	beam_vertex.append(AcGePoint3d(0, 0, 0));
-	beam_vertex.append(AcGePoint3d(5000, 0, 0));
+	beam_vertex.append(AcGePoint3d(4000, 0, 0));
 	beam_vertex.append(AcGePoint3d(10000, 0, 0));
+	beam_vertex.append(AcGePoint3d(15000, 0, 0));
 
 	std::vector<Adesk::Int32> viewable;
+	viewable.push_back(1);
 	viewable.push_back(1);
 	viewable.push_back(1);
 	viewable.push_back(1);

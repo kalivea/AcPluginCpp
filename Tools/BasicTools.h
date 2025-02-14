@@ -32,6 +32,8 @@ public:
 	static bool OffsetLineSegment(const AcGePoint3d& start_point, const AcGePoint3d& end_point, const double& distance, AcGePoint3d out_point[2]);
 	static bool IsLeftPoint(const AcGePoint3d& point1, const  AcGePoint3d& point2);
 	static bool SortPointFromLeftToRight(const AcGePoint3dArray& source_point_array, AcGePoint3dArray& target_point_array);
+	static bool IsBottomPoint(const AcGePoint3d& point1, const AcGePoint3d& point2);
+	static bool SortPointFromBottomToTop(const AcGePoint3dArray& source_point_array, AcGePoint3dArray& target_point_array);
 
 	// math tools: Rectangle Tools
 	static bool IsIntersectRectangle(const AcGePoint3d& vertex_point1, const AcGePoint3d& vertex_point2, const AcGePoint3d& vertex_point3, const AcGePoint3d& vertex_point4);

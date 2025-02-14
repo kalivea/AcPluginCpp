@@ -291,6 +291,31 @@ bool BasicTools::SortPointFromLeftToRight(const AcGePoint3dArray& source_point_a
 	return true;
 }
 
+bool BasicTools::IsBottomPoint(const AcGePoint3d& point1, const AcGePoint3d& point2)
+{
+	return point1.y < point2.y ? true : false;
+}
+
+bool BasicTools::SortPointFromBottomToTop(const AcGePoint3dArray& source_point_array, AcGePoint3dArray& target_point_array)
+{
+	if (source_point_array.isEmpty())
+	{
+		return false;
+	}
+
+	std::vector<AcGePoint3d> temp_vector;
+	for (int i = 0;i < source_point_array.length();i++)
+	{
+		temp_vector.push_back(source_point_array.at(i));
+	}
+	std::sort(temp_vector.begin(), temp_vector.end(), &BasicTools::IsBottomPoint);
+	for (int i = 0;i < temp_vector.size();i++)
+	{
+		target_point_array.append(temp_vector.at(i));
+	}
+	return true;
+}
+
 bool BasicTools::IsIntersectRectangle(const AcGePoint3d& vertex_point1, const AcGePoint3d& vertex_point2, const AcGePoint3d& vertex_point3, const AcGePoint3d& vertex_point4)
 {
 	double rect1_min_x = BasicTools::Min(vertex_point1.x, vertex_point2.x);

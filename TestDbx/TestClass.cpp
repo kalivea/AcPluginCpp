@@ -398,7 +398,7 @@ void TestClass::Test()
 	AcDbObjectId beam_id = CPolaCustomBeam::genbeam();
 
 	CPolaCustomBeam::ModifyViewable(beam_id, 2, 0);*/
-	
+
 	//AcDbPolyline* pl = new AcDbPolyline();
 	//for (int i = 0;i < 5;i++)
 	//{
@@ -410,10 +410,59 @@ void TestClass::Test()
 	//EditEntity::SetColor(DrawEntity::DrawPolyLine(BasicTools::Point3dToPoint2d(of_pt), 0, 0), 1);
 
 
-	CPolaCustomBeam* beam = new CPolaCustomBeam();
-	beam->setBeamWidth(1200);
-	beam->setBeamHeight(1500);
+	//CPolaCustomBeam* beam = new CPolaCustomBeam();
+	//beam->setBeamWidth(1200);
+	//beam->setBeamHeight(1500);
 
-	beam->SelectPillarDrawBeam(beam);
+	//beam->SelectPillarDrawBeam(beam);
+
+	//AcDbObjectIdArray pillar;
+	//SelectEntitys::GetAllEntitysByType(CPolaCustomPillar::desc(), pillar);
+
+	//const auto addText = [](AcDbObjectIdArray& pillar_array)
+	//	{
+	//		AcDbEntity* pillar = nullptr;
+	//		for (int i = 0;i < pillar_array.length();i++)
+	//		{
+	//			std::wstring info;
+	//			std::wstringstream info_stream;
+	//			info_stream << i;
+	//			info = info_stream.str();
+	//			acdbOpenObject(pillar, pillar_array.at(i), OpenMode::kForRead);
+	//			CPolaCustomPillar* p = CPolaCustomPillar::cast(pillar);
+	//			DrawEntity::AddText(p->getCenterPoint(), info.c_str(), StyleTools::InitTextStyle(), 350);
+	//			p->close();
+	//		}
+	//		pillar->close();
+	//	};
+	//addText(pillar);
+#pragma endregion
+#pragma region beam plus test
+	StyleTools::LoadLineType(_T("CENTER"), _T("acad.lin"));
+	StyleTools::LoadLineType(_T("DASHED"), _T("acad.lin"));
+
+	AcDbObjectId id = CPolaCustomBeam::genbeam();
+	AcGePoint3d point;
+	SelectEntitys::PickPoint(_T("Select point: \n"), point);
+	AcDbEntity* entity = nullptr;
+	acdbOpenObject(entity, id);
+	CPolaCustomBeam* beam_t = CPolaCustomBeam::cast(entity);
+	acutPrintf(_T("on %d"), beam_t->GetSegmentIndexFromPoint(point) + 1);
+	beam_t->close();
+
+	/*AcGePoint3d point1(0, 0, 0);
+	AcGePoint3d point2(100, 100, 0);
+	DrawEntity::DrawLine(point1, point2);
+	
+	AcGePoint3d prj1 = BasicTools::ProjectPointToLineSegment(AcGePoint3d(50, 20, 0), AcGeLineSeg3d(point1, point2), AcGeVector3d::kXAxis);
+	EditEntity::SetColor(DrawEntity::DrawLine(AcGePoint3d(50, 20, 0), prj1), 1);
+
+	AcGePoint3d prj2 = BasicTools::ProjectPointToLineSegment(AcGePoint3d(50, 20, 0), AcGeLineSeg3d(point1, point2), AcGeVector3d::kYAxis);
+	EditEntity::SetColor(DrawEntity::DrawLine(AcGePoint3d(50, 20, 0), prj2), 2);
+
+	AcGePoint3d prj3 = BasicTools::ProjectPointToLineSegment(AcGePoint3d(50, 20, 0), AcGeLineSeg3d(point1, point2), AcGeVector3d::kIdentity);
+	EditEntity::SetColor(DrawEntity::DrawLine(AcGePoint3d(50, 20, 0), prj3), 3);*/
+
+
 #pragma endregion
 }

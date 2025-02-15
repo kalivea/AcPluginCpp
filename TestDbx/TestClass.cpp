@@ -445,15 +445,15 @@ void TestClass::Test()
 	AcGePoint3d point;
 	SelectEntitys::PickPoint(_T("Select point: \n"), point);
 	AcDbEntity* entity = nullptr;
-	acdbOpenObject(entity, id);
+	acdbOpenObject(entity, id, OpenMode::kForWrite);
 	CPolaCustomBeam* beam_t = CPolaCustomBeam::cast(entity);
-	acutPrintf(_T("on %d"), beam_t->GetSegmentIndexFromPoint(point) + 1);
+	CPolaCustomBeam::ModifyViewable(beam_t, beam_t->GetSegmentIndexByYProjection(point) + 1, 0);
 	beam_t->close();
 
 	/*AcGePoint3d point1(0, 0, 0);
 	AcGePoint3d point2(100, 100, 0);
 	DrawEntity::DrawLine(point1, point2);
-	
+
 	AcGePoint3d prj1 = BasicTools::ProjectPointToLineSegment(AcGePoint3d(50, 20, 0), AcGeLineSeg3d(point1, point2), AcGeVector3d::kXAxis);
 	EditEntity::SetColor(DrawEntity::DrawLine(AcGePoint3d(50, 20, 0), prj1), 1);
 

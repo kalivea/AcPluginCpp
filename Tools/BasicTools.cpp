@@ -562,6 +562,13 @@ double BasicTools::GetDistancePointToLineSegment(const AcGePoint3d& point, const
 	return point.distanceTo(closest_point);
 }
 
+double BasicTools::GetDistancePointToLineSegment(const AcGePoint3d& point, const AcGeLineSeg3d& line_segment)
+{
+	AcGePoint3d start_point = line_segment.startPoint();
+	AcGePoint3d end_point = line_segment.endPoint();
+	return GetDistancePointToLineSegment(point, start_point, end_point);
+}
+
 double BasicTools::GetDistancePointToLine(const AcGePoint3d& point, const AcGePoint3d& line_segment_start, const AcGePoint3d& line_segment_end)
 {
 	AcGeVector3d v(line_segment_end - line_segment_start);

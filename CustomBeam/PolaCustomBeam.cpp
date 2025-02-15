@@ -782,9 +782,15 @@ AcDbObjectId CPolaCustomBeam::PickBottomPointDrawBeam(CPolaCustomBeam * beam)
 
 void CPolaCustomBeam::ModifyViewable(CPolaCustomBeam * beam, int index, Adesk::Int32 viewable)
 {
-	beam->resetViewableAt(index, viewable);
-	beam->recordGraphicsModified();
-	acedUpdateDisplay();
+	if (index <= 0 || index >= beam->getVertexesNum())
+		acutPrintf(_T("Invalid index!\n"));
+	else
+	{
+		beam->resetViewableAt(index, viewable);
+		beam->recordGraphicsModified();
+		acedUpdateDisplay();
+	}
+
 }
 
 void CPolaCustomBeam::ModifyViewable(AcDbObjectId beam_id, int index, Adesk::Int32 viewable)
@@ -902,23 +908,75 @@ AcDbObjectIdArray CPolaCustomBeam::GetIntersectingPillar() const
 	return intersecting_pillar_ids;
 }
 
-int CPolaCustomBeam::GetSegmentIndexFromPoint(const AcGePoint3d & point) const
+Adesk::Int32 CPolaCustomBeam::GetSegmentIndexByYProjection(const AcGePoint3d & point, const AcGeTol & tol) const
 {
-	for (int i = 0; i < beam_vertexes_.length() - 1; ++i)
-	{
-		AcGePoint3d start = beam_vertexes_[i];
-		AcGePoint3d end = beam_vertexes_[i + 1];
+	Adesk::Int32 segment_index = -1;
+	double min_t = DBL_MAX;
 
-		AcGeLineSeg3d segment(start, end);
-		AcGePoint3d projected_point = BasicTools::ProjectPointToLineSegment(point, segment, AcGeVector3d::kYAxis);
-		if (segment.isOn(projected_point))
+	const AcGePoint3dArray& vertices = beam_vertexes_;
+	const int vertexes_count = vertices.length() - 1;
+
+	if (vertexes_count < 1)
+		return -1;
+
+	for (int i = 0; i < vertexes_count; ++i)
+	{
+		const AcGePoint3d& v1 = vertices[i];
+		const AcGePoint3d& v2 = vertices[i + 1];
+
+		const bool isVertical = (fabs(v2.x - v1.x) <= tol.equalPoint());
+
+		if (isVertical)
 		{
-			DrawEntity::DrawLine(projected_point, point);
-			return i;
+
+			if (fabs(v1.x - point.x) > tol.equalPoint())
+				continue;
+
+			const double y_min = BasicTools::Min(v1.y, v2.y);
+			const double y_max = BasicTools::Max(v1.y, v2.y);
+
+			const double t = point.y - y_max;
+
+			if (t >= -tol.equalVector())
+			{
+
+				if (t < min_t)
+				{
+					min_t = t;
+					segment_index = i;
+				}
+			}
+		}
+		else
+		{
+			const double dx = v2.x - v1.x;
+			const double dy = v2.y - v1.y;
+
+			const double s = (point.x - v1.x) / dx;
+
+			if (s < -tol.equalPoint() || s > 1.0 + tol.equalPoint())
+				continue;
+
+			const double y_intersect = v1.y + s * dy;
+			const double t = point.y - y_intersect;
+
+			if (t < -tol.equalVector())
+				continue;
+
+			const double z_intersect = v1.z + s * (v2.z - v1.z);
+			if (fabs(z_intersect - point.z) > tol.equalPoint())
+				continue;
+
+			if (t < min_t)
+			{
+				min_t = t;
+				segment_index = i;
+			}
 		}
 	}
-	return -1;								// Projected point not found on any segment
+	return segment_index;
 }
+
 
 void CPolaCustomBeam::addJoint(const double slab_thickness, const double offset_length)
 {

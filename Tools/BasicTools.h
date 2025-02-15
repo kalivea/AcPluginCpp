@@ -53,6 +53,7 @@ public:
 	static AcGePoint3d ProjectPointToLineSegment(const AcGePoint3d& point, const AcGePoint3d& start_point, const AcGePoint3d& end_point, const AcGeVector3d& project_dirction = AcGeVector3d::kIdentity, const AcGeTol& tol = AcGeContext::gTol);
 
 	static double GetDistancePointToLineSegment(const AcGePoint3d& point, const AcGePoint3d& line_segment_start, const AcGePoint3d& line_segment_end);
+	static double GetDistancePointToLineSegment(const AcGePoint3d& point, const AcGeLineSeg3d& line_segment);
 	static double GetDistancePointToLine(const AcGePoint3d& point, const AcGePoint3d& line_segment_start, const AcGePoint3d& line_segment_end);
 
 	// math tools: Numerical tools

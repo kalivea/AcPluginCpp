@@ -150,10 +150,10 @@ public:
 	static AcDbObjectId PickCenterPointDrawBeam(CPolaCustomBeam* beam);
 	static AcDbObjectId PickTopPointDrawBeam(CPolaCustomBeam* beam);
 	static AcDbObjectId PickBottomPointDrawBeam(CPolaCustomBeam* beam);
-	static AcDbObjectId SelectPillarDrawBeam(CPolaCustomBeam* beam);				//TODO
+	static AcDbObjectId SelectPillarDrawBeam(CPolaCustomBeam* beam);			
 
-	static void ModifyViewable(CPolaCustomBeam* beam, int index, Adesk::Int32 viewable);
-	static void ModifyViewable(AcDbObjectId beam_id, int index, Adesk::Int32 viewable);
+	static bool ModifyViewable(CPolaCustomBeam* beam, int index, Adesk::Int32 viewable);
+	static bool ModifyViewable(AcDbObjectId beam_id, int index, Adesk::Int32 viewable);
 	// 
 public:
 	virtual Acad::ErrorStatus subTransformBy(const AcGeMatrix3d& xfrom);

@@ -30,6 +30,7 @@ public:
 	static bool OffsetPolyLine(const AcDbPolyline& center_line, const double& distance, AcGePoint3dArray& offset_vertex_array);
 	static bool OffsetPolyLine(const AcGePoint3dArray& center_array, const double& distance, AcGePoint3dArray& offset_vertex_array);
 	static bool OffsetLineSegment(const AcGePoint3d& start_point, const AcGePoint3d& end_point, const double& distance, AcGePoint3d out_point[2]);
+	static bool OffsetLineSegment(const AcGeLineSeg3d& line_segment, const double& distance, AcGePoint3d out_point[2]);
 	static bool IsLeftPoint(const AcGePoint3d& point1, const  AcGePoint3d& point2);
 	static bool SortPointFromLeftToRight(const AcGePoint3dArray& source_point_array, AcGePoint3dArray& target_point_array);
 	static bool IsBottomPoint(const AcGePoint3d& point1, const AcGePoint3d& point2);

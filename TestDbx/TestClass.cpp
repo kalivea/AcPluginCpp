@@ -441,14 +441,23 @@ void TestClass::Test()
 	StyleTools::LoadLineType(_T("CENTER"), _T("acad.lin"));
 	StyleTools::LoadLineType(_T("DASHED"), _T("acad.lin"));
 
-	AcDbObjectId id = CPolaCustomBeam::genbeam();
+	CPolaCustomBeam* beam = new CPolaCustomBeam();
+	beam->setBeamWidth(1200);
+	beam->setBeamHeight(1500);
+	AcDbObjectId id = CPolaCustomBeam::SelectPillarDrawBeam(beam);
+
 	AcGePoint3d point;
-	SelectEntitys::PickPoint(_T("Select point: \n"), point);
-	AcDbEntity* entity = nullptr;
-	acdbOpenObject(entity, id, OpenMode::kForWrite);
-	CPolaCustomBeam* beam_t = CPolaCustomBeam::cast(entity);
-	CPolaCustomBeam::ModifyViewable(beam_t, beam_t->GetSegmentIndexByYProjection(point) + 1, 0);
-	beam_t->close();
+	while (SelectEntitys::PickPoint(_T("Select point: \n"), point))
+	{
+		AcDbEntity* entity = nullptr;
+		acdbOpenObject(entity, id, OpenMode::kForWrite);
+		CPolaCustomBeam* beam_t = CPolaCustomBeam::cast(entity);
+		CPolaCustomBeam::ModifyViewable(beam_t, beam_t->GetSegmentIndexByYProjection(point) + 1, 0);
+		beam_t->close();
+	}
+
+
+
 
 	/*AcGePoint3d point1(0, 0, 0);
 	AcGePoint3d point2(100, 100, 0);

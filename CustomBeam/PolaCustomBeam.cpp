@@ -780,27 +780,39 @@ AcDbObjectId CPolaCustomBeam::PickBottomPointDrawBeam(CPolaCustomBeam * beam)
 	return DrawBeamWithOffset(beam, -beam->getBeamWidth() * 0.5);
 }
 
-void CPolaCustomBeam::ModifyViewable(CPolaCustomBeam * beam, int index, Adesk::Int32 viewable)
+bool CPolaCustomBeam::ModifyViewable(CPolaCustomBeam * beam, int index, Adesk::Int32 viewable)
 {
 	if (index <= 0 || index >= beam->getVertexesNum())
+	{
 		acutPrintf(_T("Invalid index!\n"));
+		return false;
+	}
+
 	else
 	{
 		beam->resetViewableAt(index, viewable);
 		beam->recordGraphicsModified();
 		acedUpdateDisplay();
+		beam->close();
+		return true;
 	}
-
 }
 
-void CPolaCustomBeam::ModifyViewable(AcDbObjectId beam_id, int index, Adesk::Int32 viewable)
+bool CPolaCustomBeam::ModifyViewable(AcDbObjectId beam_id, int index, Adesk::Int32 viewable)
 {
 	AcDbEntity* beam_entity = nullptr;
 	acdbOpenObject(beam_entity, beam_id, OpenMode::kForWrite);
 	CPolaCustomBeam* beam = CPolaCustomBeam::cast(beam_entity);
-	beam->resetViewableAt(index, viewable);
-	beam->close();
-	beam_entity->close();
+	if (ModifyViewable(beam, index, viewable))
+	{
+		beam->close();
+		return true;
+	}
+	else
+	{
+		beam->close();
+		return false;
+	}
 }
 
 AcDbObjectId CPolaCustomBeam::SelectPillarDrawBeam(CPolaCustomBeam * beam)

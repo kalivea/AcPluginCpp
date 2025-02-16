@@ -266,6 +266,11 @@ bool BasicTools::OffsetLineSegment(const AcGePoint3d& start_point, const AcGePoi
 	return false;
 }
 
+bool BasicTools::OffsetLineSegment(const AcGeLineSeg3d& line_segment, const double& distance, AcGePoint3d out_point[2])
+{
+	return OffsetLineSegment(line_segment.startPoint(), line_segment.endPoint(), distance, out_point);
+}
+
 bool BasicTools::IsLeftPoint(const AcGePoint3d& point1, const AcGePoint3d& point2)
 {
 	return point1.x < point2.x ? true : false;

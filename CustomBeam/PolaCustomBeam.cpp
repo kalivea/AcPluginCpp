@@ -1090,39 +1090,54 @@ AcDbObjectId CPolaCustomBeam::addBeamSnInfo()
 Acad::ErrorStatus CPolaCustomBeam::InsertVertex(const AcGePoint3d & insert_point, const AcGeTol tol)
 {
 	assertWriteEnabled();
-	if (beam_vertexes_.isEmpty())
+	int insert_index = -1;
+	const double min_distance_threshold = 10.0;
+
+	for (int i = 0; i < beam_vertexes_.length() - 1; ++i)
 	{
-		return Acad::eInvalidInput;
-	}
+		AcGeLineSeg3d seg(beam_vertexes_[i], beam_vertexes_[i + 1]);
+		AcGePoint3d closest_point;
+		double param = 0.0;
 
-	int vertexes_num = beam_vertexes_.length();
-	for (int i = 0; i < vertexes_num - 1; ++i)
-	{
-		const AcGePoint3d& start_vertex_ = beam_vertexes_[i];
-		const AcGePoint3d& end_vertex = beam_vertexes_[i + 1];
-
-		if (start_vertex_.isEqualTo(insert_point, tol) || end_vertex.isEqualTo(insert_point, tol))
+		if (seg.isOn(insert_point, param, tol))
 		{
-			continue;
-		}
+			closest_point = seg.evalPoint(param);
+			double dist = closest_point.distanceTo(insert_point);
 
-		AcGeVector3d v1 = end_vertex - start_vertex_;
-		v1.normalize();
-		AcGeVector3d v2 = insert_point - start_vertex_;
-		v2.normalize();
-
-		if (v1.isCodirectionalTo(v2, tol))
-		{
-			double param = v1.dotProduct(v2);
-			if (param >= 0 && param <= 1)
+			if (dist < min_distance_threshold)
 			{
-				addVertexAt(i + 1, insert_point);
-				addViewableAt(i + 1, 1);				//TODO add viewable logic need improve
-				return Acad::eOk;
+				insert_index = i + 1;
+				break;
 			}
 		}
 	}
-	return Acad::eInvalidInput; // Point does not lie on any segment within tolerance
+
+
+	if (insert_index != -1)
+	{
+
+		AcGePoint3dArray new_verts;
+		for (int j = 0; j <= insert_index; j++)
+			new_verts.append(beam_vertexes_[j]);
+
+		new_verts.append(insert_point);
+
+		for (int j = insert_index; j < beam_vertexes_.length(); j++)
+			new_verts.append(beam_vertexes_[j]);
+
+		beam_vertexes_ = new_verts;
+		vertexes_num_ = beam_vertexes_.length();
+
+
+		UpdateOffsetLine(0.5 * beam_b_);
+		GenerateBeamSegmentDirection();
+
+
+		this->assertWriteEnabled();
+		return Acad::eOk;
+	}
+
+	return Acad::eInvalidInput;
 }
 
 AcDbObjectId CPolaCustomBeam::genbeam()

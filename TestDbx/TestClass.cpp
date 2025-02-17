@@ -376,22 +376,25 @@ void TestClass::Test()
 #pragma region insert point test
 
 	////-------------------- Draw Beam -------------------------------------------
-	//StyleTools::LoadLineType(_T("CENTER"), _T("acad.lin"));
-	//StyleTools::LoadLineType(_T("DASHED"), _T("acad.lin"));
+	StyleTools::LoadLineType(_T("CENTER"), _T("acad.lin"));
+	StyleTools::LoadLineType(_T("DASHED"), _T("acad.lin"));
 
 
-	//CPolaCustomBeam* center_beam = new CPolaCustomBeam();
-	//center_beam->setBeamWidth(300);
-	//center_beam->setBeamHeight(500);
+	CPolaCustomBeam* center_beam = new CPolaCustomBeam();
+	center_beam->setBeamWidth(300);
+	center_beam->setBeamHeight(500);
 
-	//AcDbObjectId center_beam_id = CPolaCustomBeam::PickCenterPointDrawBeam(center_beam);
+	AcDbObjectId center_beam_id = CPolaCustomBeam::PickCenterPointDrawBeam(center_beam);
 
-	//AcDbEntity* beam_entity = nullptr;
-	//acdbOpenObject(beam_entity, center_beam_id, OpenMode::kForWrite);
-	//CPolaCustomBeam* beam = CPolaCustomBeam::cast(beam_entity);
+	AcGePoint3d point;
+	SelectEntitys::PickPoint(_T("Select point: \n"), point);
 
-	//beam->InsertVertex(AcGePoint3d(5000, 0, 0));
-	//beam->close();
+	AcDbEntity* beam_entity = nullptr;
+	acdbOpenObject(beam_entity, center_beam_id, OpenMode::kForWrite);
+	CPolaCustomBeam* beam = CPolaCustomBeam::cast(beam_entity);
+
+	beam->InsertVertex(point);
+	beam->close();
 	//--------------------------------------------------------------------
 	/*StyleTools::LoadLineType(_T("CENTER"), _T("acad.lin"));
 	StyleTools::LoadLineType(_T("DASHED"), _T("acad.lin"));
@@ -437,45 +440,23 @@ void TestClass::Test()
 	//	};
 	//addText(pillar);
 #pragma endregion
-#pragma region beam plus test
-	StyleTools::LoadLineType(_T("CENTER"), _T("acad.lin"));
-	StyleTools::LoadLineType(_T("DASHED"), _T("acad.lin"));
-
-	CPolaCustomBeam* beam = new CPolaCustomBeam();
-	beam->setBeamWidth(1200);
-	beam->setBeamHeight(1500);
-	AcDbObjectId id = CPolaCustomBeam::SelectPillarDrawBeam(beam);
-
-	AcGePoint3d point;
-	//while (SelectEntitys::PickPoint(_T("Select point: \n"), point))
-	//{
-	//	AcDbEntity* entity = nullptr;
-	//	acdbOpenObject(entity, id, OpenMode::kForWrite);
-	//	CPolaCustomBeam* beam_t = CPolaCustomBeam::cast(entity);
-	//	CPolaCustomBeam::ModifyViewable(beam_t, beam_t->GetSegmentIndexByYProjection(point) + 1, 0);
-	//	beam_t->close();
-	//}
-
-	AcDbEntity* entity = nullptr;
-	acdbOpenObject(entity, id, OpenMode::kForWrite);
-	CPolaCustomBeam* beam_t = CPolaCustomBeam::cast(entity);
-	
-	SelectEntitys::PickPoint(_T("Select point: \n"), point);
-	beam_t->InsertVertex(point);
-	beam_t->close();
-	/*AcGePoint3d point1(0, 0, 0);
-	AcGePoint3d point2(100, 100, 0);
-	DrawEntity::DrawLine(point1, point2);
-
-	AcGePoint3d prj1 = BasicTools::ProjectPointToLineSegment(AcGePoint3d(50, 20, 0), AcGeLineSeg3d(point1, point2), AcGeVector3d::kXAxis);
-	EditEntity::SetColor(DrawEntity::DrawLine(AcGePoint3d(50, 20, 0), prj1), 1);
-
-	AcGePoint3d prj2 = BasicTools::ProjectPointToLineSegment(AcGePoint3d(50, 20, 0), AcGeLineSeg3d(point1, point2), AcGeVector3d::kYAxis);
-	EditEntity::SetColor(DrawEntity::DrawLine(AcGePoint3d(50, 20, 0), prj2), 2);
-
-	AcGePoint3d prj3 = BasicTools::ProjectPointToLineSegment(AcGePoint3d(50, 20, 0), AcGeLineSeg3d(point1, point2), AcGeVector3d::kIdentity);
-	EditEntity::SetColor(DrawEntity::DrawLine(AcGePoint3d(50, 20, 0), prj3), 3);*/
-
-
+//#pragma region beam plus test----------------- modify viewable
+//	StyleTools::LoadLineType(_T("CENTER"), _T("acad.lin"));
+//	StyleTools::LoadLineType(_T("DASHED"), _T("acad.lin"));
+//
+//	CPolaCustomBeam* beam = new CPolaCustomBeam();
+//	beam->setBeamWidth(1200);
+//	beam->setBeamHeight(1500);
+//	AcDbObjectId id = CPolaCustomBeam::SelectPillarDrawBeam(beam);
+//
+//	AcGePoint3d point;
+//	while (SelectEntitys::PickPoint(_T("Select point: \n"), point))
+//	{
+//		AcDbEntity* entity = nullptr;
+//		acdbOpenObject(entity, id, OpenMode::kForWrite);
+//		CPolaCustomBeam* beam_t = CPolaCustomBeam::cast(entity);
+//		CPolaCustomBeam::ModifyViewable(beam_t, beam_t->GetSegmentIndexByYProjection(point) + 1, 0);
+//		beam_t->close();
+//	}
 #pragma endregion
 }

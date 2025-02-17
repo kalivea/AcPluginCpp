@@ -1087,57 +1087,19 @@ AcDbObjectId CPolaCustomBeam::addBeamSnInfo()
 	return DrawEntity::AddText(insert_point, info.c_str(), StyleTools::InitTextStyle(), 450);
 }
 
-Acad::ErrorStatus CPolaCustomBeam::InsertVertex(const AcGePoint3d & insert_point, const AcGeTol tol)
+Acad::ErrorStatus CPolaCustomBeam::InsertVertex(const AcGePoint3d & insert_point)
 {
 	assertWriteEnabled();
 	int insert_index = -1;
-	const double min_distance_threshold = 10.0;
-
-	for (int i = 0; i < beam_vertexes_.length() - 1; ++i)
-	{
-		AcGeLineSeg3d seg(beam_vertexes_[i], beam_vertexes_[i + 1]);
-		AcGePoint3d closest_point;
-		double param = 0.0;
-
-		if (seg.isOn(insert_point, param, tol))
-		{
-			closest_point = seg.evalPoint(param);
-			double dist = closest_point.distanceTo(insert_point);
-
-			if (dist < min_distance_threshold)
-			{
-				insert_index = i + 1;
-				break;
-			}
-		}
-	}
-
-
-	if (insert_index != -1)
-	{
-
-		AcGePoint3dArray new_verts;
-		for (int j = 0; j <= insert_index; j++)
-			new_verts.append(beam_vertexes_[j]);
-
-		new_verts.append(insert_point);
-
-		for (int j = insert_index; j < beam_vertexes_.length(); j++)
-			new_verts.append(beam_vertexes_[j]);
-
-		beam_vertexes_ = new_verts;
-		vertexes_num_ = beam_vertexes_.length();
-
-
-		UpdateOffsetLine(0.5 * beam_b_);
-		GenerateBeamSegmentDirection();
-
-
-		this->assertWriteEnabled();
-		return Acad::eOk;
-	}
-
-	return Acad::eInvalidInput;
+	insert_index = GetSegmentIndexByYProjection(insert_point);
+	if (insert_index < 0)
+		return Acad::eInvalidInput;
+	addVertexAt(insert_index + 1, insert_point);
+	addViewableAt(insert_index + 1, 1);
+	UpdateOffsetLine(0.5 * beam_b_);
+	this->recordGraphicsModified();
+	acedUpdateDisplay();
+	return Acad::eOk;
 }
 
 AcDbObjectId CPolaCustomBeam::genbeam()

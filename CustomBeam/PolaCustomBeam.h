@@ -150,7 +150,7 @@ public:
 	static AcDbObjectId PickCenterPointDrawBeam(CPolaCustomBeam* beam);
 	static AcDbObjectId PickTopPointDrawBeam(CPolaCustomBeam* beam);
 	static AcDbObjectId PickBottomPointDrawBeam(CPolaCustomBeam* beam);
-	static AcDbObjectId SelectPillarDrawBeam(CPolaCustomBeam* beam);			
+	static AcDbObjectId SelectPillarDrawBeam(CPolaCustomBeam* beam);
 
 	static bool ModifyViewable(CPolaCustomBeam* beam, int index, Adesk::Int32 viewable);
 	static bool ModifyViewable(AcDbObjectId beam_id, int index, Adesk::Int32 viewable);
@@ -164,7 +164,8 @@ public:
 	Adesk::Int32 GetSegmentIndexByYProjection(const AcGePoint3d& point, const AcGeTol& tol = AcGeContext::gTol) const;
 	void addJoint(const double slab_thickness, const double offset_length = 100);
 	AcDbObjectId addBeamSnInfo();
-	Acad::ErrorStatus InsertVertex(const AcGePoint3d& insert_point, const AcGeTol tol = AcGeContext::gTol);
+	Acad::ErrorStatus InsertVertex(const AcGePoint3d& insert_point);			// TODO: A tolerance value is required to determine 
+																				// whether the beam is within a certain range to prevent user error.
 	static AcDbObjectId genbeam();
 };
 

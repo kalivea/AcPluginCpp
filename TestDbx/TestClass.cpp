@@ -376,7 +376,7 @@ void TestClass::Test()
 #pragma region insert point test
 
 	////-------------------- Draw Beam -------------------------------------------
-	StyleTools::LoadLineType(_T("CENTER"), _T("acad.lin"));
+	/*StyleTools::LoadLineType(_T("CENTER"), _T("acad.lin"));
 	StyleTools::LoadLineType(_T("DASHED"), _T("acad.lin"));
 
 
@@ -394,7 +394,7 @@ void TestClass::Test()
 	CPolaCustomBeam* beam = CPolaCustomBeam::cast(beam_entity);
 
 	beam->InsertVertex(point);
-	beam->close();
+	beam->close();*/
 	//--------------------------------------------------------------------
 	/*StyleTools::LoadLineType(_T("CENTER"), _T("acad.lin"));
 	StyleTools::LoadLineType(_T("DASHED"), _T("acad.lin"));
@@ -441,22 +441,37 @@ void TestClass::Test()
 	//addText(pillar);
 #pragma endregion
 //#pragma region beam plus test----------------- modify viewable
-//	StyleTools::LoadLineType(_T("CENTER"), _T("acad.lin"));
-//	StyleTools::LoadLineType(_T("DASHED"), _T("acad.lin"));
-//
-//	CPolaCustomBeam* beam = new CPolaCustomBeam();
-//	beam->setBeamWidth(1200);
-//	beam->setBeamHeight(1500);
-//	AcDbObjectId id = CPolaCustomBeam::SelectPillarDrawBeam(beam);
-//
-//	AcGePoint3d point;
-//	while (SelectEntitys::PickPoint(_T("Select point: \n"), point))
-//	{
-//		AcDbEntity* entity = nullptr;
-//		acdbOpenObject(entity, id, OpenMode::kForWrite);
-//		CPolaCustomBeam* beam_t = CPolaCustomBeam::cast(entity);
-//		CPolaCustomBeam::ModifyViewable(beam_t, beam_t->GetSegmentIndexByYProjection(point) + 1, 0);
-//		beam_t->close();
-//	}
+	StyleTools::LoadLineType(_T("CENTER"), _T("acad.lin"));
+	StyleTools::LoadLineType(_T("DASHED"), _T("acad.lin"));
+	//
+	//	CPolaCustomBeam* beam = new CPolaCustomBeam();
+	//	beam->setBeamWidth(1200);
+	//	beam->setBeamHeight(1500);
+	//	AcDbObjectId id = CPolaCustomBeam::SelectPillarDrawBeam(beam);
+	//
+	//	AcGePoint3d point;
+	//	while (SelectEntitys::PickPoint(_T("Select point: \n"), point))
+	//	{
+	//		AcDbEntity* entity = nullptr;
+	//		acdbOpenObject(entity, id, OpenMode::kForWrite);
+	//		CPolaCustomBeam* beam_t = CPolaCustomBeam::cast(entity);
+	//		CPolaCustomBeam::ModifyViewable(beam_t, beam_t->GetSegmentIndexByYProjection(point) + 1, 0);
+	//		beam_t->close();
+	//	}
 #pragma endregion
+	//OpenWebPage();
+	AcDbObjectId beam_id = CPolaCustomBeam::genbeam();
+	AcDbObjectPointer<CPolaCustomBeam> beam;
+	beam.open(beam_id, OpenMode::kForWrite);
+	CPolaCustomBeam::ModifyViewable(beam, 1, 0);
+}
+
+void TestClass::OpenWebPage()
+{
+	const TCHAR* url = _T("http://www.baidu.com");
+	HINSTANCE result = ShellExecute(NULL, _T("open"), url, NULL, NULL, SW_SHOWNORMAL);
+	if ((INT_PTR)result <= 32)
+	{
+		acutPrintf(_T("\nERROR CODE£º%d"), (INT_PTR)result);
+	}
 }

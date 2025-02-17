@@ -50,6 +50,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CustomBeam", "CustomBeam\Cu
 		{D8296FCB-90E3-43C7-8A76-118466D5F3D8} = {D8296FCB-90E3-43C7-8A76-118466D5F3D8}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CustomBeamUi", "CustomBeamUi\CustomBeamUi.vcxproj", "{89F5AFDC-C1F3-49A7-ACFA-DE2FC94A7D8E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -88,8 +90,15 @@ Global
 		{E6E51EA3-5FF9-4236-85BD-88AD3F9E3961}.Debug|x64.Build.0 = Debug|x64
 		{E6E51EA3-5FF9-4236-85BD-88AD3F9E3961}.Release|x64.ActiveCfg = Release|x64
 		{E6E51EA3-5FF9-4236-85BD-88AD3F9E3961}.Release|x64.Build.0 = Release|x64
+		{89F5AFDC-C1F3-49A7-ACFA-DE2FC94A7D8E}.Debug|x64.ActiveCfg = Debug|x64
+		{89F5AFDC-C1F3-49A7-ACFA-DE2FC94A7D8E}.Debug|x64.Build.0 = Debug|x64
+		{89F5AFDC-C1F3-49A7-ACFA-DE2FC94A7D8E}.Release|x64.ActiveCfg = Release|x64
+		{89F5AFDC-C1F3-49A7-ACFA-DE2FC94A7D8E}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D2FA381E-C112-4400-96DE-640DDC9F47CE}
 	EndGlobalSection
 EndGlobal

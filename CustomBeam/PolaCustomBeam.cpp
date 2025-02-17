@@ -1104,7 +1104,8 @@ Acad::ErrorStatus CPolaCustomBeam::InsertVertex(const AcGePoint3d & insert_point
 
 AcDbObjectId CPolaCustomBeam::genbeam()
 {
-	CPolaCustomBeam* beam = new CPolaCustomBeam();
+	AcDbObjectPointer<CPolaCustomBeam> beam;
+	beam.create();
 	AcGePoint3dArray beam_vertex;
 	beam_vertex.append(AcGePoint3d(0, 0, 0));
 	beam_vertex.append(AcGePoint3d(4000, 0, 0));

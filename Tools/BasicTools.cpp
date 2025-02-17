@@ -511,7 +511,7 @@ AcGeLineSeg3d BasicTools::EntityToLineSegment(const AcDbEntity* entity)
 		AcGePoint3d start_point = line->startPoint();
 		AcGePoint3d end_point = line->endPoint();
 
-		line->close();
+		delete line;
 		return AcGeLineSeg3d(start_point, end_point);
 	}
 	else
@@ -528,7 +528,7 @@ AcGeLine3d BasicTools::EntityToLine(const AcDbEntity* entity)
 		AcGePoint3d start_point = line->startPoint();
 		AcGePoint3d end_point = line->endPoint();
 
-		line->close();
+		delete line;
 		return AcGeLine3d(start_point, end_point);
 	}
 	else

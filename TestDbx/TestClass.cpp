@@ -459,11 +459,11 @@ void TestClass::Test()
 	//		beam_t->close();
 	//	}
 #pragma endregion
-	//OpenWebPage();
-	AcDbObjectId beam_id = CPolaCustomBeam::genbeam();
-	AcDbObjectPointer<CPolaCustomBeam> beam;
-	beam.open(beam_id, OpenMode::kForWrite);
-	CPolaCustomBeam::ModifyViewable(beam, 1, 0);
+	OpenWebPage();
+	//AcDbObjectId beam_id = CPolaCustomBeam::genbeam();
+	//AcDbObjectPointer<CPolaCustomBeam> beam;
+	//beam.open(beam_id, OpenMode::kForWrite);
+	//CPolaCustomBeam::ModifyViewable(beam, 1, 0);
 }
 
 void TestClass::OpenWebPage()

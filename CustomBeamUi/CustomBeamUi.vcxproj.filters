@@ -30,6 +30,9 @@
     <ClCompile Include="PolaBeamUi.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="TestClass.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="StdAfx.h">
@@ -43,6 +46,9 @@
     </ClInclude>
     <ClInclude Include="PolaBeamUi.h">
       <Filter>源文件</Filter>
+    </ClInclude>
+    <ClInclude Include="TestClass.h">
+      <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

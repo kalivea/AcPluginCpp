@@ -449,6 +449,12 @@ std::vector<Adesk::Int32> CPolaCustomBeam::getBeamViewable() const
 	return beam_viewable_;
 }
 
+Adesk::Int32 CPolaCustomBeam::getViewableAt(const int index) const
+{
+	std::vector<Adesk::Int32> v = getBeamViewable();
+	return v.at(index);
+}
+
 Adesk::Int32 CPolaCustomBeam::getBeamProperty() const
 {
 	assertReadEnabled();
@@ -813,6 +819,13 @@ bool CPolaCustomBeam::ModifyViewable(AcDbObjectId beam_id, int index, Adesk::Int
 		beam->close();
 		return false;
 	}
+}
+
+bool CPolaCustomBeam::ModifyViewable(CPolaCustomBeam * beam, int index)
+{
+	AcDbObjectPointer<CPolaCustomBeam> beam_t;
+	beam_t.acquire(beam);
+	return ModifyViewable(beam_t, index, beam_t->getViewableAt(index) ^ 1);
 }
 
 AcDbObjectId CPolaCustomBeam::SelectPillarDrawBeam(CPolaCustomBeam * beam)

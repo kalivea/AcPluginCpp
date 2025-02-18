@@ -29,24 +29,32 @@
 #include "resource.h"
 //-----------------------------------------------------------------------------
 class CPolaBeamUi : public CAdUiBaseDialog {
-	DECLARE_DYNAMIC (CPolaBeamUi)
+	DECLARE_DYNAMIC(CPolaBeamUi)
 
 public:
-	CPolaBeamUi (CWnd *pParent =NULL, HINSTANCE hInstance =NULL) ;
+	CPolaBeamUi(CWnd* pParent = NULL, HINSTANCE hInstance = NULL);
 
-	enum { IDD = IDD_BEAM_MODAL} ;
+	enum { IDD = IDD_BEAM_MODAL };
 
 protected:
-	virtual void DoDataExchange (CDataExchange *pDX) ;
-	afx_msg LRESULT OnAcadKeepFocus (WPARAM, LPARAM) ;
+	virtual void DoDataExchange(CDataExchange* pDX);
+	afx_msg LRESULT OnAcadKeepFocus(WPARAM, LPARAM);
 
 	DECLARE_MESSAGE_MAP()
 public:
-	afx_msg void OnBnClickedButtonPickpillar();
 	CEdit Edit_Beam_Sn_;
-	int beam_sn;
+	int beam_Sn;
 	CEdit Edit_Beam_b_;
 	double beam_b;
 	CEdit Edit_Beam_h_;
 	double beam_h;
-} ;
+	CEdit Edit_Beam_Slab;
+	double slab_thickness;
+	CEdit Edit_Beam_Slab_offset;
+	double offset_length;
+	afx_msg void OnBnClickedButtonPickpillar();
+	afx_msg void OnBnClickedButtonPickoffset();
+	afx_msg void OnBnClickedButtonEditviewable();
+	afx_msg void OnBnClickedButtonAddvertex();
+	afx_msg void OnBnClickedButtonAddjoint();
+};

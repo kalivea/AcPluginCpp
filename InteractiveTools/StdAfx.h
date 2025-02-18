@@ -75,11 +75,11 @@
         
 //-----------------------------------------------------------------------------
 
-#include "BasicTools.h"
+
 
 #define POLA_DLL_INTERACTIVE
 #include "InteractiveDef.h"
-
+#include "BasicTools.h"
 #include "CoordinateSystem.h"
 #include "SelectEntitys.h"
 #include <functional>

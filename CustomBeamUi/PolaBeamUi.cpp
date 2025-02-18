@@ -25,6 +25,7 @@
 #include "StdAfx.h"
 #include "resource.h"
 #include "PolaBeamUi.h"
+#include <SelectEntitys.h>
 
 //-----------------------------------------------------------------------------
 IMPLEMENT_DYNAMIC(CPolaBeamUi, CAdUiBaseDialog)
@@ -32,6 +33,10 @@ IMPLEMENT_DYNAMIC(CPolaBeamUi, CAdUiBaseDialog)
 BEGIN_MESSAGE_MAP(CPolaBeamUi, CAdUiBaseDialog)
 	ON_MESSAGE(WM_ACAD_KEEPFOCUS, OnAcadKeepFocus)
 	ON_BN_CLICKED(IDC_BUTTON_PICKPILLAR, &CPolaBeamUi::OnBnClickedButtonPickpillar)
+	ON_BN_CLICKED(IDC_BUTTON_PICKOFFSET, &CPolaBeamUi::OnBnClickedButtonPickoffset)
+	ON_BN_CLICKED(IDC_BUTTON_EDITVIEWABLE, &CPolaBeamUi::OnBnClickedButtonEditviewable)
+	ON_BN_CLICKED(IDC_BUTTON_ADDVERTEX, &CPolaBeamUi::OnBnClickedButtonAddvertex)
+	ON_BN_CLICKED(IDC_BUTTON_ADDJOINT, &CPolaBeamUi::OnBnClickedButtonAddjoint)
 END_MESSAGE_MAP()
 
 //-----------------------------------------------------------------------------
@@ -44,6 +49,8 @@ void CPolaBeamUi::DoDataExchange(CDataExchange* pDX) {
 	DDX_Control(pDX, IDC_EDIT_BEAM_SN, Edit_Beam_Sn_);
 	DDX_Control(pDX, IDC_EDIT_BEAM_B, Edit_Beam_b_);
 	DDX_Control(pDX, IDC_EDIT_BEAM_H, Edit_Beam_h_);
+	DDX_Control(pDX, IDC_EDIT_BEAM_SLAB, Edit_Beam_Slab);
+	DDX_Control(pDX, IDC_EDIT_BEAM_SLABOFFSET, Edit_Beam_Slab_offset);
 }
 
 //-----------------------------------------------------------------------------
@@ -57,7 +64,7 @@ void CPolaBeamUi::OnBnClickedButtonPickpillar()
 {
 	CString temp;
 	Edit_Beam_Sn_.GetWindowTextW(temp);
-	beam_sn = _wtoi(temp);
+	beam_Sn = _wtoi(temp);
 
 	Edit_Beam_b_.GetWindowTextW(temp);
 	beam_b = _wtof(temp);
@@ -71,8 +78,130 @@ void CPolaBeamUi::OnBnClickedButtonPickpillar()
 	{
 		return;
 	}
-	beam->setBeamProperty(beam_sn);
+	beam->setBeamProperty(beam_Sn);
 	beam->setBeamWidth(beam_b);
 	beam->setBeamHeight(beam_h);
+	BeginEditorCommand();
 	CPolaCustomBeam::SelectPillarDrawBeam(beam);
+	CompleteEditorCommand();
+}
+
+void CPolaBeamUi::OnBnClickedButtonPickoffset()
+{
+	CString temp;
+	Edit_Beam_Sn_.GetWindowTextW(temp);
+	beam_Sn = _wtoi(temp);
+
+	Edit_Beam_b_.GetWindowTextW(temp);
+	beam_b = _wtof(temp);
+
+	Edit_Beam_h_.GetWindowTextW(temp);
+	beam_h = _wtof(temp);
+
+	AcDbObjectPointer<CPolaCustomBeam> beam;
+	beam.create();
+	if (beam.openStatus() != Acad::eOk)
+	{
+		return;
+	}
+	int selected_radio_id = -1;
+	selected_radio_id = GetCheckedRadioButton(IDC_RADIO_TOP, IDC_RADIO_BOT);
+
+	beam->setBeamProperty(beam_Sn);
+	beam->setBeamWidth(beam_b);
+	beam->setBeamHeight(beam_h);
+
+	switch (selected_radio_id)
+	{
+	case IDC_RADIO_TOP:
+		BeginEditorCommand();
+		CPolaCustomBeam::PickTopPointDrawBeam(beam);
+		break;
+	case IDC_RADIO_CEN:
+		BeginEditorCommand();
+		CPolaCustomBeam::PickCenterPointDrawBeam(beam);
+		break;
+	case IDC_RADIO_BOT:
+		BeginEditorCommand();
+		CPolaCustomBeam::PickBottomPointDrawBeam(beam);
+		break;
+	default:
+		MessageBox(_T("No mode select!"));
+		break;
+	}
+	CompleteEditorCommand();
+}
+
+void CPolaBeamUi::OnBnClickedButtonEditviewable()
+{
+	BeginEditorCommand();
+	AcDbObjectIdArray beam_id;
+	SelectEntitys::PickEntitys(_T("Pick beam\n"), CPolaCustomBeam::desc(), beam_id);
+
+	if (beam_id.length() > 1)
+		acutPrintf(_T("Only pick one beam entity"));
+
+	AcGePoint3d point;
+	AcDbObjectPointer<CPolaCustomBeam> beam;
+	beam.create();
+	while (SelectEntitys::PickPoint(_T("Select point: \n"), point))
+	{
+		beam.open(beam_id.at(0), OpenMode::kForWrite);
+		CPolaCustomBeam::ModifyViewable(beam, beam->GetSegmentIndexByYProjection(point) + 1);
+	}
+	CompleteEditorCommand();
+}
+
+void CPolaBeamUi::OnBnClickedButtonAddvertex()
+{
+	BeginEditorCommand();
+	AcDbObjectIdArray beam_id;
+	if (!SelectEntitys::PickEntitys(_T("Pick beam\n"), CPolaCustomBeam::desc(), beam_id))
+	{
+		return;
+	}
+	if (beam_id.length() > 1)
+	{
+		acutPrintf(_T("Only pick one beam entity"));
+		return;
+	}
+
+	AcDbObjectPointer<CPolaCustomBeam> beam;
+	AcGePoint3d point;
+	beam.open(beam_id.at(0), OpenMode::kForWrite);
+	if (SelectEntitys::PickPoint(_T("Select point: \n"), point))
+	{
+		CompleteEditorCommand();
+		beam.open(beam_id.at(0), OpenMode::kForWrite);
+		beam->InsertVertex(point);
+	}
+	else
+	{
+		CancelEditorCommand();
+	}
+}
+
+void CPolaBeamUi::OnBnClickedButtonAddjoint()
+{
+	CString temp;
+	Edit_Beam_Slab.GetWindowTextW(temp);
+	slab_thickness = _wtof(temp);
+	Edit_Beam_Slab_offset.GetWindowTextW(temp);
+	offset_length = _wtof(temp);
+
+	BeginEditorCommand();
+	AcDbObjectIdArray beam_id;
+	if (!SelectEntitys::PickEntitys(_T("Pick beam\n"), CPolaCustomBeam::desc(), beam_id))
+	{
+		return;
+	}
+	if (beam_id.length() > 1)
+	{
+		acutPrintf(_T("Only pick one beam entity"));
+		return;
+	}
+	CompleteEditorCommand();
+	AcDbObjectPointer<CPolaCustomBeam> beam;
+	beam.open(beam_id.at(0), OpenMode::kForWrite);
+	beam->addJoint(slab_thickness, offset_length);
 }

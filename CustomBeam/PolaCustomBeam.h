@@ -122,6 +122,7 @@ public:
 	double getBeamWidth() const;
 	double getBeamHeight() const;
 	std::vector<Adesk::Int32> getBeamViewable() const;
+	Adesk::Int32 getViewableAt(const int index) const;
 	Adesk::Int32 getBeamProperty() const;
 	Adesk::Int32 getVertexesNum() const;
 	AcGeVector3dArray getBeamSegmentDirection() const;
@@ -154,6 +155,7 @@ public:
 
 	static bool ModifyViewable(CPolaCustomBeam* beam, int index, Adesk::Int32 viewable);
 	static bool ModifyViewable(AcDbObjectId beam_id, int index, Adesk::Int32 viewable);
+	static bool ModifyViewable(CPolaCustomBeam* beam, int index);
 	// 
 public:
 	virtual Acad::ErrorStatus subTransformBy(const AcGeMatrix3d& xfrom);

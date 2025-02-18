@@ -14,6 +14,10 @@
 #define IDC_BUTTON_PICKPILLAR           107
 #define IDC_BUTTON_EDITVIEWABLE         108
 #define IDC_BUTTON_ADDVERTEX            109
+#define IDC_BUTTON_ADDJOINT             110
+#define IDC_EDIT_BEAM_SLAB              111
+#define IDC_EDIT_BEAM_B3                112
+#define IDC_EDIT_BEAM_SLABOFFSET        112
 
 // Next default values for new objects
 // 

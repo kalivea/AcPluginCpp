@@ -42,7 +42,7 @@ public:
 		AcRx::AppRetCode retCode =AcRxArxApp::On_kInitAppMsg (pkt) ;
 		
 		// TODO: Add your initialization code here
-
+		TestClass::TestClassInit();
 		return (retCode) ;
 	}
 
@@ -53,7 +53,7 @@ public:
 		AcRx::AppRetCode retCode =AcRxArxApp::On_kUnloadAppMsg (pkt) ;
 
 		// TODO: Unload dependencies here
-
+		TestClass::TestClassUnload();
 		return (retCode) ;
 	}
 

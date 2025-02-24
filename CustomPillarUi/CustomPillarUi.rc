@@ -1,0 +1,174 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// 中文(简体，中国) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
+LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
+#pragma code_page(936)
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "FileDescription", "CustomPillarUi ObjectARX application"
+            VALUE "FileVersion", "1, 0, 0, 1"
+            VALUE "InternalName", "CustomPillarUi"
+            VALUE "LegalCopyright", "Copyright ?2012"
+            VALUE "OriginalFilename", "PolaCustomPillarUi.arx"
+            VALUE "ProductName", "CustomPillarUi Application"
+            VALUE "ProductVersion", "1, 0, 0, 1"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_POLAPILLARUI DIALOGEX 0, 0, 301, 255
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "柱实体工具界面"
+FONT 8, "Tahoma", 0, 0, 0x0
+BEGIN
+    LTEXT           "柱子编号：",IDC_STATIC,11,11,41,13
+    EDITTEXT        IDC_EDIT_SN,53,9,33,14,ES_AUTOHSCROLL
+    LTEXT           "柱子属性：",IDC_STATIC,11,31,41,13
+    LTEXT           "柱子可见性：",IDC_STATIC,57,31,49,15
+    CONTROL         "实线",IDC_RADIO_SLINE,"Button",BS_AUTORADIOBUTTON | WS_GROUP,110,31,32,10
+    CONTROL         "虚线",IDC_RADIO_DLINE,"Button",BS_AUTORADIOBUTTON,156,31,32,10
+    CONTROL         "方柱",IDC_RADIO_RECT,"Button",BS_AUTORADIOBUTTON | WS_GROUP,11,52,32,10
+    CONTROL         "圆柱",IDC_RADIO_CIRC,"Button",BS_AUTORADIOBUTTON,11,77,32,10
+    LTEXT           "混凝土等级：C",IDC_STATIC,51,52,54,13
+    EDITTEXT        IDC_EDIT_CONC_GRADE,105,50,33,14,ES_AUTOHSCROLL
+    LTEXT           "钢管直径D：",IDC_STATIC,52,77,46,15
+    EDITTEXT        IDC_EDIT_PIPE_D,106,75,32,14,ES_AUTOHSCROLL
+    LTEXT           "mm",IDC_STATIC,144,77,16,18
+    LTEXT           "钢管壁厚t：",IDC_STATIC,173,77,44,14
+    EDITTEXT        IDC_EDIT_PIPE_T,221,75,31,14,ES_AUTOHSCROLL
+    LTEXT           "mm",IDC_STATIC,261,77,16,17
+    LTEXT           "柱子截面尺寸：",IDC_STATIC,11,102,57,11
+    LTEXT           "柱宽b：",IDC_STATIC,80,102,41,15
+    EDITTEXT        IDC_EDIT_D,126,100,40,14,ES_AUTOHSCROLL
+    LTEXT           "mm",IDC_STATIC,170,102,18,15
+    LTEXT           "柱高h：",IDC_STATIC,192,102,29,13
+    EDITTEXT        IDC_EDIT_H,226,100,40,14,ES_AUTOHSCROLL
+    LTEXT           "mm",IDC_STATIC,271,102,16,12
+    LTEXT           "预览部分：",IDC_STATIC,11,130,41,14
+    PUSHBUTTON      "Click me",IDC_BUTTON_PREVIEW,87,127,50,14
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKFRAME,9,143,127,104
+    LTEXT           "绘制方式：",IDC_STATIC,147,130,41,14
+    LTEXT           "1. 单个柱子插入：",IDC_STATIC,147,151,66,13
+    PUSHBUTTON      "Click me",IDC_BUTTON_SINSERT,234,148,50,14
+    LTEXT           "2. 选择轴线插入：",IDC_STATIC,147,172,66,15
+    PUSHBUTTON      "Click me",IDC_BUTTON_MINSERT,234,169,50,14
+    DEFPUSHBUTTON   "确定",IDOK,192,233,50,14
+    PUSHBUTTON      "取消",IDCANCEL,243,233,50,14
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_POLAPILLARUI, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 294
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 248
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_POLAPILLARUI AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE
+BEGIN
+    IDS_PROJNAME            "CustomPillarUi"
+END
+
+#endif    // 中文(简体，中国) resources
+/////////////////////////////////////////////////////////////////////////////
+
+

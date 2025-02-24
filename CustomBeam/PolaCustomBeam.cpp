@@ -1112,27 +1112,3 @@ Acad::ErrorStatus CPolaCustomBeam::InsertVertex(const AcGePoint3d & insert_point
 	acedUpdateDisplay();
 	return Acad::eOk;
 }
-
-AcDbObjectId CPolaCustomBeam::genbeam()
-{
-	AcDbObjectPointer<CPolaCustomBeam> beam;
-	beam.create();
-	AcGePoint3dArray beam_vertex;
-	beam_vertex.append(AcGePoint3d(0, 0, 0));
-	beam_vertex.append(AcGePoint3d(4000, 0, 0));
-	beam_vertex.append(AcGePoint3d(10000, 0, 0));
-	beam_vertex.append(AcGePoint3d(15000, 0, 0));
-
-	std::vector<Adesk::Int32> viewable;
-	viewable.push_back(1);
-	viewable.push_back(1);
-	viewable.push_back(1);
-	viewable.push_back(1);
-
-	beam->setBeamWidth(300);
-	beam->setBeamHeight(500);
-	beam->setBeamVertexes(beam_vertex);
-	beam->setBeamViewable(viewable);
-	beam->UpdateOffsetLine(0.5 * beam->getBeamWidth());
-	return AddToModelSpace::AddEntityToModelSpace(beam);
-}

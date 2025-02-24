@@ -793,7 +793,6 @@ bool CPolaCustomBeam::ModifyViewable(CPolaCustomBeam * beam, int index, Adesk::I
 		acutPrintf(_T("Invalid index!\n"));
 		return false;
 	}
-
 	else
 	{
 		beam->resetViewableAt(index, viewable);
@@ -1001,7 +1000,6 @@ Adesk::Int32 CPolaCustomBeam::GetSegmentIndexByYProjection(const AcGePoint3d & p
 	}
 	return segment_index;
 }
-
 
 void CPolaCustomBeam::addJoint(const double slab_thickness, const double offset_length)
 {

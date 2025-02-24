@@ -57,4 +57,9 @@ public:
 	afx_msg void OnBnClickedButtonEditviewable();
 	afx_msg void OnBnClickedButtonAddvertex();
 	afx_msg void OnBnClickedButtonAddjoint();
+	afx_msg void OnEnKillfocusEditBeamSn();
+	afx_msg void OnEnKillfocusEditBeamB();
+	afx_msg void OnEnKillfocusEditBeamH();
+	afx_msg void OnEnKillfocusEditBeamSlab();
+	afx_msg void OnEnKillfocusEditBeamSlaboffset();
 };

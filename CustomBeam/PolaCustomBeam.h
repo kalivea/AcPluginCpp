@@ -47,6 +47,7 @@
 //-----------------------------------------------------------------------------
 #include "dbmain.h"
 #include <sstream> 
+#include <gevc3dar.h>
 //-----------------------------------------------------------------------------
 class BEAM_DLLIMPEXP CPolaCustomBeam : public AcDbEntity {
 

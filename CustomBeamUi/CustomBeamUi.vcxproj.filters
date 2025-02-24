@@ -44,10 +44,10 @@
     <ClInclude Include="Resource.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="PolaBeamUi.h">
-      <Filter>源文件</Filter>
-    </ClInclude>
     <ClInclude Include="TestClass.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="PolaBeamUi.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

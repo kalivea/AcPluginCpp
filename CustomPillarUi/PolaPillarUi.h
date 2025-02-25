@@ -76,4 +76,6 @@ public:
 	afx_msg void OnEnKillfocusEditH();
 	afx_msg void OnBnClickedButtonPreview();
 	afx_msg void OnPaint();
+	afx_msg void OnBnClickedButtonSinsert();
+	afx_msg void OnBnClickedButtonMinsert();
 };

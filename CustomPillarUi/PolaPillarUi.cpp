@@ -25,7 +25,9 @@
 #include "StdAfx.h"
 #include "resource.h"
 #include "PolaPillarUi.h"
-
+#include "PolaCustomPillar.h"
+#include "SelectEntitys.h"
+#include "BasicTools.h"
 //-----------------------------------------------------------------------------
 IMPLEMENT_DYNAMIC(CPolaPillarUi, CAdUiBaseDialog)
 
@@ -41,6 +43,8 @@ BEGIN_MESSAGE_MAP(CPolaPillarUi, CAdUiBaseDialog)
 	ON_EN_KILLFOCUS(IDC_EDIT_H, &CPolaPillarUi::OnEnKillfocusEditH)
 	ON_BN_CLICKED(IDC_BUTTON_PREVIEW, &CPolaPillarUi::OnBnClickedButtonPreview)
 	ON_WM_PAINT()
+	ON_BN_CLICKED(IDC_BUTTON_SINSERT, &CPolaPillarUi::OnBnClickedButtonSinsert)
+	ON_BN_CLICKED(IDC_BUTTON_MINSERT, &CPolaPillarUi::OnBnClickedButtonMinsert)
 END_MESSAGE_MAP()
 
 //-----------------------------------------------------------------------------
@@ -291,7 +295,7 @@ void CPolaPillarUi::OnPaint()
 	{
 		mem_dc.Ellipse(rc_draw_rect);
 
-		if (isDataReady) 
+		if (isDataReady)
 		{
 			CString dimension;
 			dimension.Format(_T("D = %d"), static_cast<int>(pipe_d));
@@ -316,4 +320,67 @@ void CPolaPillarUi::OnPaint()
 	dc.BitBlt(rc_picture.left, rc_picture.top, rc_picture.Width(), rc_picture.Height(), &mem_dc, 0, 0, SRCCOPY);
 	mem_dc.SelectObject(old_bitmap);
 	bitmap.DeleteObject();
+}
+
+void CPolaPillarUi::OnBnClickedButtonSinsert()
+{
+	AcDbObjectPointer<CPolaCustomPillar> pillar;
+	pillar.create();
+	pillar->setSn(beam_sn);
+	pillar->setConcreteGrade(beam_conc_grade);
+	pillar->setDiameter(pillar_d, pillar_h);
+	pillar->setViewable(line_style);
+	pillar->setPillarType(shape_type);
+	pillar->setPillarProperty(shape_type);
+
+	BeginEditorCommand();
+	AcGePoint3d insert_point;
+	SelectEntitys::PickPoint(_T("Pick insertion point"), insert_point);
+	CPolaCustomPillar::SingleInsert(*pillar, insert_point);
+	CompleteEditorCommand();
+}
+
+void CPolaPillarUi::OnBnClickedButtonMinsert()
+{
+	AcDbObjectPointer<CPolaCustomPillar> pillar;
+	pillar.create();
+	pillar->setSn(beam_sn);
+	pillar->setConcreteGrade(beam_conc_grade);
+	pillar->setDiameter(pillar_d, pillar_h);
+	pillar->setViewable(line_style);
+	pillar->setPillarType(shape_type);
+	pillar->setPillarProperty(shape_type);
+
+	AcGePoint3dArray insert_point;
+	AcDbObjectIdArray grid_id;
+	std::vector<AcGeLineSeg3d> grid_line_segment;
+
+	BeginEditorCommand();
+	SelectEntitys::PickLinesOnLayer(_T("Line"), grid_id);
+	if (grid_id.isEmpty())
+	{
+		CompleteEditorCommand();
+		return;
+	}
+
+	for (auto id : grid_id)
+	{
+		AcDbObjectPointer<AcDbLine> line_entity;
+		line_entity.open(id, AcDb::kForRead);
+		AcGeLineSeg3d line_seg(line_entity->startPoint(), line_entity->endPoint());
+		grid_line_segment.push_back(line_seg);
+	}
+
+	for (int i = 0; i < grid_line_segment.size(); i++)
+	{
+		for (int j = i + 1; j < grid_line_segment.size(); j++)
+		{
+			if (BasicTools::GetIntersect(grid_line_segment.at(i), grid_line_segment.at(j)) != AcGePoint3d(6496, 6496, 6496))
+			{
+				insert_point.append(BasicTools::GetIntersect(grid_line_segment.at(i), grid_line_segment.at(j)));
+			}
+		}
+	}
+	CPolaCustomPillar::BatchInsert(*pillar, insert_point);
+	CompleteEditorCommand();
 }

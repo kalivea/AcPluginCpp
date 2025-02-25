@@ -28,17 +28,22 @@
 #include "adui.h"
 #include "resource.h"
 //-----------------------------------------------------------------------------
+
+enum ShapeType { CIRCLE, RECTANGLE };
+enum LineStyle { DASHED, SOLID };
+
 class CPolaPillarUi : public CAdUiBaseDialog {
-	DECLARE_DYNAMIC (CPolaPillarUi)
+	DECLARE_DYNAMIC(CPolaPillarUi)
 
 public:
-	CPolaPillarUi (CWnd *pParent =NULL, HINSTANCE hInstance =NULL) ;
+	CPolaPillarUi(CWnd* pParent = NULL, HINSTANCE hInstance = NULL);
 
-	enum { IDD = IDD_POLAPILLARUI} ;
-
+	enum { IDD = IDD_POLAPILLARUI };
+public:
+	void ScalePattern(ShapeType shape, double d1, double d2 = 0, LineStyle style = SOLID);
 protected:
-	virtual void DoDataExchange (CDataExchange *pDX) ;
-	afx_msg LRESULT OnAcadKeepFocus (WPARAM, LPARAM) ;
+	virtual void DoDataExchange(CDataExchange* pDX);
+	afx_msg LRESULT OnAcadKeepFocus(WPARAM, LPARAM);
 
 	DECLARE_MESSAGE_MAP()
 public:
@@ -49,13 +54,19 @@ public:
 	CEdit Edit_Grade;
 	int beam_conc_grade;
 	CEdit Edit_Pipe_D_;
-	double pipe_d;
+	double pipe_d = 0;
 	CEdit Edit_Pipe_T_;
-	double pipe_t;
+	double pipe_t = 0;
 	CEdit Edit_Pillar_D_;
-	double pillar_d;
+	double pillar_d = 0;
 	CEdit Edit_Pillar_H_;
-	double pillar_h;
+	double pillar_h = 0;
+
+	CRect rc_draw_rect;
+	ShapeType shape_type;
+	LineStyle line_style;
+	BOOL isDataReady = false;
+
 	virtual BOOL OnInitDialog();
 	afx_msg void OnEnKillfocusEditSn();
 	afx_msg void OnEnKillfocusEditConcGrade();
@@ -63,4 +74,6 @@ public:
 	afx_msg void OnEnKillfocusEditPipeT();
 	afx_msg void OnEnKillfocusEditD();
 	afx_msg void OnEnKillfocusEditH();
-} ;
+	afx_msg void OnBnClickedButtonPreview();
+	afx_msg void OnPaint();
+};

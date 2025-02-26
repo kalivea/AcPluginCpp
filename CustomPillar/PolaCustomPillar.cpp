@@ -180,6 +180,7 @@ Adesk::Boolean CPolaCustomPillar::subWorldDraw(AcGiWorldDraw * mode) {
 		else
 		{
 			mode->subEntityTraits().setLineType(StyleTools::GetLineStyleId(_T("DASHED")));
+			mode->subEntityTraits().setLineTypeScale(300);
 			mode->geometry().circle(center_point_, pillar_d_ * 0.5, AcGeVector3d::kZAxis);
 		}
 	}
@@ -200,14 +201,14 @@ Adesk::Boolean CPolaCustomPillar::subWorldDraw(AcGiWorldDraw * mode) {
 				delete pl;
 
 				mode->subEntityTraits().setLineType(StyleTools::GetLineStyleId(_T("DASHED")));
-				mode->subEntityTraits().setLineTypeScale(100);
+				mode->subEntityTraits().setLineTypeScale(300);
 				AcDbLine(rect_pillar_vertex_.at(0), rect_pillar_vertex_.at(2)).worldDraw(mode);
 				AcDbLine(rect_pillar_vertex_.at(1), rect_pillar_vertex_.at(3)).worldDraw(mode);
 			}
 			else
 			{
 				mode->subEntityTraits().setLineType(StyleTools::GetLineStyleId(_T("DASHED")));
-				mode->subEntityTraits().setLineTypeScale(100);
+				mode->subEntityTraits().setLineTypeScale(300);
 
 				AcDbPolyline* pl = new AcDbPolyline();
 				for (int i = 0; i < rect_pillar_vertex_.length(); i++)
@@ -560,7 +561,7 @@ bool CPolaCustomPillar::checkValue(const CPolaCustomPillar * pillar)
 	bool check_result;
 	double d, h;
 	pillar->getDiameter(d, h);
-	bool size_result = (d > 0 && h > 0) ? true : false;
+	bool size_result = (d > 0 && h >= 0) ? true : false;
 	bool prop_result = (pillar->getPillarProperty() == 0 || pillar->getPillarProperty() == 1) ? true : false;
 	bool type_result = (pillar->getPillarType() == 0 || pillar->getPillarType() == 1) ? true : false;
 	bool sn_result = pillar->getPillarSn() > 0 ? true : false;

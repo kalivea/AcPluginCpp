@@ -45,6 +45,8 @@ BEGIN_MESSAGE_MAP(CPolaPillarUi, CAdUiBaseDialog)
 	ON_WM_PAINT()
 	ON_BN_CLICKED(IDC_BUTTON_SINSERT, &CPolaPillarUi::OnBnClickedButtonSinsert)
 	ON_BN_CLICKED(IDC_BUTTON_MINSERT, &CPolaPillarUi::OnBnClickedButtonMinsert)
+	ON_BN_CLICKED(IDC_RADIO_SLINE, &CPolaPillarUi::OnBnClickedRadioSline)
+	ON_BN_CLICKED(IDC_RADIO_DLINE, &CPolaPillarUi::OnBnClickedRadioDline)
 END_MESSAGE_MAP()
 
 //-----------------------------------------------------------------------------
@@ -126,6 +128,8 @@ void CPolaPillarUi::OnBnClickedRadioRect()
 	pipe_d = 0;
 	SetDlgItemText(IDC_EDIT_PIPE_T, _T(""));
 	pipe_t = 0;
+
+	shape_type = RECTANGLE;
 }
 
 void CPolaPillarUi::OnBnClickedRadioCirc()
@@ -143,6 +147,8 @@ void CPolaPillarUi::OnBnClickedRadioCirc()
 	pillar_d = 0;
 	SetDlgItemText(IDC_EDIT_H, _T(""));
 	pillar_h = 0;
+
+	shape_type = CIRCLE;
 }
 
 
@@ -383,4 +389,14 @@ void CPolaPillarUi::OnBnClickedButtonMinsert()
 	}
 	CPolaCustomPillar::BatchInsert(*pillar, insert_point);
 	CompleteEditorCommand();
+}
+
+void CPolaPillarUi::OnBnClickedRadioSline()
+{
+	line_style = SOLID;
+}
+
+void CPolaPillarUi::OnBnClickedRadioDline()
+{
+	line_style = DASHED;
 }

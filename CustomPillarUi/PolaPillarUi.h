@@ -63,8 +63,8 @@ public:
 	double pillar_h = 0;
 
 	CRect rc_draw_rect;
-	ShapeType shape_type;
-	LineStyle line_style;
+	ShapeType shape_type = RECTANGLE;
+	LineStyle line_style = SOLID;
 	BOOL isDataReady = false;
 
 	virtual BOOL OnInitDialog();
@@ -78,4 +78,6 @@ public:
 	afx_msg void OnPaint();
 	afx_msg void OnBnClickedButtonSinsert();
 	afx_msg void OnBnClickedButtonMinsert();
+	afx_msg void OnBnClickedRadioSline();
+	afx_msg void OnBnClickedRadioDline();
 };

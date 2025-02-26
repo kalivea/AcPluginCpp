@@ -215,24 +215,61 @@ AcGePoint3d BasicTools::OffsetMidPoint(const AcGePoint3d& start_point, const AcG
 
 bool BasicTools::OffsetPolyLine(const AcDbPolyline& center_line, const double& distance, AcGePoint3dArray& offset_vertex_array)
 {
+	offset_vertex_array.removeAll();
 	AcDbVoidPtrArray offset_curves;
-	Acad::ErrorStatus error_status;
-	error_status = center_line.getOffsetCurves(distance, offset_curves);
-	if (error_status == Acad::eOk)
+	Acad::ErrorStatus error_status = center_line.getOffsetCurves(distance, offset_curves);
+
+	if (error_status != Acad::eOk)
 	{
-		if (offset_curves.length() == 1)			// Currently only polylines can be converted!
-		{
-			AcDbPolyline* pl = AcDbPolyline::cast(reinterpret_cast<const AcRxObject*> (offset_curves.at(0)));	// TODO: unsafely cast!!
-			for (unsigned int i = 0; i < pl->numVerts(); i++)
-			{
-				AcGePoint2d temp;
-				pl->getPointAt(i, temp);
-				offset_vertex_array.append(BasicTools::Point2dToPoint3d(temp));
-			}
-			delete pl;
-		}
+		return false;
 	}
-	return true;
+
+	bool result = false;
+	const int curve_count = offset_curves.length();
+
+	for (int i = 0; i < curve_count; ++i)
+	{
+		AcDbEntity* entity = static_cast<AcDbEntity*>(offset_curves[i]);
+		if (!entity || !entity->isKindOf(AcDbPolyline::desc()))
+			continue;
+
+		AcDbPolyline* offset_polyline = AcDbPolyline::cast(entity);
+		if (!offset_polyline)
+		{
+			delete entity;
+			continue;
+		}
+
+		const bool isClosed = offset_polyline->isClosed();
+		const int vertex_count = offset_polyline->numVerts();
+		AcGePoint3dArray temp_array;
+
+		for (int j = 0; j < vertex_count; ++j)
+		{
+			AcGePoint2d point;
+			if (offset_polyline->getPointAt(j, point) == Acad::eOk)
+			{
+				temp_array.append(Point2dToPoint3d(point));
+			}
+		}
+
+		if (isClosed && temp_array.length() > 1)
+		{
+
+			const AcGePoint3d& first = temp_array.first();
+			const AcGePoint3d& last = temp_array.last();
+
+			if (!first.isEqualTo(last))
+			{
+				temp_array.append(first);
+			}
+		}
+
+		offset_vertex_array.append(temp_array);
+		delete entity;
+		result = true;
+	}
+	return result;
 }
 
 bool BasicTools::OffsetPolyLine(const AcGePoint3dArray& center_array, const double& distance, AcGePoint3dArray& offset_vertex_array)

@@ -17,6 +17,8 @@
 #define IDC_EDIT_SN                     112
 #define IDC_RADIO_SLINE                 113
 #define IDC_RADIO_DLINE                 114
+#define IDC_BUTTON_MINSERT2             115
+#define IDC_BUTTON_ADDINFO              115
 #define IDC_STATIC_PICTURE              116
 
 // Next default values for new objects

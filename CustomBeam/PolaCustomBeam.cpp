@@ -221,11 +221,16 @@ Adesk::Boolean CPolaCustomBeam::subWorldDraw(AcGiWorldDraw * mode) {
 			throw;
 		}
 	}
+	const bool isClosed = IsBeamClosed();
+	if (!isClosed)
+	{
+		mode->subEntityTraits().setLineType(StyleTools::GetLineStyleId(_T("CONTINUOUS")));
+		AcDbLine left_side_line(top_offset_vertex_.first(), bottom_offset_vertex_.first());
+		AcDbLine right_side_line(top_offset_vertex_.last(), bottom_offset_vertex_.last());
+		left_side_line.worldDraw(mode);
+		right_side_line.worldDraw(mode);
+	}
 
-	AcDbLine left_side_line(top_offset_vertex_.first(), bottom_offset_vertex_.first());
-	AcDbLine right_side_line(top_offset_vertex_.last(), bottom_offset_vertex_.last());
-	left_side_line.worldDraw(mode);
-	right_side_line.worldDraw(mode);
 	return (AcDbEntity::subWorldDraw(mode));
 }
 
@@ -476,6 +481,11 @@ double CPolaCustomBeam::getBeamLength() const
 		length += beam_vertexes_.at(i).distanceTo(beam_vertexes_.at(i + 1));
 	}
 	return length;
+}
+
+bool CPolaCustomBeam::IsBeamClosed() const
+{
+	return beam_vertexes_.first().isEqualTo(beam_vertexes_.last());
 }
 
 AcGeVector3dArray CPolaCustomBeam::getBeamSegmentDirection() const

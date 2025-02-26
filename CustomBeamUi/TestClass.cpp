@@ -4,7 +4,7 @@
 #include "StyleTools.h"
 void TestClass::TestClassInit()
 {
-	acedRegCmds->addCommand(_T("tmpGroupName"), _T("TestClass"), _T("TestClass"), ACRX_CMD_MODAL, Test);
+	acedRegCmds->addCommand(_T("tmpGroupName"), _T("TestBeam"), _T("TestBeam"), ACRX_CMD_MODAL, Test);
 }
 void TestClass::TestClassUnload()
 {

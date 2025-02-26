@@ -47,6 +47,7 @@ BEGIN_MESSAGE_MAP(CPolaPillarUi, CAdUiBaseDialog)
 	ON_BN_CLICKED(IDC_BUTTON_MINSERT, &CPolaPillarUi::OnBnClickedButtonMinsert)
 	ON_BN_CLICKED(IDC_RADIO_SLINE, &CPolaPillarUi::OnBnClickedRadioSline)
 	ON_BN_CLICKED(IDC_RADIO_DLINE, &CPolaPillarUi::OnBnClickedRadioDline)
+	ON_BN_CLICKED(IDC_BUTTON_ADDINFO, &CPolaPillarUi::OnBnClickedButtonAddinfo)
 END_MESSAGE_MAP()
 
 //-----------------------------------------------------------------------------
@@ -372,18 +373,31 @@ void CPolaPillarUi::OnBnClickedButtonMinsert()
 	for (auto id : grid_id)
 	{
 		AcDbObjectPointer<AcDbLine> line_entity;
-		line_entity.open(id, AcDb::kForRead);
-		AcGeLineSeg3d line_seg(line_entity->startPoint(), line_entity->endPoint());
-		grid_line_segment.push_back(line_seg);
+		if (line_entity.open(id, AcDb::kForRead) == Acad::eOk)
+		{
+			grid_line_segment.emplace_back(line_entity->startPoint(), line_entity->endPoint());
+		}
 	}
 
-	for (int i = 0; i < grid_line_segment.size(); i++)
-	{
-		for (int j = i + 1; j < grid_line_segment.size(); j++)
+	auto IsPointExist = [](const AcGePoint3d& pt, const AcGePoint3dArray& points, double tolerance)
 		{
-			if (BasicTools::GetIntersect(grid_line_segment.at(i), grid_line_segment.at(j)) != AcGePoint3d(6496, 6496, 6496))
+			for (int i = 0; i < points.length(); ++i)
 			{
-				insert_point.append(BasicTools::GetIntersect(grid_line_segment.at(i), grid_line_segment.at(j)));
+				if (fabs(points[i].x - pt.x) < tolerance && fabs(points[i].y - pt.y) < tolerance && fabs(points[i].z - pt.z) < tolerance)
+					return true;
+			}
+			return false;
+		};
+
+	const AcGePoint3d invalid_point(6496, 6496, 6496);
+	for (size_t i = 0; i < grid_line_segment.size(); ++i)
+	{
+		for (size_t j = i + 1; j < grid_line_segment.size(); ++j)
+		{
+			AcGePoint3d intersect = BasicTools::GetIntersect(grid_line_segment[i], grid_line_segment[j]);
+			if (intersect != invalid_point && !IsPointExist(intersect, insert_point, pillar_d / 2))
+			{
+				insert_point.append(intersect);
 			}
 		}
 	}
@@ -399,4 +413,18 @@ void CPolaPillarUi::OnBnClickedRadioSline()
 void CPolaPillarUi::OnBnClickedRadioDline()
 {
 	line_style = DASHED;
+}
+
+void CPolaPillarUi::OnBnClickedButtonAddinfo()
+{
+	AcDbObjectIdArray pillar_id_array;
+	BeginEditorCommand();
+	SelectEntitys::PickEntitys(_T("Select pillar \n"), CPolaCustomPillar::desc(), pillar_id_array);
+	for (auto& pillar_id : pillar_id_array)
+	{
+		AcDbObjectPointer<CPolaCustomPillar> pillar;
+		pillar.open(pillar_id, OpenMode::kForWrite);
+		pillar->AddPillarLeader();
+	}
+	CompleteEditorCommand();
 }

@@ -117,6 +117,7 @@ private:
 
 	Adesk::Int32 beam_property_;					// store property of beam. The sn of beam.
 	AcGeVector3dArray beam_segment_direction;		// store beam segment direction.
+
 public:
 	//           get functions
 	AcGePoint3dArray getBeamVertexes() const;
@@ -129,6 +130,7 @@ public:
 	AcGeVector3dArray getBeamSegmentDirection() const;
 	//
 	double getBeamLength() const;
+	bool IsBeamClosed() const;
 private:
 	AcGePoint3d getHorizontalMidPoint() const;
 	//           set functions

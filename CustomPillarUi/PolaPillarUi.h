@@ -80,4 +80,5 @@ public:
 	afx_msg void OnBnClickedButtonMinsert();
 	afx_msg void OnBnClickedRadioSline();
 	afx_msg void OnBnClickedRadioDline();
+	afx_msg void OnBnClickedButtonAddinfo();
 };

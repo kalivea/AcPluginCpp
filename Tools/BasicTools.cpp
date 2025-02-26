@@ -1,6 +1,7 @@
 #include "StdAfx.h"
 #include "BasicTools.h"
 #include "StyleTools.h"
+#include <cmath>
 
 /// <summary>
 /// Converts the angle to the target angle type.

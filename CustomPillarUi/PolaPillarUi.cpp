@@ -195,7 +195,6 @@ void CPolaPillarUi::OnEnKillfocusEditPipeT()
 	CString temp;
 	Edit_Pipe_T_.GetWindowTextW(temp);
 	pipe_t = _wtof(temp);
-
 }
 
 void CPolaPillarUi::OnEnKillfocusEditD()

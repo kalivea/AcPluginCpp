@@ -1,6 +1,6 @@
 #include "StdAfx.h"
 #include "TestClass.h"
-
+#include "SyncCircleReactor.h"
 void TestClass::TestClassInit()
 {
 	acedRegCmds->addCommand(_T("tmpGroupName"), _T("TestClass"), _T("TestClass"), ACRX_CMD_MODAL, Test);
@@ -461,6 +461,40 @@ void TestClass::Test()
 #pragma endregion
 
 #pragma region reacter
+	ads_name en1;
+	ads_point pt;
+	if (acedEntSel(_T("\n选择第一个圆："), en1, pt) != RTNORM) return;
 
+	// 选择第二个圆
+	ads_name en2;
+	if (acedEntSel(_T("\n选择第二个圆："), en2, pt) != RTNORM) return;
+
+	// 转换对象ID
+	AcDbObjectId id1, id2;
+	acdbGetObjectId(id1, en1);
+	acdbGetObjectId(id2, en2);
+
+	// 验证圆对象
+	AcDbCircle* pCircle = nullptr;
+	if (acdbOpenObject(pCircle, id1, AcDb::kForRead) != Acad::eOk) return;
+	pCircle->close();
+	if (acdbOpenObject(pCircle, id2, AcDb::kForRead) != Acad::eOk) return;
+	pCircle->close();
+
+	// 创建并附加反应器
+	SyncCircleReactor* reactor1 = new SyncCircleReactor(id2);
+	SyncCircleReactor* reactor2 = new SyncCircleReactor(id1);
+
+	AcDbObject* obj = nullptr;
+	if (acdbOpenObject(obj, id1, AcDb::kForWrite) == Acad::eOk) {
+		obj->addReactor(reactor1);
+		obj->close();
+	}
+	if (acdbOpenObject(obj, id2, AcDb::kForWrite) == Acad::eOk) {
+		obj->addReactor(reactor2);
+		obj->close();
+	}
+
+	acutPrintf(_T("\n已建立半径同步关联！"));
 #pragma endregion
 }

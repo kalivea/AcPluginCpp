@@ -96,6 +96,7 @@
 #include "PolaCustomBeam.h"
 
 #include "PillarTools.h"
+
 	//- Declare it as an extern here so that it becomes available in all modules
 extern AcApDataManager<CDocData> DocVars;
 

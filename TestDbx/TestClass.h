@@ -1,4 +1,5 @@
 #pragma once
+#include "functional"
 class TestClass
 {
 public:
@@ -6,4 +7,3 @@ public:
 	static void TestClassUnload();
 	static void Test();
 };
-

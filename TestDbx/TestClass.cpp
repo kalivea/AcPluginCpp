@@ -1,6 +1,6 @@
 #include "StdAfx.h"
 #include "TestClass.h"
-#include "SyncCircleReactor.h"
+#include "CircleReactor.h"
 void TestClass::TestClassInit()
 {
 	acedRegCmds->addCommand(_T("tmpGroupName"), _T("TestClass"), _T("TestClass"), ACRX_CMD_MODAL, Test);
@@ -461,40 +461,40 @@ void TestClass::Test()
 #pragma endregion
 
 #pragma region reacter
-	ads_name en1;
-	ads_point pt;
-	if (acedEntSel(_T("\n选择第一个圆："), en1, pt) != RTNORM) return;
-
-	// 选择第二个圆
-	ads_name en2;
-	if (acedEntSel(_T("\n选择第二个圆："), en2, pt) != RTNORM) return;
-
-	// 转换对象ID
-	AcDbObjectId id1, id2;
-	acdbGetObjectId(id1, en1);
-	acdbGetObjectId(id2, en2);
-
-	// 验证圆对象
-	AcDbCircle* pCircle = nullptr;
-	if (acdbOpenObject(pCircle, id1, AcDb::kForRead) != Acad::eOk) return;
-	pCircle->close();
-	if (acdbOpenObject(pCircle, id2, AcDb::kForRead) != Acad::eOk) return;
-	pCircle->close();
-
-	// 创建并附加反应器
-	SyncCircleReactor* reactor1 = new SyncCircleReactor(id2);
-	SyncCircleReactor* reactor2 = new SyncCircleReactor(id1);
-
-	AcDbObject* obj = nullptr;
-	if (acdbOpenObject(obj, id1, AcDb::kForWrite) == Acad::eOk) {
-		obj->addReactor(reactor1);
-		obj->close();
-	}
-	if (acdbOpenObject(obj, id2, AcDb::kForWrite) == Acad::eOk) {
-		obj->addReactor(reactor2);
-		obj->close();
+	AcDbObjectIdArray circle_ids;
+	if (!SelectEntitys::PickEntitys(_T("select two circles: "), AcDbCircle::desc(), circle_ids))
+		return;
+	if (circle_ids.length() != 2)
+	{
+		acutPrintf(_T("only can select two circles!"));
+		return;
 	}
 
-	acutPrintf(_T("\n已建立半径同步关联！"));
+	AcDbDictionary* name_dict = nullptr;
+	CCircleReactor* circ_reactor1 = new CCircleReactor();
+	circ_reactor1->setLink(circle_ids.at(1));
+	AcDbObjectId reactor1_id;
+	acdbHostApplicationServices()->workingDatabase()->getNamedObjectsDictionary(name_dict, OpenMode::kForWrite);
+	name_dict->setAt(_T("circ1"), circ_reactor1, reactor1_id);
+	AcDbCircle* circ1 = nullptr;
+	if (acdbOpenObject(circ1, circle_ids[0], OpenMode::kForWrite) == Acad::eOk)
+	{
+		circ1->addPersistentReactor(reactor1_id);
+		circ1->close();
+	}
+
+	CCircleReactor* circ_reactor2 = new CCircleReactor();
+	circ_reactor2->setLink(circle_ids.at(0));
+	AcDbObjectId reactor2_id;
+	name_dict->setAt(_T("circ2"), circ_reactor2, reactor2_id);
+	AcDbCircle* circ2 = nullptr;
+	if (acdbOpenObject(circ2, circle_ids[1], OpenMode::kForWrite) == Acad::eOk)
+	{
+		circ2->addPersistentReactor(reactor2_id);
+		circ2->close();
+	}
+	circ_reactor1->close();
+	circ_reactor2->close();
+	name_dict->close();
 #pragma endregion
 }

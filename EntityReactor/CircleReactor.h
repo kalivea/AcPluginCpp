@@ -20,11 +20,11 @@
 //
 
 //-----------------------------------------------------------------------------
-//----- SyncCircleReactor.h : Declaration of the SyncCircleReactor
+//----- CircleReactor.h : Declaration of the CCircleReactor
 //-----------------------------------------------------------------------------
 #pragma once
 
-#ifdef TESTDBX_MODULE
+#ifdef ENTITYREACTOR_MODULE
 #define DLLIMPEXP __declspec(dllexport)
 #else
 //----- Note: we don't use __declspec(dllimport) here, because of the
@@ -48,24 +48,33 @@
 #include "dbmain.h"
 
 //-----------------------------------------------------------------------------
-//----- Note: Uncomment the DLLIMPEXP symbol below if you wish exporting
-//----- your class to other ARX/DBX modules
-class /*DLLIMPEXP*/ SyncCircleReactor : public AcDbObjectReactor {
+class DLLIMPEXP CCircleReactor : public AcDbObject {
 
 public:
-	ACRX_DECLARE_MEMBERS(SyncCircleReactor) ;
+	ACRX_DECLARE_MEMBERS(CCircleReactor);
+
+protected:
+	static Adesk::UInt32 kCurrentVersionNumber;
 
 public:
-    SyncCircleReactor();
-    SyncCircleReactor(AcDbObjectId otherId);
-    virtual ~SyncCircleReactor();
+	CCircleReactor();
+	virtual ~CCircleReactor();
 
-    virtual void modified(const AcDbObject* dbObj) override;
+	//----- AcDbObject protocols
+	//- Dwg Filing protocol
+	virtual Acad::ErrorStatus dwgOutFields(AcDbDwgFiler* pFiler) const;
+	virtual Acad::ErrorStatus dwgInFields(AcDbDwgFiler* pFiler);
 
+	//- Persistent reactor callbacks
+
+	virtual void erased(const AcDbObject* pDbObj, Adesk::Boolean bErasing = true);
+	virtual void modified(const AcDbObject* pDbObj);
+	void setLink(AcDbObjectId entity_id);
 private:
-    AcDbObjectId m_otherCircleId;
-} ;
+	AcDbObjectId entity_id_;
 
-#ifdef TESTDBX_MODULE
-ACDB_REGISTER_OBJECT_ENTRY_AUTO(SyncCircleReactor)
+};
+
+#ifdef ENTITYREACTOR_MODULE
+ACDB_REGISTER_OBJECT_ENTRY_AUTO(CCircleReactor)
 #endif

@@ -1,6 +1,7 @@
 #include "StdAfx.h"
 #include "TestClass.h"
 #include "CircleReactor.h"
+#include "PolaReactor.h"
 void TestClass::TestClassInit()
 {
 	acedRegCmds->addCommand(_T("tmpGroupName"), _T("TestClass"), _T("TestClass"), ACRX_CMD_MODAL, Test);
@@ -461,7 +462,7 @@ void TestClass::Test()
 #pragma endregion
 
 #pragma region reacter
-	AcDbObjectIdArray circle_ids;
+	/*AcDbObjectIdArray circle_ids;
 	if (!SelectEntitys::PickEntitys(_T("select two circles: "), AcDbCircle::desc(), circle_ids))
 		return;
 	if (circle_ids.length() != 2)
@@ -495,6 +496,31 @@ void TestClass::Test()
 	}
 	circ_reactor1->close();
 	circ_reactor2->close();
+	name_dict->close();*/
+	AcDbObjectIdArray circ_ids;
+	if (!SelectEntitys::PickEntitys(_T("select two objects to sync colors: "), AcDbCircle::desc(), circ_ids))
+		return;
+
+	if (circ_ids.length() != 2)
+	{
+		acutPrintf(_T("only can select two objects!"));
+		return;
+	}
+
+	AcDbDictionary* name_dict = nullptr;
+
+	CPolaReactor* color_reactor1 = new CPolaReactor(circ_ids.at(1), 1); 
+	AcDbObjectId reactor1_id;
+	acdbHostApplicationServices()->workingDatabase()->getNamedObjectsDictionary(name_dict, OpenMode::kForWrite);
+	name_dict->setAt(_T("color_reactor1"), color_reactor1, reactor1_id);
+
+	AcDbCircle* circ1 = nullptr;
+	if (acdbOpenObject(circ1, circ_ids[0], OpenMode::kForWrite) == Acad::eOk)
+	{
+		circ1->addPersistentReactor(reactor1_id);
+		circ1->close();
+	}
+	color_reactor1->close();
 	name_dict->close();
 #pragma endregion
 }

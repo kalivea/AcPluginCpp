@@ -24,6 +24,12 @@
     <ClCompile Include="CircleReactor.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="CallbackManager.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="PolaReactor.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="StdAfx.h">
@@ -33,6 +39,15 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="CircleReactor.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="CallbackManager.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="PolaReactor.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ReactorDef.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

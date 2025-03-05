@@ -25,43 +25,66 @@
 #include "StdAfx.h"
 #include "resource.h"
 #include "CircleReactor.h"
+#include "PolaReactor.h"
+#include "CallbackManager.h"
 //-----------------------------------------------------------------------------
 #define szRDS _RXST("Pola")
 
+void syncColors(const AcDbObject* source, AcDbObjectId target)
+{
+	AcDbEntity* circ2_entity;
+	AcDbCircle* circ1 = AcDbCircle::cast(source);
+
+	Acad::ErrorStatus es;
+	es = acdbOpenObject(circ2_entity, target, OpenMode::kForWrite);
+
+	AcDbCircle* circ2 = AcDbCircle::cast(circ2_entity);
+	double radius = circ1->radius();
+	circ2->setRadius(radius);
+
+	circ2->close();
+
+	circ2_entity->close();
+}
 //-----------------------------------------------------------------------------
 //----- ObjectARX EntryPoint
+
 class CEntityReactorApp : public AcRxDbxApp {
 
 public:
-	CEntityReactorApp () : AcRxDbxApp () {}
+	CEntityReactorApp() : AcRxDbxApp() {}
 
-	virtual AcRx::AppRetCode On_kInitAppMsg (void *pkt) {
+	virtual AcRx::AppRetCode On_kInitAppMsg(void* pkt) {
 		// TODO: Load dependencies here
 
 		// You *must* call On_kInitAppMsg here
-		AcRx::AppRetCode retCode =AcRxDbxApp::On_kInitAppMsg (pkt) ;
-		
+		AcRx::AppRetCode retCode = AcRxDbxApp::On_kInitAppMsg(pkt);
+
 		// TODO: Add your initialization code here
 		CCircleReactor::rxInit();
+		CallbackManager::getInstance();
+		CallbackManager::getInstance().registerCallback(1, syncColors);
+		CPolaReactor::rxInit();
 		acrxBuildClassHierarchy();
-		return (retCode) ;
+		return (retCode);
 	}
 
-	virtual AcRx::AppRetCode On_kUnloadAppMsg (void *pkt) {
+	virtual AcRx::AppRetCode On_kUnloadAppMsg(void* pkt) {
 		// TODO: Add your code here
 
 		// You *must* call On_kUnloadAppMsg here
-		AcRx::AppRetCode retCode =AcRxDbxApp::On_kUnloadAppMsg (pkt) ;
+		AcRx::AppRetCode retCode = AcRxDbxApp::On_kUnloadAppMsg(pkt);
 
 		// TODO: Unload dependencies here
 		deleteAcRxClass(CCircleReactor::desc());
-		return (retCode) ;
+		deleteAcRxClass(CPolaReactor::desc());
+		return (retCode);
 	}
 
-	virtual void RegisterServerComponents () {
+	virtual void RegisterServerComponents() {
 	}
-	
-} ;
+
+};
 
 //-----------------------------------------------------------------------------
 IMPLEMENT_ARX_ENTRYPOINT(CEntityReactorApp)

@@ -497,6 +497,45 @@ void TestClass::Test()
 	circ_reactor1->close();
 	circ_reactor2->close();
 	name_dict->close();*/
+	//AcDbObjectIdArray circ_ids;
+	//if (!SelectEntitys::PickEntitys(_T("select two objects to sync colors: "), AcDbCircle::desc(), circ_ids))
+	//	return;
+
+	//if (circ_ids.length() != 2)
+	//{
+	//	acutPrintf(_T("only can select two objects!"));
+	//	return;
+	//}
+
+	//AcDbDictionary* name_dict = nullptr;
+
+	//CPolaReactor* radius_reactor1 = new CPolaReactor(circ_ids.at(1), 1); 
+	//AcDbObjectId reactor1_id;
+	//acdbHostApplicationServices()->workingDatabase()->getNamedObjectsDictionary(name_dict, OpenMode::kForWrite);
+	//name_dict->setAt(_T("color_reactor1"), radius_reactor1, reactor1_id);
+
+	//AcDbCircle* circ1 = nullptr;
+	//if (acdbOpenObject(circ1, circ_ids[0], OpenMode::kForWrite) == Acad::eOk)
+	//{
+	//	circ1->addPersistentReactor(reactor1_id);
+	//	circ1->close();
+	//}
+
+	//CPolaReactor* radius_reactor2 = new CPolaReactor(circ_ids.at(0), 1);
+	//AcDbObjectId reactor2_id;
+	//name_dict->setAt(_T("color_reactor2"), radius_reactor2, reactor2_id);
+
+	//AcDbCircle* circ2 = nullptr;
+	//if (acdbOpenObject(circ2, circ_ids[1], OpenMode::kForWrite) == Acad::eOk)
+	//{
+	//	circ2->addPersistentReactor(reactor2_id);
+	//	circ2->close();
+	//}
+
+	//radius_reactor1->close();
+	//radius_reactor2->close();
+	//name_dict->close();
+
 	AcDbObjectIdArray circ_ids;
 	if (!SelectEntitys::PickEntitys(_T("select two objects to sync colors: "), AcDbCircle::desc(), circ_ids))
 		return;
@@ -507,20 +546,75 @@ void TestClass::Test()
 		return;
 	}
 
+	// Set up dictionary for storing reactors
 	AcDbDictionary* name_dict = nullptr;
+	Acad::ErrorStatus es = acdbHostApplicationServices()->workingDatabase()
+		->getNamedObjectsDictionary(name_dict, OpenMode::kForWrite);
+	if (es != Acad::eOk)
+	{
+		acutPrintf(_T("\nError getting named objects dictionary: %s"), acadErrorStatusText(es));
+		return;
+	}
 
-	CPolaReactor* color_reactor1 = new CPolaReactor(circ_ids.at(1), 1); 
+	// First, create both reactors without attaching them
+	CPolaReactor* radius_reactor1 = new CPolaReactor(circ_ids.at(1), 1);
 	AcDbObjectId reactor1_id;
-	acdbHostApplicationServices()->workingDatabase()->getNamedObjectsDictionary(name_dict, OpenMode::kForWrite);
-	name_dict->setAt(_T("color_reactor1"), color_reactor1, reactor1_id);
+	es = name_dict->setAt(_T("color_reactor1"), radius_reactor1, reactor1_id);
+	if (es != Acad::eOk)
+	{
+		acutPrintf(_T("\nError storing reactor1: %s"), acadErrorStatusText(es));
+		delete radius_reactor1;
+		name_dict->close();
+		return;
+	}
+	radius_reactor1->close();
 
+	CPolaReactor* radius_reactor2 = new CPolaReactor(circ_ids.at(0), 1);
+	AcDbObjectId reactor2_id;
+	es = name_dict->setAt(_T("color_reactor2"), radius_reactor2, reactor2_id);
+	if (es != Acad::eOk)
+	{
+		acutPrintf(_T("\nError storing reactor2: %s"), acadErrorStatusText(es));
+		delete radius_reactor2;
+		name_dict->close();
+		return;
+	}
+	radius_reactor2->close();
+
+	// Then, in a separate step, add the reactors to the circles
 	AcDbCircle* circ1 = nullptr;
-	if (acdbOpenObject(circ1, circ_ids[0], OpenMode::kForWrite) == Acad::eOk)
+	es = acdbOpenObject(circ1, circ_ids[0], OpenMode::kForWrite);
+	if (es == Acad::eOk)
 	{
 		circ1->addPersistentReactor(reactor1_id);
 		circ1->close();
 	}
-	color_reactor1->close();
+	else
+	{
+		acutPrintf(_T("\nError opening circle1: %s"), acadErrorStatusText(es));
+	}
+
+	AcDbCircle* circ2 = nullptr;
+	es = acdbOpenObject(circ2, circ_ids[1], OpenMode::kForWrite);
+	if (es == Acad::eOk)
+	{
+		circ2->addPersistentReactor(reactor2_id);
+		circ2->close();
+	}
+	else if (es == Acad::eWasNotifying)
+	{
+		// Handle the case when the object is currently sending notifications
+		acutPrintf(_T("\nCircle2 is currently notifying - will try again later"));
+
+		// Alternative approach: Schedule a delayed task to add the reactor
+		// This would require a custom implementation of a delayed task system
+		// For simplicity, you could use a command that the user can run after this one
+	}
+	else
+	{
+		acutPrintf(_T("\nError opening circle2: %s"), acadErrorStatusText(es));
+	}
+
 	name_dict->close();
 #pragma endregion
 }

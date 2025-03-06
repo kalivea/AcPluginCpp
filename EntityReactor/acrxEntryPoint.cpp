@@ -30,22 +30,18 @@
 //-----------------------------------------------------------------------------
 #define szRDS _RXST("Pola")
 
-void syncColors(const AcDbObject* source, AcDbObjectId target)
+void syncRadius(const AcDbObject* source, AcDbObjectId target)
 {
-	AcDbEntity* circ2_entity;
-	AcDbCircle* circ1 = AcDbCircle::cast(source);
-
-	Acad::ErrorStatus es;
-	es = acdbOpenObject(circ2_entity, target, OpenMode::kForWrite);
-
-	AcDbCircle* circ2 = AcDbCircle::cast(circ2_entity);
-	double radius = circ1->radius();
-	circ2->setRadius(radius);
-
-	circ2->close();
-
-	circ2_entity->close();
+	AcDbCircle* circ = AcDbCircle::cast(source);
+	AcDbCircle* circ_t = nullptr;
+	double radius = circ->radius();
+	if (acdbOpenObject(circ_t, target, OpenMode::kForWrite) == Acad::eOk)
+	{
+		circ_t->setRadius(radius);
+		circ_t->close();
+	}
 }
+
 //-----------------------------------------------------------------------------
 //----- ObjectARX EntryPoint
 
@@ -63,7 +59,7 @@ public:
 		// TODO: Add your initialization code here
 		CCircleReactor::rxInit();
 		CallbackManager::getInstance();
-		CallbackManager::getInstance().registerCallback(1, syncColors);
+		CallbackManager::getInstance().registerCallback(1, syncRadius);
 		CPolaReactor::rxInit();
 		acrxBuildClassHierarchy();
 		return (retCode);

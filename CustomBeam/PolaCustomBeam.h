@@ -167,11 +167,10 @@ public:
 public:
 	AcDbObjectIdArray GetIntersectingPillar() const;
 	Adesk::Int32 GetSegmentIndexByYProjection(const AcGePoint3d& point, const AcGeTol& tol = AcGeContext::gTol) const;
+	Adesk::Int32 GetSegmentIndex(const AcGePoint3d& point, const AcGeTol& tol = AcGeContext::gTol) const;
 	void addJoint(const double slab_thickness, const double offset_length = 100);
 	AcDbObjectId addBeamSnInfo();
-	Acad::ErrorStatus InsertVertex(const AcGePoint3d& insert_point);			// TODO: A tolerance value is required to determine 
-																				// whether the beam is within a certain range to prevent user error.
-	static AcDbObjectId genbeam();
+	Acad::ErrorStatus InsertVertex(const AcGePoint3d& insert_point);
 };
 
 #ifdef CUSTOMBEAM_MODULE

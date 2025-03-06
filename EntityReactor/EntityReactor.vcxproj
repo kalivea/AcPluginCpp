@@ -71,7 +71,6 @@
   <ItemGroup>
     <ClCompile Include="acrxEntryPoint.cpp" />
     <ClCompile Include="CallbackManager.cpp" />
-    <ClCompile Include="CircleReactor.cpp" />
     <ClCompile Include="PolaReactor.cpp" />
     <ClCompile Include="StdAfx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -80,7 +79,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CallbackManager.h" />
-    <ClInclude Include="CircleReactor.h" />
     <ClInclude Include="PolaReactor.h" />
     <ClInclude Include="ReactorDef.h" />
     <ClInclude Include="Resource.h" />

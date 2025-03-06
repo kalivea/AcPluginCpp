@@ -66,11 +66,12 @@ public:
 	virtual Acad::ErrorStatus dwgOutFields(AcDbDwgFiler* pFiler) const;
 	virtual Acad::ErrorStatus dwgInFields(AcDbDwgFiler* pFiler);
 	virtual void modified(const AcDbObject* pDbObj) override;
-	void trigger(const AcDbObject* source_id, AcDbObjectId target_id) const;
+	void trigger(const AcDbObject* source_object, AcDbObjectId target_id) const;
+	void BoundObjectId(AcDbObjectId& id);
 	AcDbObjectId boundObjectId() const;
 private:
-	AcDbObjectId m_boundObjectId;
-	int m_callbackId;
+	AcDbObjectId bound_objectId;
+	int callback_id;
 };
 
 #ifdef ENTITYREACTOR_MODULE

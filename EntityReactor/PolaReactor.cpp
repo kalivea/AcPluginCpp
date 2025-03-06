@@ -44,7 +44,7 @@ CPolaReactor::CPolaReactor() : AcDbObject() {
 }
 
 CPolaReactor::CPolaReactor(AcDbObjectId & boundObjectId, int callbackId)
-	: m_boundObjectId(boundObjectId), m_callbackId(callbackId)
+	: bound_objectId(boundObjectId), callback_id(callbackId)
 {
 }
 
@@ -65,10 +65,10 @@ Acad::ErrorStatus CPolaReactor::dwgOutFields(AcDbDwgFiler * pFiler) const {
 		return (es);
 	//----- Output params
 	//.....
-	es = pFiler->writeItem(m_callbackId);
+	es = pFiler->writeItem(callback_id);
 	if (es != Acad::eOk)
 		return (es);
-	es = pFiler->writeItem((AcDbSoftPointerId&)m_boundObjectId);
+	es = pFiler->writeItem((AcDbSoftPointerId&)bound_objectId);
 	if (es != Acad::eOk)
 		return (es);
 	return (pFiler->filerStatus());
@@ -92,10 +92,10 @@ Acad::ErrorStatus CPolaReactor::dwgInFields(AcDbDwgFiler * pFiler) {
 	//	return (Acad::eMakeMeProxy) ;
 	//----- Read params
 	//.....
-	es = pFiler->readItem(&m_callbackId);
+	es = pFiler->readItem(&callback_id);
 	if (es != Acad::eOk)
 		return (es);
-	es = pFiler->readItem((AcDbSoftPointerId*)&m_boundObjectId);
+	es = pFiler->readItem((AcDbSoftPointerId*)&bound_objectId);
 	if (es != Acad::eOk)
 		return (es);
 	return (pFiler->filerStatus());
@@ -103,17 +103,22 @@ Acad::ErrorStatus CPolaReactor::dwgInFields(AcDbDwgFiler * pFiler) {
 
 void CPolaReactor::modified(const AcDbObject * pDbObj)
 {
-	trigger(pDbObj, m_boundObjectId);
+	trigger(pDbObj, bound_objectId);
 	AcDbObject::modified(pDbObj);
 }
 
-void CPolaReactor::trigger(const AcDbObject* source_id, AcDbObjectId target_id) const
+void CPolaReactor::trigger(const AcDbObject * source_id, AcDbObjectId target_id) const
 {
-	CallbackManager::getInstance().executeCallback(m_callbackId, source_id, target_id);
+	CallbackManager::getInstance().executeCallback(callback_id, source_id, target_id);
+}
+
+inline void CPolaReactor::BoundObjectId(AcDbObjectId & id)
+{
+	bound_objectId = id;
 }
 
 AcDbObjectId CPolaReactor::boundObjectId() const
 {
-	return m_boundObjectId;
+	return bound_objectId;
 }
 

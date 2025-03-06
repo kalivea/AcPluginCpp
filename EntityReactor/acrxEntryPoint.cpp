@@ -24,7 +24,6 @@
 //-----------------------------------------------------------------------------
 #include "StdAfx.h"
 #include "resource.h"
-#include "CircleReactor.h"
 #include "PolaReactor.h"
 #include "CallbackManager.h"
 //-----------------------------------------------------------------------------
@@ -57,10 +56,9 @@ public:
 		AcRx::AppRetCode retCode = AcRxDbxApp::On_kInitAppMsg(pkt);
 
 		// TODO: Add your initialization code here
-		CCircleReactor::rxInit();
+		CPolaReactor::rxInit();
 		CallbackManager::getInstance();
 		CallbackManager::getInstance().registerCallback(1, syncRadius);
-		CPolaReactor::rxInit();
 		acrxBuildClassHierarchy();
 		return (retCode);
 	}
@@ -72,7 +70,6 @@ public:
 		AcRx::AppRetCode retCode = AcRxDbxApp::On_kUnloadAppMsg(pkt);
 
 		// TODO: Unload dependencies here
-		deleteAcRxClass(CCircleReactor::desc());
 		deleteAcRxClass(CPolaReactor::desc());
 		return (retCode);
 	}

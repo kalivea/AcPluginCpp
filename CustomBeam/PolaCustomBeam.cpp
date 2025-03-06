@@ -398,35 +398,6 @@ Acad::ErrorStatus CPolaCustomBeam::subMoveGripPointsAt(
 	//----- the older getGripPoints() implementation. The call below may return
 	//----- eNotImplemented depending of your base class.
 	return (AcDbEntity::subMoveGripPointsAt(gripAppData, offset, bitflags));
-	//for (int i = 0; i < gripAppData.length(); ++i)
-	//{
-	//	AcDbGripData* grip_data = static_cast<AcDbGripData*>(gripAppData[i]);
-	//	void* app_data = grip_data->appData();
-
-	//	if (app_data == (void*)2)
-	//	{
-	//		AcGePoint3d original_point = grip_data->gripPoint();
-	//		AcGePoint3d new_point = original_point + offset;
-	//		int insert_index = -1;
-	//		for (int j = 0; j < beam_vertexes_.length() - 1; ++j)
-	//		{
-	//			AcGeLineSeg3d seg(beam_vertexes_[j], beam_vertexes_[j + 1]);
-	//			if (seg.isOn(original_point, AcGeContext::gTol))
-	//			{
-	//				insert_index = j + 1;
-	//				break;
-	//			}
-	//		}
-	//		if (insert_index != -1)
-	//		{
-	//			beam_vertexes_.insertAt(insert_index, new_point);
-	//			vertexes_num_++;
-	//			UpdateOffsetLine(0.5 * beam_b_);
-	//			GenerateBeamSegmentDirection();
-	//		}
-	//	}
-	//}
-	//return Acad::eOk;
 }
 
 
@@ -1011,85 +982,160 @@ Adesk::Int32 CPolaCustomBeam::GetSegmentIndexByYProjection(const AcGePoint3d & p
 	return segment_index;
 }
 
+Adesk::Int32 CPolaCustomBeam::GetSegmentIndex(const AcGePoint3d & point, const AcGeTol & tol) const
+{
+	if (beam_vertexes_.length() < 2)
+		return -1;
+	double min_distance = DBL_MAX;
+	int closest_segment_index = -1;
+
+	for (int i = 0; i < beam_vertexes_.length() - 1; i++)
+	{
+		AcGePoint3d start_point = beam_vertexes_[i];
+		AcGePoint3d end_point = beam_vertexes_[i + 1];
+
+		AcGeLineSeg3d segment(start_point, end_point);
+
+		AcGePoint3d closest_point;
+		closest_point = segment.closestPointTo(point);
+
+		if (segment.isOn(closest_point, tol))
+		{
+			double dist = point.distanceTo(closest_point);
+			if (dist < min_distance)
+			{
+				min_distance = dist;
+				closest_segment_index = i;
+			}
+		}
+	}
+	if (closest_segment_index == -1)
+	{
+		for (int i = 0; i < beam_vertexes_.length(); i++)
+		{
+			double dist = point.distanceTo(beam_vertexes_[i]);
+			if (dist < min_distance)
+			{
+				min_distance = dist;
+				closest_segment_index = (i == beam_vertexes_.length() - 1) ? i - 1 : i;
+			}
+		}
+	}
+	return closest_segment_index;
+}
+
 void CPolaCustomBeam::addJoint(const double slab_thickness, const double offset_length)
 {
-	AcDbObjectIdArray intersecting_pillar_ids = GetIntersectingPillar();
 	if (vertexes_num_ < 2)
 	{
 		acutPrintf(_T("Beam vertexes number less than 2, can't add joint.\n"));
 		return;
 	}
-	for (int i = 1;i < beam_vertexes_.length() - 1;i++)
+
+	AcDbObjectIdArray intersecting_pillar_ids = GetIntersectingPillar();
+	if (intersecting_pillar_ids.isEmpty())
+	{
+		return; 
+	}
+
+	auto CreateLine = [](const AcGePoint3d& start, const AcGePoint3d& end, const ACHAR* line_type, double scale_if_dashed = 1.0)
+		{
+			AcDbLine* line = new AcDbLine(start, end);
+			line->setLinetype(StyleTools::GetLineStyleId(line_type));
+			if (_tcscmp(line_type, _T("DASHED")) == 0)
+			{
+				line->setLinetypeScale(scale_if_dashed);
+			}
+			return AddToModelSpace::AddEntityToModelSpace(line) ? line : nullptr;
+		};
+
+	for (int i = 1; i < beam_vertexes_.length() - 1; i++)
 	{
 		if (beam_viewable_.at(i) == beam_viewable_.at(i + 1))
+		{
 			continue;
+		}
+
+		const AcGePoint3d& vertex = beam_vertexes_.at(i);
+
 		for (const auto& pillar_id : intersecting_pillar_ids)
 		{
 			AcDbEntity* pillar_entity = nullptr;
 			if (acdbOpenObject(pillar_entity, pillar_id, OpenMode::kForRead) != Acad::eOk)
-				continue;
-			CPolaCustomPillar* pillar = CPolaCustomPillar::cast(pillar_entity);
-			const AcGePoint3d& temp_pillar_center_point = pillar->getCenterPoint();
-
-			if (temp_pillar_center_point != beam_vertexes_.at(i))
 			{
-				pillar_entity->close();
 				continue;
 			}
-			AcDbLine* joint_line1 = new AcDbLine();
-			AcDbLine* joint_line2 = new AcDbLine();
-			AcDbLine* joint_line3 = new AcDbLine();
-			AcDbLine* joint_line4 = new AcDbLine();
+
+			std::unique_ptr<AcDbEntity, std::function<void(AcDbEntity*)>> pillar_guard(
+				pillar_entity, [](AcDbEntity* p) { if (p) p->close(); });
+
+			CPolaCustomPillar* pillar = CPolaCustomPillar::cast(pillar_entity);
+			if (!pillar || pillar->getCenterPoint() != vertex)
+			{
+				continue;
+			}
+
 			double pillar_b, pillar_h;
 			pillar->getDiameter(pillar_b, pillar_h);
 
-			joint_line1->setStartPoint(AcGePoint3d(temp_pillar_center_point.x - pillar_b / 2.0 - offset_length - beam_h_ + slab_thickness, temp_pillar_center_point.y + beam_b_ / 2, 0));
-			joint_line1->setEndPoint(AcGePoint3d(temp_pillar_center_point.x - pillar_b / 2.0 - offset_length - beam_h_ + slab_thickness, temp_pillar_center_point.y - beam_b_ / 2, 0));
-
-			joint_line2->setStartPoint(AcGePoint3d(temp_pillar_center_point.x - pillar_b / 2.0 - offset_length, temp_pillar_center_point.y + beam_b_ / 2, 0));
-			joint_line2->setEndPoint(AcGePoint3d(temp_pillar_center_point.x - pillar_b / 2.0 - offset_length, temp_pillar_center_point.y - beam_b_ / 2, 0));
-
-			joint_line3->setStartPoint(AcGePoint3d(temp_pillar_center_point.x + pillar_b / 2.0 + offset_length, temp_pillar_center_point.y + beam_b_ / 2, 0));
-			joint_line3->setEndPoint(AcGePoint3d(temp_pillar_center_point.x + pillar_b / 2.0 + offset_length, temp_pillar_center_point.y - beam_b_ / 2, 0));
-
-			joint_line4->setStartPoint(AcGePoint3d(temp_pillar_center_point.x + pillar_b / 2.0 + offset_length + beam_h_ - slab_thickness, temp_pillar_center_point.y + beam_b_ / 2, 0));
-			joint_line4->setEndPoint(AcGePoint3d(temp_pillar_center_point.x + pillar_b / 2.0 + offset_length + beam_h_ - slab_thickness, temp_pillar_center_point.y - beam_b_ / 2, 0));
-			if (beam_viewable_.at(i) == 1)
+			bool isHorizontalBeam = true;
+			if (i > 0 && i < beam_vertexes_.length() - 1)
 			{
-				joint_line1->setLinetype(StyleTools::GetLineStyleId(_T("DASHED")));
-				joint_line1->setLinetypeScale(700);
-				joint_line2->setLinetype(StyleTools::GetLineStyleId(_T("DASHED")));
-				joint_line2->setLinetypeScale(700);
-				joint_line3->setLinetype(StyleTools::GetLineStyleId(_T("CONTINUOUS")));
-				joint_line4->setLinetype(StyleTools::GetLineStyleId(_T("CONTINUOUS")));
-				AcDbLine* temp_line1 = new AcDbLine(joint_line2->startPoint(), joint_line4->startPoint());
-				AcDbLine* temp_line2 = new AcDbLine(joint_line2->endPoint(), joint_line4->endPoint());
-				AddToModelSpace::AddEntityToModelSpace(joint_line1);
-				AddToModelSpace::AddEntityToModelSpace(joint_line2);
-				AddToModelSpace::AddEntityToModelSpace(joint_line3);
-				AddToModelSpace::AddEntityToModelSpace(joint_line4);
-				AddToModelSpace::AddEntityToModelSpace(temp_line1);
-				AddToModelSpace::AddEntityToModelSpace(temp_line2);
+				double dx = fabs(beam_vertexes_[i + 1].x - beam_vertexes_[i - 1].x);
+				double dy = fabs(beam_vertexes_[i + 1].y - beam_vertexes_[i - 1].y);
+				isHorizontalBeam = (dx >= dy);
+			}
+
+			AcGePoint3d p1, p2, p3, p4, p5, p6, p7, p8;
+
+			if (isHorizontalBeam)
+			{
+				p1 = AcGePoint3d(vertex.x - pillar_b / 2 - offset_length - beam_h_ + slab_thickness, vertex.y + beam_b_ / 2, vertex.z);
+				p2 = AcGePoint3d(vertex.x - pillar_b / 2 - offset_length - beam_h_ + slab_thickness, vertex.y - beam_b_ / 2, vertex.z);
+
+				p3 = AcGePoint3d(vertex.x - pillar_b / 2 - offset_length, vertex.y + beam_b_ / 2, vertex.z);
+				p4 = AcGePoint3d(vertex.x - pillar_b / 2 - offset_length, vertex.y - beam_b_ / 2, vertex.z);
+
+				p5 = AcGePoint3d(vertex.x + pillar_b / 2 + offset_length, vertex.y + beam_b_ / 2, vertex.z);
+				p6 = AcGePoint3d(vertex.x + pillar_b / 2 + offset_length, vertex.y - beam_b_ / 2, vertex.z);
+
+				p7 = AcGePoint3d(vertex.x + pillar_b / 2 + offset_length + beam_h_ - slab_thickness, vertex.y + beam_b_ / 2, vertex.z);
+				p8 = AcGePoint3d(vertex.x + pillar_b / 2 + offset_length + beam_h_ - slab_thickness, vertex.y - beam_b_ / 2, vertex.z);
 			}
 			else
 			{
-				joint_line3->setLinetype(StyleTools::GetLineStyleId(_T("DASHED")));
-				joint_line3->setLinetypeScale(700);
-				joint_line4->setLinetype(StyleTools::GetLineStyleId(_T("DASHED")));
-				joint_line4->setLinetypeScale(700);
-				joint_line1->setLinetype(StyleTools::GetLineStyleId(_T("CONTINUOUS")));
-				joint_line2->setLinetype(StyleTools::GetLineStyleId(_T("CONTINUOUS")));
+				p1 = AcGePoint3d(vertex.x + beam_b_ / 2, vertex.y - pillar_h / 2 - offset_length - beam_h_ + slab_thickness, vertex.z);
+				p2 = AcGePoint3d(vertex.x - beam_b_ / 2, vertex.y - pillar_h / 2 - offset_length - beam_h_ + slab_thickness, vertex.z);
 
-				AcDbLine* temp_line1 = new AcDbLine(joint_line1->startPoint(), joint_line3->startPoint());
-				AcDbLine* temp_line2 = new AcDbLine(joint_line1->endPoint(), joint_line3->endPoint());
+				p3 = AcGePoint3d(vertex.x + beam_b_ / 2, vertex.y - pillar_h / 2 - offset_length, vertex.z);
+				p4 = AcGePoint3d(vertex.x - beam_b_ / 2, vertex.y - pillar_h / 2 - offset_length, vertex.z);
 
-				AddToModelSpace::AddEntityToModelSpace(joint_line1);
-				AddToModelSpace::AddEntityToModelSpace(joint_line2);
-				AddToModelSpace::AddEntityToModelSpace(joint_line3);
-				AddToModelSpace::AddEntityToModelSpace(joint_line4);
-				AddToModelSpace::AddEntityToModelSpace(temp_line1);
-				AddToModelSpace::AddEntityToModelSpace(temp_line2);
+				p5 = AcGePoint3d(vertex.x + beam_b_ / 2, vertex.y + pillar_h / 2 + offset_length, vertex.z);
+				p6 = AcGePoint3d(vertex.x - beam_b_ / 2, vertex.y + pillar_h / 2 + offset_length, vertex.z);
+
+				p7 = AcGePoint3d(vertex.x + beam_b_ / 2, vertex.y + pillar_h / 2 + offset_length + beam_h_ - slab_thickness, vertex.z);
+				p8 = AcGePoint3d(vertex.x - beam_b_ / 2, vertex.y + pillar_h / 2 + offset_length + beam_h_ - slab_thickness, vertex.z);
 			}
+
+			if (beam_viewable_.at(i) == 1)
+			{
+				CreateLine(p1, p2, _T("DASHED"), 700);
+				CreateLine(p3, p4, _T("DASHED"), 700);
+				CreateLine(p5, p6, _T("CONTINUOUS"));
+				CreateLine(p7, p8, _T("CONTINUOUS"));
+				CreateLine(p3, p7, _T("CONTINUOUS")); 
+				CreateLine(p4, p8, _T("CONTINUOUS")); 
+			}
+			else
+			{
+				CreateLine(p1, p2, _T("CONTINUOUS"));
+				CreateLine(p3, p4, _T("CONTINUOUS"));
+				CreateLine(p5, p6, _T("DASHED"), 700);
+				CreateLine(p7, p8, _T("DASHED"), 700);
+				CreateLine(p1, p5, _T("CONTINUOUS")); 
+				CreateLine(p2, p6, _T("CONTINUOUS")); 
+			}
+			break;
 		}
 	}
 }
@@ -1112,7 +1158,8 @@ Acad::ErrorStatus CPolaCustomBeam::InsertVertex(const AcGePoint3d & insert_point
 {
 	assertWriteEnabled();
 	int insert_index = -1;
-	insert_index = GetSegmentIndexByYProjection(insert_point);
+	//insert_index = GetSegmentIndexByYProjection(insert_point);
+	insert_index = GetSegmentIndex(insert_point);
 	if (insert_index < 0)
 		return Acad::eInvalidInput;
 	addVertexAt(insert_index + 1, insert_point);

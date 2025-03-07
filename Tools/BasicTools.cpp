@@ -198,6 +198,14 @@ double BasicTools::Min(const double& num1, const double& num2)
 {
 	return num1 <= num2 ? num1 : num2;
 }
+
+int BasicTools::RandomInt(const int& min, const int& max)
+{
+	unsigned seed = static_cast<unsigned> (std::chrono::system_clock::now().time_since_epoch().count());
+    std::mt19937 random_generator(seed);
+    std::uniform_int_distribution<> int_distribution(min, max);
+    return int_distribution(random_generator);
+}
 /// <summary>
 /// Calculate the coordinates of the midpoint of the line segment based on the offset distance
 /// </summary>

@@ -635,8 +635,8 @@ AcDbObjectId CPolaCustomPillar::SingleInsert(const CPolaCustomPillar & pillar_te
 
 AcDbObjectId CPolaCustomPillar::AddPillarLeader()
 {
-	AcGePoint3d point_on_leader = AcGePoint3d(center_point_.x + 900, center_point_.y - 900, center_point_.z);
-
+	AcGePoint3d point_on_leader(center_point_.x + 2000, center_point_.y - 1000, center_point_.z);
+	AcGePoint3d text_point(point_on_leader.x + 2000, point_on_leader.y, point_on_leader.z);
 	std::wstring info;
 	std::wstringstream info_stream;
 	if (pillar_type_ == 1)
@@ -653,7 +653,7 @@ AcDbObjectId CPolaCustomPillar::AddPillarLeader()
 	{
 		throw std::invalid_argument("Invalid pillar type");
 	}
-	return DrawEntity::AddMLeader(center_point_, point_on_leader, point_on_leader, info.c_str());
+	return DrawEntity::AddMLeader(center_point_, point_on_leader, text_point, info.c_str());
 }
 
 Acad::ErrorStatus CPolaCustomPillar::subGetGeomExtents(AcDbExtents & extents) const

@@ -26,7 +26,7 @@
 #include "resource.h"
 #include "PolaBeamUi.h"
 #include <SelectEntitys.h>
-
+#include "EditEntity.h"
 //-----------------------------------------------------------------------------
 IMPLEMENT_DYNAMIC(CPolaBeamUi, CAdUiBaseDialog)
 
@@ -77,7 +77,8 @@ void CPolaBeamUi::OnBnClickedButtonPickpillar()
 	beam->setBeamWidth(beam_b);
 	beam->setBeamHeight(beam_h);
 	BeginEditorCommand();
-	CPolaCustomBeam::SelectPillarDrawBeam(beam);
+	AcDbObjectId beam_id = CPolaCustomBeam::SelectPillarDrawBeam(beam);
+	EditEntity::SetLayer(beam_id, _T("POLA_BEAM_STRUCTURE"));
 	CompleteEditorCommand();
 }
 
@@ -95,20 +96,23 @@ void CPolaBeamUi::OnBnClickedButtonPickoffset()
 	beam->setBeamProperty(beam_Sn);
 	beam->setBeamWidth(beam_b);
 	beam->setBeamHeight(beam_h);
-
+	AcDbObjectId beam_id = AcDbObjectId::kNull;
 	switch (selected_radio_id)
 	{
 	case IDC_RADIO_TOP:
 		BeginEditorCommand();
-		CPolaCustomBeam::PickTopPointDrawBeam(beam);
+		beam_id = CPolaCustomBeam::PickTopPointDrawBeam(beam);
+		EditEntity::SetLayer(beam_id, _T("POLA_BEAM_STRUCTURE"));
 		break;
 	case IDC_RADIO_CEN:
 		BeginEditorCommand();
-		CPolaCustomBeam::PickCenterPointDrawBeam(beam);
+		beam_id = CPolaCustomBeam::PickCenterPointDrawBeam(beam);
+		EditEntity::SetLayer(beam_id, _T("POLA_BEAM_STRUCTURE"));
 		break;
 	case IDC_RADIO_BOT:
 		BeginEditorCommand();
-		CPolaCustomBeam::PickBottomPointDrawBeam(beam);
+		beam_id = CPolaCustomBeam::PickBottomPointDrawBeam(beam);
+		EditEntity::SetLayer(beam_id, _T("POLA_BEAM_STRUCTURE"));
 		break;
 	default:
 		MessageBox(_T("No mode select!"));
@@ -131,7 +135,7 @@ void CPolaBeamUi::OnBnClickedButtonEditviewable()
 	while (SelectEntitys::PickPoint(_T("Select point: \n"), point))
 	{
 		beam.open(beam_id.at(0), OpenMode::kForWrite);
-		CPolaCustomBeam::ModifyViewable(beam, beam->GetSegmentIndexByYProjection(point) + 1);
+		CPolaCustomBeam::ModifyViewable(beam, beam->GetSegmentIndex(point) + 1);
 	}
 	CompleteEditorCommand();
 }

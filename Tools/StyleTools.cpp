@@ -166,7 +166,6 @@ AcDbObjectId StyleTools::CreateLayerStyle(const TCHAR* layer_name, const int& co
 
 AcDbObjectId StyleTools::GetLayerId(const TCHAR* layer_name)
 {
-
 	AcDbObjectId layer_id = AcDbObjectId::kNull;
 	AcDbLayerTable* layer_table = nullptr;
 	if (IsLayerExist(layer_name))

@@ -537,4 +537,8 @@ void TestClass::Test()
 
 	//name_dict->close();
 #pragma endregion
+#pragma region random number
+	//for (int i = 0;i < 10;i++)
+	//	acutPrintf(_T("%d\n"), BasicTools::RandomInt(0, 100));
+#pragma endregion
 }

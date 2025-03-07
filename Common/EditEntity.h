@@ -1,4 +1,5 @@
 #pragma once
+#include "StdAfx.h"
 /*
 * Update Time: 2024-12-04
 * This is a collection of tools that can edit CAD entity(s).

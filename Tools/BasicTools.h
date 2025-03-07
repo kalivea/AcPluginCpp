@@ -60,7 +60,7 @@ public:
 	// math tools: Numerical tools
 	static double Max(const double& num1, const double& num2);
 	static double Min(const double& num1, const double& num2);
-
+	static int RandomInt(const int& min, const int& max);
 	// grid tools
 	static AcGePoint3dArray DistanceToPointArrayX(const AcGePoint3d& first_point, const double distance[], const int& cnt);
 	static AcGePoint3dArray DistanceToPointArrayY(const AcGePoint3d& first_point, const double distance[], const int& cnt);

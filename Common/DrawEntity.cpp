@@ -309,9 +309,9 @@ AcDbObjectId DrawEntity::AddMLeader(const AcGePoint3d& insert_point, const AcGeP
 	mleader->setLastVertex(leader_index, point_on_leader);
 	mleader->setMText(mtext);
 	mleader->setContentType(AcDbMLeaderStyle::kMTextContent);
-	mleader->setArrowSize(0.018);
 
+	mleader->setDoglegDirection(leader_index, AcGeVector3d(1, 0, 0));
+	mleader->setEnableDogleg(true);
 	mtext->close();
 	return AddToModelSpace::AddEntityToModelSpace(mleader);
 }
-

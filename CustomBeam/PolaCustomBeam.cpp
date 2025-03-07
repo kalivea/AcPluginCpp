@@ -194,12 +194,14 @@ Adesk::Boolean CPolaCustomBeam::subWorldDraw(AcGiWorldDraw * mode) {
 		{
 			mode->subEntityTraits().setLineType(StyleTools::GetLineStyleId(_T("DASHED")));
 			mode->subEntityTraits().setLineTypeScale(700);
+			mode->subEntityTraits().setColor(256);
 			mode->subEntityTraits().setSelectionMarker(base_marker);
 			temp_top_line.worldDraw(mode);
 			mode->subEntityTraits().setSelectionMarker(base_marker + 2);
 			temp_bottom_line.worldDraw(mode);
 
 			mode->subEntityTraits().setLineType(StyleTools::GetLineStyleId(_T("CENTER")));
+			mode->subEntityTraits().setColor(8);
 			mode->subEntityTraits().setSelectionMarker(base_marker + 1);
 			temp_center_line.worldDraw(mode);
 		}
@@ -207,12 +209,14 @@ Adesk::Boolean CPolaCustomBeam::subWorldDraw(AcGiWorldDraw * mode) {
 		{
 			mode->subEntityTraits().setLineType(StyleTools::GetLineStyleId(_T("CONTINUOUS")));
 			mode->subEntityTraits().setSelectionMarker(base_marker);
+			mode->subEntityTraits().setColor(256);
 			temp_top_line.worldDraw(mode);
 			mode->subEntityTraits().setSelectionMarker(base_marker + 2);
 			temp_bottom_line.worldDraw(mode);
 
 			mode->subEntityTraits().setLineType(StyleTools::GetLineStyleId(_T("CENTER")));
 			mode->subEntityTraits().setLineTypeScale(700);
+			mode->subEntityTraits().setColor(8);
 			mode->subEntityTraits().setSelectionMarker(base_marker + 1);
 			temp_center_line.worldDraw(mode);
 		}

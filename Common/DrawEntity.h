@@ -1,4 +1,5 @@
 #pragma once
+#include "StdAfx.h"
 /*
 * Update Time: 2025-01-03
 * This is a tool for drawing basic graphics in CAD.

@@ -176,11 +176,13 @@ Adesk::Boolean CPolaCustomPillar::subWorldDraw(AcGiWorldDraw * mode) {
 		if (viewable_)
 		{
 			mode->geometry().circle(center_point_, pillar_d_ * 0.5, AcGeVector3d::kZAxis);
+			mode->subEntityTraits().setColor(256);
 		}
 		else
 		{
 			mode->subEntityTraits().setLineType(StyleTools::GetLineStyleId(_T("DASHED")));
-			mode->subEntityTraits().setLineTypeScale(300);
+			mode->subEntityTraits().setLineTypeScale(700);
+			mode->subEntityTraits().setColor(256);
 			mode->geometry().circle(center_point_, pillar_d_ * 0.5, AcGeVector3d::kZAxis);
 		}
 	}
@@ -197,11 +199,13 @@ Adesk::Boolean CPolaCustomPillar::subWorldDraw(AcGiWorldDraw * mode) {
 				}
 				pl->setDatabaseDefaults();
 				pl->setClosed(true);
+				mode->subEntityTraits().setColor(256);
 				pl->worldDraw(mode);
 				delete pl;
 
 				mode->subEntityTraits().setLineType(StyleTools::GetLineStyleId(_T("DASHED")));
 				mode->subEntityTraits().setLineTypeScale(300);
+				mode->subEntityTraits().setColor(3);
 				AcDbLine(rect_pillar_vertex_.at(0), rect_pillar_vertex_.at(2)).worldDraw(mode);
 				AcDbLine(rect_pillar_vertex_.at(1), rect_pillar_vertex_.at(3)).worldDraw(mode);
 			}
@@ -217,9 +221,10 @@ Adesk::Boolean CPolaCustomPillar::subWorldDraw(AcGiWorldDraw * mode) {
 				}
 				pl->setDatabaseDefaults();
 				pl->setClosed(true);
+				mode->subEntityTraits().setColor(256);
 				pl->worldDraw(mode);
 				delete pl;
-
+				mode->subEntityTraits().setColor(3);
 				AcDbLine(rect_pillar_vertex_.at(0), rect_pillar_vertex_.at(2)).worldDraw(mode);
 				AcDbLine(rect_pillar_vertex_.at(1), rect_pillar_vertex_.at(3)).worldDraw(mode);
 			}

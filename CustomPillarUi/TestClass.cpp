@@ -14,6 +14,8 @@ void TestClass::Test()
 {
 	StyleTools::LoadLineType(_T("CENTER"), _T("acad.lin"));
 	StyleTools::LoadLineType(_T("DASHED"), _T("acad.lin"));
+	StyleTools::CreateLayerStyle(_T("POLA_PILLAR_STRUCTURE"), 2, _T("CONTINUOUS"));
+	StyleTools::CreateLayerStyle(_T("POLA_PILLAR_MARK"), 3, _T("CONTINUOUS"));
 	CAcModuleResourceOverride res;			// TODO
 	CPolaPillarUi ui;
 	if (ui.DoModal() != IDOK)

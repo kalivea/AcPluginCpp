@@ -27,6 +27,7 @@
 //-----------------------------------------------------------------------------
 #include "adui.h"
 #include "resource.h"
+#include "InputValidator.h"
 //-----------------------------------------------------------------------------
 
 enum ShapeType { CIRCLE, RECTANGLE };
@@ -50,17 +51,17 @@ public:
 	afx_msg void OnBnClickedRadioRect();
 	afx_msg void OnBnClickedRadioCirc();
 	CEdit Edit_Sn_;
-	int beam_sn;
+	int pillar_sn = 6496;
 	CEdit Edit_Grade;
-	int beam_conc_grade;
+	int pillar_conc_grade = 6496;
 	CEdit Edit_Pipe_D_;
-	double pipe_d = 0;
+	double pipe_d = 6496;
 	CEdit Edit_Pipe_T_;
-	double pipe_t = 0;
+	double pipe_t = 6496;
 	CEdit Edit_Pillar_D_;
-	double pillar_d = 0;
+	double pillar_d = 6496;
 	CEdit Edit_Pillar_H_;
-	double pillar_h = 0;
+	double pillar_h = 6496;
 
 	CRect rc_draw_rect;
 	ShapeType shape_type = RECTANGLE;

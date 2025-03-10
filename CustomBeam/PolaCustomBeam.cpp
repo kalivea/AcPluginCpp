@@ -674,84 +674,134 @@ void CPolaCustomBeam::GenerateBeamSegmentDirection()
 
 AcDbObjectId CPolaCustomBeam::DrawBeamWithOffset(CPolaCustomBeam * beam, const double offset_distance)
 {
-
 	int index = 2;
 	TCHAR keyword[256] = { 0 };
 	beam->addViewableAt(0, 0);
 	AcGePoint3d start_point;
 
-	if (!SelectEntitys::PickPoint(_T("Pick first point:\n"), start_point))
-		return AcDbObjectId::kNull;
+	bool first_point_selected = false;
+	while (!first_point_selected)
+	{
+		if (SelectEntitys::PickPoint(_T("Pick first point (required):\n"), start_point))
+		{
+			first_point_selected = true;
+		}
+		else
+		{
+			acutPrintf(_T("First point selection was canceled. This point is required. Please try again.\n"));
+		}
+	}
+
 	AcGePoint3d previous_point = start_point;
 	AcGePoint3d current_point;
 	AcDbObjectId beam_id = AcDbObjectId::kNull;
 
-	while (SelectEntitys::PickPoint(_T("Pick next point:\n"), start_point, current_point))
+	bool second_point_selected = false;
+	while (!second_point_selected)
 	{
-		if (index == 2)
+		if (SelectEntitys::PickPoint(_T("Pick next point (required to create a beam):\n"), start_point, current_point))
+		{
+			second_point_selected = true;
+		}
+		else
+		{
+			acutPrintf(_T("Second point selection was canceled. At least two points are required. Please try again.\n"));
+		}
+	}
+
+	if (offset_distance != 0.0)
+	{
+		AcGePoint3d temp_point[2];
+		BasicTools::OffsetLineSegment(start_point, current_point, offset_distance, temp_point);
+		beam->addVertexAt(0, temp_point[0]);
+		beam->addVertexAt(1, temp_point[1]);
+	}
+	else
+	{
+		beam->addVertexAt(0, previous_point);
+		beam->addVertexAt(1, current_point);
+	}
+
+	while (true)
+	{
+		InputValue::GetKeyword(
+			_T("Please enter the visibility of the beam segment: [Visible/Invisible]"),
+			_T("Visible Invisible"), keyword, sizeof(keyword) / sizeof(TCHAR));
+
+		if (_tcscmp(keyword, _T("Visible")) == 0)
+		{
+			beam->addViewableAt(index - 1, 1);
+			break;
+		}
+		else if (_tcscmp(keyword, _T("Invisible")) == 0)
+		{
+			beam->addViewableAt(index - 1, 0);
+			break;
+		}
+		else
+		{
+			acutPrintf(_T("Invalid input. Please enter 'Visible' or 'Invisible'.\n"));
+		}
+	}
+
+	beam_id = AddToModelSpace::AddEntityToModelSpace(beam);
+
+	previous_point = current_point;
+	index++;
+
+	while (true)
+	{
+		if (!SelectEntitys::PickPoint(_T("Pick next point (required):\n"), start_point, current_point))
+		{
+			acutPrintf(_T("Beam creation completed with %d points.\n"), index - 1);
+			break;
+		}
+
+		CPolaCustomBeam* beam_ptr = nullptr;
+		if (acdbOpenObject(beam_ptr, beam_id, AcDb::kForWrite) == Acad::eOk)
 		{
 			if (offset_distance != 0.0)
 			{
 				AcGePoint3d temp_point[2];
-				BasicTools::OffsetLineSegment(start_point, current_point, offset_distance, temp_point);
-				beam->addVertexAt(0, temp_point[0]);
-				beam->addVertexAt(1, temp_point[1]);
+				BasicTools::OffsetLineSegment(previous_point, current_point, offset_distance, temp_point);
+				beam_ptr->addVertexAt(index - 1, temp_point[1]);
 			}
 			else
 			{
-				beam->addVertexAt(0, previous_point);
-				beam->addVertexAt(1, current_point);
+				beam_ptr->addVertexAt(index - 1, current_point);
 			}
 
-			InputValue::GetKeyword(
-				_T("Please enter the visibility of the beam segment: [Visible/Invisible]"),
-				_T("Visible Invisible"), keyword, sizeof(keyword) / sizeof(TCHAR));
-
-			if (_tcscmp(keyword, _T("Visible")) == 0)
-				beam->addViewableAt(index - 1, 1);
-			else if (_tcscmp(keyword, _T("Invisible")) == 0)
-				beam->addViewableAt(index - 1, 0);
-			else
-				throw;
-
-			beam_id = AddToModelSpace::AddEntityToModelSpace(beam);
-		}
-		else if (index > 2)
-		{
-			CPolaCustomBeam* beam = nullptr;
-			if (acdbOpenObject(beam, beam_id, AcDb::kForWrite) == Acad::eOk)
+			while (true)
 			{
-				if (offset_distance != 0.0)
-				{
-					AcGePoint3d temp_point[2];
-					BasicTools::OffsetLineSegment(previous_point, current_point, offset_distance, temp_point);
-					beam->addVertexAt(index - 1, temp_point[1]);
-				}
-				else
-				{
-					beam->addVertexAt(index - 1, current_point);
-				}
-
 				InputValue::GetKeyword(
 					_T("Please enter the visibility of the beam segment: [Visible/Invisible]"),
 					_T("Visible Invisible"), keyword, sizeof(keyword) / sizeof(TCHAR));
 
 				if (_tcscmp(keyword, _T("Visible")) == 0)
-					beam->addViewableAt(index - 1, 1);
+				{
+					beam_ptr->addViewableAt(index - 1, 1);
+					break;
+				}
 				else if (_tcscmp(keyword, _T("Invisible")) == 0)
-					beam->addViewableAt(index - 1, 0);
+				{
+					beam_ptr->addViewableAt(index - 1, 0);
+					break;
+				}
 				else
-					throw;
-
-				beam->close();
+				{
+					acutPrintf(_T("Invalid input. Please enter 'Visible' or 'Invisible'.\n"));
+				}
 			}
+			beam_ptr->close();
 		}
+
 		beam->recordGraphicsModified();
 		acedUpdateDisplay();
 
 		previous_point = current_point;
 		index++;
 	}
+
 	beam->close();
 	return beam_id;
 }
@@ -820,22 +870,25 @@ AcDbObjectId CPolaCustomBeam::SelectPillarDrawBeam(CPolaCustomBeam * beam)
 	std::vector<Adesk::Int32> viewable;
 	viewable.push_back(1);
 
-	SelectEntitys::PickEntitys(_T("Select pillar\n"), CPolaCustomPillar::desc(), selected_pillar);
-	for (const auto& pillar : selected_pillar)
+	if (SelectEntitys::PickEntitys(_T("Select pillar\n"), CPolaCustomPillar::desc(), selected_pillar))
 	{
-		AcDbEntity* current_pillar_entity = nullptr;
-		acdbOpenObject(current_pillar_entity, pillar, OpenMode::kForRead);
-		CPolaCustomPillar* current_pillar = CPolaCustomPillar::cast(current_pillar_entity);
-		vertex_array.append(current_pillar->getCenterPoint());
-		viewable.push_back(1);
-		current_pillar->close();
-		current_pillar_entity->close();
+		for (const auto& pillar : selected_pillar)
+		{
+			AcDbEntity* current_pillar_entity = nullptr;
+			acdbOpenObject(current_pillar_entity, pillar, OpenMode::kForRead);
+			CPolaCustomPillar* current_pillar = CPolaCustomPillar::cast(current_pillar_entity);
+			vertex_array.append(current_pillar->getCenterPoint());
+			viewable.push_back(1);
+			current_pillar->close();
+			current_pillar_entity->close();
+		}
+		BasicTools::SortPointFromLeftToRight(vertex_array, sort_vertex_array);
+		beam->setBeamVertexes(sort_vertex_array);
+		beam->setBeamViewable(viewable);
+		beam->UpdateOffsetLine(0.5 * beam->getBeamWidth());
+		return AddToModelSpace::AddEntityToModelSpace(beam);
 	}
-	BasicTools::SortPointFromLeftToRight(vertex_array, sort_vertex_array);
-	beam->setBeamVertexes(sort_vertex_array);
-	beam->setBeamViewable(viewable);
-	beam->UpdateOffsetLine(0.5 * beam->getBeamWidth());
-	return AddToModelSpace::AddEntityToModelSpace(beam);
+	return AcDbObjectId::kNull;
 }
 
 Acad::ErrorStatus CPolaCustomBeam::subTransformBy(const AcGeMatrix3d & xfrom)
@@ -1028,21 +1081,22 @@ Adesk::Int32 CPolaCustomBeam::GetSegmentIndex(const AcGePoint3d & point, const A
 	return closest_segment_index;
 }
 
-void CPolaCustomBeam::addJoint(const double slab_thickness, const double offset_length)
+AcDbObjectIdArray CPolaCustomBeam::addJoint(const double slab_thickness, const double offset_length)
 {
+	AcDbObjectIdArray joint_line_ids;
 	if (vertexes_num_ < 2)
 	{
 		acutPrintf(_T("Beam vertexes number less than 2, can't add joint.\n"));
-		return;
+		return joint_line_ids;
 	}
 
 	AcDbObjectIdArray intersecting_pillar_ids = GetIntersectingPillar();
 	if (intersecting_pillar_ids.isEmpty())
 	{
-		return; 
+		return joint_line_ids;
 	}
 
-	auto CreateLine = [](const AcGePoint3d& start, const AcGePoint3d& end, const ACHAR* line_type, double scale_if_dashed = 1.0)
+	auto CreateLine = [&joint_line_ids](const AcGePoint3d& start, const AcGePoint3d& end, const ACHAR* line_type, double scale_if_dashed = 1.0)
 		{
 			AcDbLine* line = new AcDbLine(start, end);
 			line->setLinetype(StyleTools::GetLineStyleId(line_type));
@@ -1050,7 +1104,7 @@ void CPolaCustomBeam::addJoint(const double slab_thickness, const double offset_
 			{
 				line->setLinetypeScale(scale_if_dashed);
 			}
-			return AddToModelSpace::AddEntityToModelSpace(line) ? line : nullptr;
+			joint_line_ids.append(AddToModelSpace::AddEntityToModelSpace(line));
 		};
 
 	for (int i = 1; i < beam_vertexes_.length() - 1; i++)
@@ -1127,8 +1181,8 @@ void CPolaCustomBeam::addJoint(const double slab_thickness, const double offset_
 				CreateLine(p3, p4, _T("DASHED"), 700);
 				CreateLine(p5, p6, _T("CONTINUOUS"));
 				CreateLine(p7, p8, _T("CONTINUOUS"));
-				CreateLine(p3, p7, _T("CONTINUOUS")); 
-				CreateLine(p4, p8, _T("CONTINUOUS")); 
+				CreateLine(p3, p7, _T("CONTINUOUS"));
+				CreateLine(p4, p8, _T("CONTINUOUS"));
 			}
 			else
 			{
@@ -1136,12 +1190,13 @@ void CPolaCustomBeam::addJoint(const double slab_thickness, const double offset_
 				CreateLine(p3, p4, _T("CONTINUOUS"));
 				CreateLine(p5, p6, _T("DASHED"), 700);
 				CreateLine(p7, p8, _T("DASHED"), 700);
-				CreateLine(p1, p5, _T("CONTINUOUS")); 
-				CreateLine(p2, p6, _T("CONTINUOUS")); 
+				CreateLine(p1, p5, _T("CONTINUOUS"));
+				CreateLine(p2, p6, _T("CONTINUOUS"));
 			}
 			break;
 		}
 	}
+	return joint_line_ids;
 }
 
 AcDbObjectId CPolaCustomBeam::addBeamSnInfo()

@@ -91,6 +91,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CoordinateSystem.h" />
+    <ClInclude Include="InputValidator.h" />
     <ClInclude Include="InputValue.h" />
     <ClInclude Include="InteractiveDef.h" />
     <ClInclude Include="Resource.h" />

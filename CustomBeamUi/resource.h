@@ -16,8 +16,9 @@
 #define IDC_BUTTON_ADDVERTEX            109
 #define IDC_BUTTON_ADDJOINT             110
 #define IDC_EDIT_BEAM_SLAB              111
-#define IDC_EDIT_BEAM_B3                112
 #define IDC_EDIT_BEAM_SLABOFFSET        112
+#define IDC_BUTTON_EDITVIEWABLE2        113
+#define IDC_BUTTON_ADDINFO              113
 
 // Next default values for new objects
 // 

@@ -53,6 +53,9 @@
     <ClInclude Include="InputValue.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="InputValidator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="InteractiveTools.rc">

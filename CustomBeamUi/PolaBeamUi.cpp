@@ -42,6 +42,7 @@ BEGIN_MESSAGE_MAP(CPolaBeamUi, CAdUiBaseDialog)
 	ON_EN_KILLFOCUS(IDC_EDIT_BEAM_H, &CPolaBeamUi::OnEnKillfocusEditBeamH)
 	ON_EN_KILLFOCUS(IDC_EDIT_BEAM_SLAB, &CPolaBeamUi::OnEnKillfocusEditBeamSlab)
 	ON_EN_KILLFOCUS(IDC_EDIT_BEAM_SLABOFFSET, &CPolaBeamUi::OnEnKillfocusEditBeamSlaboffset)
+	ON_BN_CLICKED(IDC_BUTTON_ADDINFO, &CPolaBeamUi::OnBnClickedButtonAddinfo)
 END_MESSAGE_MAP()
 
 //-----------------------------------------------------------------------------
@@ -67,6 +68,24 @@ LRESULT CPolaBeamUi::OnAcadKeepFocus(WPARAM, LPARAM) {
 
 void CPolaBeamUi::OnBnClickedButtonPickpillar()
 {
+	if (!InputValidator<int>::Validate(Edit_Beam_Sn_, beam_Sn, _T("Beam SN")))
+	{
+		Edit_Beam_Sn_.SetFocus();
+		return;
+	}
+
+	if (!InputValidator<double>::Validate(Edit_Beam_b_, beam_b, _T("Beam width")))
+	{
+		Edit_Beam_b_.SetFocus();
+		return;
+	}
+
+	if (!InputValidator<double>::Validate(Edit_Beam_h_, beam_h, _T("Beam height")))
+	{
+		Edit_Beam_h_.SetFocus();
+		return;
+	}
+
 	AcDbObjectPointer<CPolaCustomBeam> beam;
 	beam.create();
 	if (beam.openStatus() != Acad::eOk)
@@ -76,14 +95,33 @@ void CPolaBeamUi::OnBnClickedButtonPickpillar()
 	beam->setBeamProperty(beam_Sn);
 	beam->setBeamWidth(beam_b);
 	beam->setBeamHeight(beam_h);
+
 	BeginEditorCommand();
 	AcDbObjectId beam_id = CPolaCustomBeam::SelectPillarDrawBeam(beam);
-	EditEntity::SetLayer(beam_id, _T("POLA_BEAM_STRUCTURE"));
 	CompleteEditorCommand();
+	if (beam_id != AcDbObjectId::kNull)
+		EditEntity::SetLayer(beam_id, _T("POLA_BEAM_STRUCTURE"));
 }
 
 void CPolaBeamUi::OnBnClickedButtonPickoffset()
 {
+	if (!InputValidator<int>::Validate(Edit_Beam_Sn_, beam_Sn, _T("Beam SN")))
+	{
+		Edit_Beam_Sn_.SetFocus();
+		return;
+	}
+
+	if (!InputValidator<double>::Validate(Edit_Beam_b_, beam_b, _T("Beam width")))
+	{
+		Edit_Beam_b_.SetFocus();
+		return;
+	}
+
+	if (!InputValidator<double>::Validate(Edit_Beam_h_, beam_h, _T("Beam height")))
+	{
+		Edit_Beam_h_.SetFocus();
+		return;
+	}
 	AcDbObjectPointer<CPolaCustomBeam> beam;
 	beam.create();
 	if (beam.openStatus() != Acad::eOk)
@@ -121,19 +159,41 @@ void CPolaBeamUi::OnBnClickedButtonPickoffset()
 	CompleteEditorCommand();
 }
 
+
 void CPolaBeamUi::OnBnClickedButtonEditviewable()
 {
 	BeginEditorCommand();
 	AcDbObjectIdArray beam_id;
-	SelectEntitys::PickEntitys(_T("Pick beam\n"), CPolaCustomBeam::desc(), beam_id);
 
-	if (beam_id.length() > 1)
-		acutPrintf(_T("Only pick one beam entity"));
+	while (true)
+	{
+		if (!SelectEntitys::PickEntitys(_T("Pick one beam\n"), CPolaCustomBeam::desc(), beam_id))
+		{
+			CompleteEditorCommand();
+			return;
+		}
+
+		if (beam_id.length() == 1)
+		{
+			break;
+		}
+		else
+		{
+			acutPrintf(_T("Please pick exactly one beam entity.\n"));
+		}
+	}
 
 	AcGePoint3d point;
 	AcDbObjectPointer<CPolaCustomBeam> beam;
-	while (SelectEntitys::PickPoint(_T("Select point: \n"), point))
+
+	while (true)
 	{
+		if (!SelectEntitys::PickPoint(_T("Select point: \n"), point))
+		{
+
+			acutPrintf(_T("Point selection canceled. Returning to dialog.\n"));
+			break;
+		}
 		beam.open(beam_id.at(0), OpenMode::kForWrite);
 		CPolaCustomBeam::ModifyViewable(beam, beam->GetSegmentIndex(point) + 1);
 	}
@@ -144,14 +204,22 @@ void CPolaBeamUi::OnBnClickedButtonAddvertex()
 {
 	BeginEditorCommand();
 	AcDbObjectIdArray beam_id;
-	if (!SelectEntitys::PickEntitys(_T("Pick beam\n"), CPolaCustomBeam::desc(), beam_id))
+	while (true)
 	{
-		return;
-	}
-	if (beam_id.length() > 1)
-	{
-		acutPrintf(_T("Only pick one beam entity"));
-		return;
+		if (!SelectEntitys::PickEntitys(_T("Pick one beam\n"), CPolaCustomBeam::desc(), beam_id))
+		{
+			CompleteEditorCommand();
+			return;
+		}
+
+		if (beam_id.length() == 1)
+		{
+			break;
+		}
+		else
+		{
+			acutPrintf(_T("Please pick exactly one beam entity.\n"));
+		}
 	}
 
 	AcDbObjectPointer<CPolaCustomBeam> beam;
@@ -164,60 +232,103 @@ void CPolaBeamUi::OnBnClickedButtonAddvertex()
 	}
 	else
 	{
-		CancelEditorCommand();
+		CompleteEditorCommand();
 	}
 }
 
 void CPolaBeamUi::OnBnClickedButtonAddjoint()
 {
-	BeginEditorCommand();
-	AcDbObjectIdArray beam_id;
-	if (!SelectEntitys::PickEntitys(_T("Pick beam\n"), CPolaCustomBeam::desc(), beam_id))
+	if (!InputValidator<double>::Validate(Edit_Beam_Slab, slab_thickness, _T("Slab thickness")))
 	{
+		Edit_Beam_Slab.SetFocus();
 		return;
 	}
-	if (beam_id.length() > 1)
+	if (!InputValidator<double>::Validate(Edit_Beam_Slab_offset, offset_length, _T("Slab offset length")))
 	{
-		acutPrintf(_T("Only pick one beam entity"));
+		Edit_Beam_Slab_offset.SetFocus();
 		return;
+	}
+	BeginEditorCommand();
+	AcDbObjectIdArray beam_id;
+	bool isSelectionSuccessful = false;
+
+	while (!isSelectionSuccessful)
+	{
+		if (SelectEntitys::PickEntitys(_T("Pick beam\n"), CPolaCustomBeam::desc(), beam_id))
+		{
+			if (beam_id.length() > 1)
+			{
+				acutPrintf(_T("\nOnly pick one beam entity. Please try again.\n"));
+				beam_id.setLogicalLength(0);
+				continue;
+			}
+			isSelectionSuccessful = true;
+		}
+		else
+		{
+			acutPrintf(_T("\nSelection canceled.\n"));
+			CompleteEditorCommand();
+			return;
+		}
 	}
 	CompleteEditorCommand();
 	AcDbObjectPointer<CPolaCustomBeam> beam;
 	beam.open(beam_id.at(0), OpenMode::kForWrite);
-	beam->addJoint(slab_thickness, offset_length);
+	EditEntity::SetLayer(beam->addJoint(slab_thickness, offset_length), _T("POLA_BEAM_JOINT"));
 }
 
 void CPolaBeamUi::OnEnKillfocusEditBeamSn()
 {
-	CString temp;
-	Edit_Beam_Sn_.GetWindowTextW(temp);
-	beam_Sn = _wtoi(temp);
+	InputValidator<int>::Validate(Edit_Beam_Sn_, beam_Sn, _T("Beam SN"), false);
 }
 
 void CPolaBeamUi::OnEnKillfocusEditBeamB()
 {
-	CString temp;
-	Edit_Beam_b_.GetWindowTextW(temp);
-	beam_b = _wtof(temp);
+	InputValidator<double>::Validate(Edit_Beam_b_, beam_b, _T("Beam width"), false);
 }
 
 void CPolaBeamUi::OnEnKillfocusEditBeamH()
 {
-	CString temp;
-	Edit_Beam_h_.GetWindowTextW(temp);
-	beam_h = _wtof(temp);
+	InputValidator<double>::Validate(Edit_Beam_h_, beam_h, _T("Beam height"), false);
 }
 
 void CPolaBeamUi::OnEnKillfocusEditBeamSlab()
 {
-	CString temp;
-	Edit_Beam_Slab.GetWindowTextW(temp);
-	slab_thickness = _wtof(temp);
+	InputValidator<double>::Validate(Edit_Beam_Slab, slab_thickness, _T("slab thickness"), false);
 }
 
 void CPolaBeamUi::OnEnKillfocusEditBeamSlaboffset()
 {
-	CString temp;
-	Edit_Beam_Slab_offset.GetWindowTextW(temp);
-	offset_length = _wtof(temp);
+	InputValidator<double>::Validate(Edit_Beam_Slab_offset, offset_length, _T("slab thickness"), false);
+}
+
+void CPolaBeamUi::OnBnClickedButtonAddinfo()
+{
+	BeginEditorCommand();
+	AcDbObjectIdArray beam_id;
+	bool isSelectionSuccessful = false;
+
+	while (!isSelectionSuccessful)
+	{
+		if (SelectEntitys::PickEntitys(_T("Pick beam\n"), CPolaCustomBeam::desc(), beam_id))
+		{
+			if (beam_id.length() > 1)
+			{
+				acutPrintf(_T("\nOnly pick one beam entity. Please try again.\n"));
+				beam_id.setLogicalLength(0);
+				continue;
+			}
+			isSelectionSuccessful = true;
+		}
+		else
+		{
+			acutPrintf(_T("\nSelection canceled.\n"));
+			CompleteEditorCommand();
+			return;
+		}
+	}
+	CompleteEditorCommand();
+	AcDbObjectPointer<CPolaCustomBeam> beam;
+	beam.open(beam_id.at(0), OpenMode::kForWrite);
+	EditEntity::SetLayer(beam->addBeamSnInfo(), _T("POLA_BEAM_MARK"));
 }

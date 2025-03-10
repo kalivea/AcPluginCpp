@@ -27,6 +27,7 @@
 //-----------------------------------------------------------------------------
 #include "adui.h"
 #include "resource.h"
+#include "InputValidator.h"
 //-----------------------------------------------------------------------------
 class CPolaBeamUi : public CAdUiBaseDialog {
 	DECLARE_DYNAMIC(CPolaBeamUi)
@@ -43,15 +44,15 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	CEdit Edit_Beam_Sn_;
-	int beam_Sn;
+	int beam_Sn = 6496;
 	CEdit Edit_Beam_b_;
-	double beam_b;
+	double beam_b = 6496;
 	CEdit Edit_Beam_h_;
-	double beam_h;
+	double beam_h = 6496;
 	CEdit Edit_Beam_Slab;
-	double slab_thickness;
+	double slab_thickness = 6496;
 	CEdit Edit_Beam_Slab_offset;
-	double offset_length;
+	double offset_length = 6496;
 	afx_msg void OnBnClickedButtonPickpillar();
 	afx_msg void OnBnClickedButtonPickoffset();
 	afx_msg void OnBnClickedButtonEditviewable();
@@ -62,4 +63,5 @@ public:
 	afx_msg void OnEnKillfocusEditBeamH();
 	afx_msg void OnEnKillfocusEditBeamSlab();
 	afx_msg void OnEnKillfocusEditBeamSlaboffset();
+	afx_msg void OnBnClickedButtonAddinfo();
 };

@@ -86,6 +86,10 @@ AcDbObjectId StyleTools::InitMLeaderStyle()
 
 AcDbObjectId StyleTools::CreateTextStyle(const TCHAR* text_style_name, const TCHAR* big_font_file_name, const TCHAR* text_file_name, const double& x_scale)
 {
+	if (IsTextStyleExist(text_style_name))
+	{
+		return GetTextStyleId(text_style_name);
+	}
 	AcDbObjectId default_text_style_id = AcDbObjectId::kNull;
 	AcDbTextStyleTable* text_style_table = nullptr;
 	acdbHostApplicationServices()->workingDatabase()->getTextStyleTable(text_style_table, OpenMode::kForWrite);
@@ -147,15 +151,19 @@ AcDbObjectId StyleTools::GetDimensionStyleId(const TCHAR* dimension_style_name)
 
 AcDbObjectId StyleTools::CreateLayerStyle(const TCHAR* layer_name, const int& color_index, const TCHAR* line_type)
 {
+	if (IsLayerExist(layer_name))
+	{
+		return GetLayerId(layer_name);
+	}
 	AcCmColor color;
 	color.setColorIndex(color_index);
 	AcDbObjectId layer_id = AcDbObjectId::kNull;
 	AcDbLayerTable* layer_table = nullptr;
 	acdbHostApplicationServices()->workingDatabase()->getLayerTable(layer_table, OpenMode::kForWrite);
 	AcDbLayerTableRecord* layer_table_record = new AcDbLayerTableRecord();
-	layer_table_record->setName(layer_name);								//TODO: only set layer name.
-	layer_table_record->setLinetypeObjectId(StyleTools::GetLineStyleId(line_type));
-	layer_table_record->setColor(color);
+	layer_table_record->setName(layer_name);								
+	layer_table_record->setLinetypeObjectId(StyleTools::GetLineStyleId(line_type));	
+	layer_table_record->setColor(color);									
 	layer_table->add(layer_table_record);
 	layer_id = layer_table_record->objectId();
 
@@ -184,6 +192,10 @@ AcDbObjectId StyleTools::GetLayerId(const TCHAR* layer_name)
 
 AcDbObjectId StyleTools::LoadLineType(const TCHAR* line_type, const TCHAR* line_type_file)
 {
+	if (IsLineTypeExist(line_type))
+	{
+		return GetLineStyleId(line_type);
+	}
 	acdbHostApplicationServices()->workingDatabase()->loadLineTypeFile(line_type, line_type_file);
 	AcDbLinetypeTable* line_type_table = nullptr;
 	acdbHostApplicationServices()->workingDatabase()->getLinetypeTable(line_type_table, OpenMode::kForRead);

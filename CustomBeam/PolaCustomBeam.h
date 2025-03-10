@@ -168,7 +168,7 @@ public:
 	AcDbObjectIdArray GetIntersectingPillar() const;
 	Adesk::Int32 GetSegmentIndexByYProjection(const AcGePoint3d& point, const AcGeTol& tol = AcGeContext::gTol) const;
 	Adesk::Int32 GetSegmentIndex(const AcGePoint3d& point, const AcGeTol& tol = AcGeContext::gTol) const;
-	void addJoint(const double slab_thickness, const double offset_length = 100);
+	AcDbObjectIdArray addJoint(const double slab_thickness, const double offset_length = 100);
 	AcDbObjectId addBeamSnInfo();
 	Acad::ErrorStatus InsertVertex(const AcGePoint3d& insert_point);
 };

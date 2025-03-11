@@ -404,7 +404,6 @@ Acad::ErrorStatus CPolaCustomBeam::subMoveGripPointsAt(
 	return (AcDbEntity::subMoveGripPointsAt(gripAppData, offset, bitflags));
 }
 
-
 AcGePoint3dArray CPolaCustomBeam::getBeamVertexes() const
 {
 	assertReadEnabled();
@@ -472,86 +471,39 @@ AcGeVector3dArray CPolaCustomBeam::getBeamSegmentDirection() const
 AcGePoint3d CPolaCustomBeam::getHorizontalMidPoint() const
 {
 	assertReadEnabled();
-	if (beam_vertexes_.length() < 2)
-	{
-		return AcGePoint3d(6496, 6496, 6496);
-	}
+	double sum_x = 0.0, sum_y = 0.0, sum_z = 0.0;
+	int horizontal_segment_count = 0;
 
-	std::vector<double> segment_lengths;
-	double total_length = 0.0;
 	for (int i = 0; i < beam_vertexes_.length() - 1; ++i)
-	{
-		double len = beam_vertexes_[i].distanceTo(beam_vertexes_[i + 1]);
-		segment_lengths.push_back(len);
-		total_length += len;
-	}
-	double middle_position = total_length / 2.0;
-
-	double current_sum = 0.0;
-	AcGePoint3d path_mid_point;
-	bool isMidOnHorizontal = false;
-	int middle_segment_index = -1;
-
-	for (int i = 0; i < segment_lengths.size(); ++i)
-	{
-		double segment_length = segment_lengths[i];
-		if (current_sum + segment_length >= middle_position)
-		{
-			double remain = middle_position - current_sum;
-			AcGePoint3d start = beam_vertexes_[i];
-			AcGePoint3d end = beam_vertexes_[i + 1];
-			double ratio = remain / segment_length;
-			AcGeVector3d vec = end - start;
-			vec *= ratio;
-			path_mid_point = start + vec;
-
-			isMidOnHorizontal = (fabs(start.y - end.y) < AcGeContext::gTol.equalPoint());
-			middle_segment_index = i;
-			break;
-		}
-		current_sum += segment_length;
-	}
-
-	if (isMidOnHorizontal)
-	{
-		return path_mid_point;
-	}
-
-	std::vector<std::pair<double, AcGePoint3d>> horizontal_segments;
-	current_sum = 0.0;
-	for (int i = 0; i < segment_lengths.size(); ++i)
 	{
 		AcGePoint3d start = beam_vertexes_[i];
 		AcGePoint3d end = beam_vertexes_[i + 1];
-		double segment_len = segment_lengths[i];
 
-		if (fabs(start.y - end.y) < AcGeContext::gTol.equalPoint())
+		if (fabs(start.z - end.z) < AcGeContext::gTol.equalPoint())
 		{
-			AcGePoint3d mid_point((start.x + end.x) / 2.0, (start.y + end.y) / 2.0, (start.z + end.z) / 2.0);
-			double mid_path_position = current_sum + segment_len / 2.0;
-			horizontal_segments.emplace_back(mid_path_position, mid_point);
-		}
-		current_sum += segment_len;
-	}
+			double mid_x = (start.x + end.x) / 2.0;
+			double mid_y = (start.y + end.y) / 2.0;
+			double mid_z = (start.z + end.z) / 2.0;
 
-	if (horizontal_segments.empty())
-	{
-		return path_mid_point;
-	}
-
-	double min_difference = (std::numeric_limits<double>::max)();
-
-	AcGePoint3d horizontal_mid_point = path_mid_point;
-	for (const auto& horizontal_segment_data : horizontal_segments)
-	{
-		double diff = fabs(horizontal_segment_data.first - middle_position);
-		if (diff < min_difference)
-		{
-			min_difference = diff;
-			horizontal_mid_point = horizontal_segment_data.second;
+			sum_x += mid_x;
+			sum_y += mid_y;
+			sum_z += mid_z;
+			horizontal_segment_count++;
 		}
 	}
-	return horizontal_mid_point;
+
+	if (horizontal_segment_count == 0)
+	{
+		for (int i = 0; i < beam_vertexes_.length(); ++i)
+		{
+			sum_x += beam_vertexes_[i].x;
+			sum_y += beam_vertexes_[i].y;
+			sum_z += beam_vertexes_[i].z;
+		}
+		return AcGePoint3d(sum_x / beam_vertexes_.length(), sum_y / beam_vertexes_.length(), sum_z / beam_vertexes_.length());
+	}
+
+	return AcGePoint3d(sum_x / horizontal_segment_count, sum_y / horizontal_segment_count, sum_z / horizontal_segment_count);
 }
 
 void CPolaCustomBeam::setBeamVertexes(const AcGePoint3dArray & beam_vertexes)

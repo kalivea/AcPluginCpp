@@ -537,8 +537,21 @@ void TestClass::Test()
 
 	//name_dict->close();
 #pragma endregion
-#pragma region random number
-	//for (int i = 0;i < 10;i++)
-	//	acutPrintf(_T("%d\n"), BasicTools::RandomInt(0, 100));
+#pragma region pillar tools
+	AcGePoint3d point;
+	while (SelectEntitys::PickPoint(_T("pick point:"), point))
+	{
+		AcDbObjectId pillar_id;
+		double d;
+		if (PillarTools::detectRoundPillar(point, pillar_id, d))
+		{
+			EditEntity::SetColor(pillar_id, 1);
+			acutPrintf(_T("round pillar d =%f\n"), d);
+		}
+		else
+		{
+			acutPrintf(_T("no pillar\n"));
+		}
+	}
 #pragma endregion
 }

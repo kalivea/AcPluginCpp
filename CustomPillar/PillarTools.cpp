@@ -30,3 +30,27 @@ bool PillarTools::detectPillar(const AcGePoint3d& point, AcDbObjectId& pillar_id
 	pillar_diameter = 0;
 	return false;
 }
+
+bool PillarTools::detectRoundPillar(const AcGePoint3d& point, AcDbObjectId& pillar_id, double& pillar_diameter)
+{
+	AcDbObjectId pillar;
+	double diameter;
+	double height = 0;
+	if (detectPillar(point, pillar, diameter))
+	{
+		AcDbEntity* entity = nullptr;
+		Acad::ErrorStatus error_status = acdbOpenObject(entity, pillar, OpenMode::kForRead);
+		if (error_status != Acad::eOk)
+			return false;
+		CPolaCustomPillar* pillar_entity = CPolaCustomPillar::cast(entity);
+		if (pillar_entity->getPillarType() == 0)
+		{
+			pillar_entity->close();
+			pillar_id = pillar_entity->objectId();
+			pillar_diameter = diameter;
+			return true;
+		}
+		pillar_entity->close();
+	}
+	return false;
+}

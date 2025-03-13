@@ -1,0 +1,178 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// 中文(简体，中国) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
+LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
+#pragma code_page(936)
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "FileDescription", "IRMUi ObjectARX application"
+            VALUE "FileVersion", "1, 0, 0, 1"
+            VALUE "InternalName", "IRMUi"
+            VALUE "LegalCopyright", "Copyright ?2012"
+            VALUE "OriginalFilename", "PolaIRMUi.arx"
+            VALUE "ProductName", "IRMUi Application"
+            VALUE "ProductVersion", "1, 0, 0, 1"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_POLAIRMUI DIALOGEX 0, 0, 301, 271
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "平面整体法界面"
+FONT 8, "Tahoma", 0, 0, 0x0
+BEGIN
+    LTEXT           "梁信息",IDC_STATIC,13,11,25,13
+    LTEXT           "标注梁选择",IDC_STATIC,13,30,41,12
+    PUSHBUTTON      "Click me",IDC_BUTTON_SEL_BEAM,108,27,50,14
+    LTEXT           "梁类型选择：",IDC_STATIC,13,49,49,11
+    CONTROL         "顶/中梁",IDC_RADIO_TOP,"Button",BS_AUTORADIOBUTTON | WS_GROUP,109,48,43,10
+    CONTROL         "底梁",IDC_RADIO_BOTTOM,"Button",BS_AUTORADIOBUTTON,159,48,32,10
+    LTEXT           "梁信息识别：",IDC_STATIC,13,68,49,15
+    EDITTEXT        IDC_EDIT_BEAM_INFO,65,66,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_BEAM_SGE_NUM,109,66,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_BEAM_B,160,66,40,14,ES_AUTOHSCROLL
+    LTEXT           "×",IDC_STATIC,202,68,8,8
+    EDITTEXT        IDC_EDIT_BEAM_H,210,66,40,14,ES_AUTOHSCROLL
+    LTEXT           "钢筋信息",IDC_STATIC,13,112,33,12
+    LTEXT           "通长筋",IDC_STATIC,13,136,25,14
+    LTEXT           "上层：",IDC_STATIC,55,136,25,12
+    EDITTEXT        IDC_EDIT_TOP_M_R_NUM,78,133,24,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_TOP_M_R_D,121,133,24,14,ES_AUTOHSCROLL
+    LTEXT           "下层：",IDC_STATIC,180,136,25,13
+    EDITTEXT        IDC_EDIT_BOT_M_R_NUM,202,133,24,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_BOT_M_R_D,246,133,24,14,ES_AUTOHSCROLL
+    LTEXT           "箍筋",IDC_STATIC,13,158,17,12
+    EDITTEXT        IDC_EDIT_STIR_NUM,78,155,24,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_STIR_D,122,155,24,14,ES_AUTOHSCROLL
+    LTEXT           "（",IDC_STATIC,147,158,9,16
+    EDITTEXT        IDC_EDIT_STIR_LIMB_NUM,155,155,11,14,ES_AUTOHSCROLL
+    LTEXT           "）",IDC_STATIC,168,158,9,14
+    LTEXT           "腰筋",IDC_STATIC,13,179,17,12
+    EDITTEXT        IDC_EDIT_SIDE_NUM,78,176,24,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_SIDE_D,122,176,24,14,ES_AUTOHSCROLL
+    LTEXT           "柱端附加筋",IDC_STATIC,13,200,41,13
+    EDITTEXT        IDC_EDIT_C_A_R_NUM,78,198,24,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_C_A_R_D,122,198,24,14,ES_AUTOHSCROLL
+    LTEXT           "跨中附加筋",IDC_STATIC,13,221,41,19
+    EDITTEXT        IDC_EDIT_B_A_R_NUM,78,219,24,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_B_A__R_D,122,219,24,14,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "确定",IDOK,191,249,50,14
+    PUSHBUTTON      "取消",IDCANCEL,243,249,50,14
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_POLAIRMUI, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 294
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 264
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_POLAIRMUI AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE
+BEGIN
+    IDS_PROJNAME            "IRMUi"
+END
+
+#endif    // 中文(简体，中国) resources
+/////////////////////////////////////////////////////////////////////////////
+
+

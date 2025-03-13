@@ -95,6 +95,7 @@ AcGePoint3d PolaIRM::getInsertPoint() const
 
 AcDbObjectIdArray PolaIRM::DrawPolaIRM()
 {
+	insert_point_ = AcGePoint3d(0, 0, 0);
 	AcDbObjectIdArray IRM_ids;
 	std::vector<int> reinforcement_per_row = BasicTools::CalculateReinforcement(static_cast<int>(beam_b_), top_main_reinforcement_d_, top_main_reinforcement_num_, 45, stirrup_reinforcement_d_);
 	AcGePoint3d end_point = insert_point_ + AcGeVector3d(0, beam_b_ / 2.0 + 500 + 2000, 0);

@@ -3,30 +3,32 @@
 class POLADLL_IRM_API PolaIRM
 {
 private:
-	int beam_sn_;
-	int beam_segment_num_;
+	int beam_sn_ = 6496;
+	int beam_segment_num_ = 6496;
 
-	double beam_b_;
-	double beam_h_;
+	double beam_b_ = 6496;
+	double beam_h_ = 6496;
 
-	int top_main_reinforcement_num_;
-	int top_main_reinforcement_d_;
+	int top_main_reinforcement_num_ = 6496;
+	int top_main_reinforcement_d_ = 6496;
 
-	int bottom_main_reinforcement_num_;
-	int bottom_main_reinforcement_d_;
+	int bottom_main_reinforcement_num_ = 6496;
+	int bottom_main_reinforcement_d_ = 6496;
 
-	int stirrup_reinforcement_d_;
-	int stirrup_reinforcement_s_;
-	int stirrp_limb_num_;
+	int stirrup_reinforcement_d_ = 6496;
+	int stirrup_reinforcement_s_ = 6496;
+	int stirrp_limb_num_ = 6496;
 
-	int side_reinforcement_num_;
-	int side_reinforcement_d_;
+	int side_reinforcement_num_ = 6496;
+	int side_reinforcement_d_ = 6496;
 
-	int column_end_addition_reinforcement_num_;
-	int column_end_addition_reinforcement_d_;
+	int column_end_addition_reinforcement_num_ = 6496;
+	int column_end_addition_reinforcement_d_ = 6496;
 
-	int beam_mid_addition_reinforcement_num_;
-	int beam_mid_addition_reinforcement_d_;
+	int beam_mid_addition_reinforcement_num_ = 6496;
+	int beam_mid_addition_reinforcement_d_ = 6496;
+
+	AcGePoint3d insert_point_ = AcGePoint3d(6496, 6496, 6496);
 public:
 	PolaIRM() {};
 	~PolaIRM() {};
@@ -38,12 +40,19 @@ public:
 	void setColumnEndAdditionReinforcementInfo(int column_end_addition_reinforcement_num, int column_end_addition_reinforcement_d);
 	void setBeamMidAdditionReinforcementInfo(int beam_mid_addition_reinforcement_num, int beam_mid_addition_reinforcement_d);
 
-	void getBeamInfo(int& beam_sn, int& beam_segment_num, double& beam_b, double& beam_h);
-	void getMainReinforcementInfo(int& top_main_reinforcement_num, int& top_main_reinforcement_d, int& bottom_main_reinforcement_num, int& bottom_main_reinforcement_d);
-	void getStirrupReinforcementInfo(int& stirrup_reinforcement_d, int& stirrup_reinforcement_s, int& stirrp_limb_num);
-	void getSideReinforcementInfo(int& side_reinforcement_num, int& side_reinforcement_d);
-	void getColumnEndAdditionReinforcementInfo(int& column_end_addition_reinforcement_num, int& column_end_addition_reinforcement_d);
-	void getBeamMidAdditionReinforcementInfo(int& beam_mid_addition_reinforcement_num, int& beam_mid_addition_reinforcement_d);
+	void setInsertPoint(AcGePoint3d insert_point);
+
+	void getBeamInfo(int& beam_sn, int& beam_segment_num, double& beam_b, double& beam_h) const;
+	void getMainReinforcementInfo(int& top_main_reinforcement_num, int& top_main_reinforcement_d, int& bottom_main_reinforcement_num, int& bottom_main_reinforcement_d) const;
+	void getStirrupReinforcementInfo(int& stirrup_reinforcement_d, int& stirrup_reinforcement_s, int& stirrp_limb_num) const;
+	void getSideReinforcementInfo(int& side_reinforcement_num, int& side_reinforcement_d) const;
+	void getColumnEndAdditionReinforcementInfo(int& column_end_addition_reinforcement_num, int& column_end_addition_reinforcement_d) const;
+	void getBeamMidAdditionReinforcementInfo(int& beam_mid_addition_reinforcement_num, int& beam_mid_addition_reinforcement_d) const;
+
+	AcGePoint3d getInsertPoint() const;
+public:
+	AcDbObjectIdArray DrawPolaIRM();
+private:
 
 };
 

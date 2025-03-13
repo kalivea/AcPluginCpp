@@ -90,7 +90,7 @@ AcDbObjectId StyleTools::CreateTextStyle(const TCHAR* text_style_name, const TCH
 	{
 		return GetTextStyleId(text_style_name);
 	}
-	AcDbObjectId default_text_style_id = AcDbObjectId::kNull;
+	AcDbObjectId new_text_style_id = AcDbObjectId::kNull;
 	AcDbTextStyleTable* text_style_table = nullptr;
 	acdbHostApplicationServices()->workingDatabase()->getTextStyleTable(text_style_table, OpenMode::kForWrite);
 	AcDbTextStyleTableRecord* text_style_table_record = new AcDbTextStyleTableRecord();
@@ -100,12 +100,12 @@ AcDbObjectId StyleTools::CreateTextStyle(const TCHAR* text_style_name, const TCH
 	text_style_table_record->setXScale(x_scale);
 	text_style_table->add(text_style_table_record);
 
-	default_text_style_id = text_style_table_record->objectId();
+	new_text_style_id = text_style_table_record->objectId();
 
 	text_style_table_record->close();
 	text_style_table->close();
 
-	return default_text_style_id;
+	return new_text_style_id;
 }
 
 AcDbObjectId StyleTools::GetTextStyleId(const TCHAR* text_style_name)

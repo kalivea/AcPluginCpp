@@ -70,6 +70,10 @@
     #include "AcExtensionModule.h" //- Needed for AutoCAD MFC extension even if not present in the RealDWG SDK
 #define POLA_DLL_IRM
 #include "IRMDef.h"
+#include "PolaCustomBeam.h"
+#include "EditEntity.h"
+#include "DrawEntity.h"
+#include "SelectEntitys.h"
                         #pragma pack(pop)
 
     

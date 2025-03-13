@@ -457,6 +457,11 @@ double CPolaCustomBeam::getBeamLength() const
 	return length;
 }
 
+Adesk::Int32 CPolaCustomBeam::getBeamSegmentNum() const
+{
+	return beam_vertexes_.length() - 1;
+}
+
 bool CPolaCustomBeam::IsBeamClosed() const
 {
 	return beam_vertexes_.first().isEqualTo(beam_vertexes_.last());

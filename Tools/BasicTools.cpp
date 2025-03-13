@@ -202,9 +202,9 @@ double BasicTools::Min(const double& num1, const double& num2)
 int BasicTools::RandomInt(const int& min, const int& max)
 {
 	unsigned seed = static_cast<unsigned> (std::chrono::system_clock::now().time_since_epoch().count());
-    std::mt19937 random_generator(seed);
-    std::uniform_int_distribution<> int_distribution(min, max);
-    return int_distribution(random_generator);
+	std::mt19937 random_generator(seed);
+	std::uniform_int_distribution<> int_distribution(min, max);
+	return int_distribution(random_generator);
 }
 /// <summary>
 /// Calculate the coordinates of the midpoint of the line segment based on the offset distance
@@ -496,6 +496,39 @@ AcDbObjectIdArray BasicTools::GetAllEntityIdsInDatabase(const TCHAR* layer_name,
 	block_table->close();
 
 	return all_entity_ids;
+}
+
+std::vector<int> BasicTools::CalculateReinforcement(int beam_width, int bar_diameter, int bars_num, int cover_thickness, int stirrup_diameter)
+{
+	int effective_width = beam_width - 2 * cover_thickness - 2 * stirrup_diameter;
+
+	int min_spacing_top = (std::max)(30, static_cast<int>(1.5 * bar_diameter));
+	int min_spacing_bottom = (std::max)(25, bar_diameter);
+
+	int max_bars_per_row = (effective_width + min_spacing_top) / (bar_diameter + min_spacing_top);
+
+	if (max_bars_per_row < 1)
+	{
+		max_bars_per_row = 1;
+	}
+	int rows = static_cast<int>(std::ceil(static_cast<double>(bars_num) / max_bars_per_row));
+	std::vector<int> bars_in_row(rows, 0);
+	int remaining_bars = bars_num;
+
+	for (int i = 0; i < rows; i++)
+	{
+		if (remaining_bars >= max_bars_per_row)
+		{
+			bars_in_row[i] = max_bars_per_row;
+			remaining_bars -= max_bars_per_row;
+		}
+		else
+		{
+			bars_in_row[i] = remaining_bars;
+			remaining_bars = 0;
+		}
+	}
+	return bars_in_row;
 }
 
 /// <summary>

@@ -1,6 +1,7 @@
 #include "StdAfx.h"
 #include "TestClass.h"
 #include "PolaReactor.h"
+#include "PolaIRM.h"
 void TestClass::TestClassInit()
 {
 	acedRegCmds->addCommand(_T("tmpGroupName"), _T("TestClass"), _T("TestClass"), ACRX_CMD_MODAL, Test);
@@ -538,20 +539,30 @@ void TestClass::Test()
 	//name_dict->close();
 #pragma endregion
 #pragma region pillar tools
-	AcGePoint3d point;
-	while (SelectEntitys::PickPoint(_T("pick point:"), point))
-	{
-		AcDbObjectId pillar_id;
-		double d;
-		if (PillarTools::detectRoundPillar(point, pillar_id, d))
-		{
-			EditEntity::SetColor(pillar_id, 1);
-			acutPrintf(_T("round pillar d =%f\n"), d);
-		}
-		else
-		{
-			acutPrintf(_T("no pillar\n"));
-		}
-	}
+	//AcGePoint3d point;
+	//while (SelectEntitys::PickPoint(_T("pick point:"), point))
+	//{
+	//	AcDbObjectId pillar_id;
+	//	double d;
+	//	if (PillarTools::detectRoundPillar(point, pillar_id, d))
+	//	{
+	//		EditEntity::SetColor(pillar_id, 1);
+	//		acutPrintf(_T("round pillar d =%f\n"), d);
+	//	}
+	//	else
+	//	{
+	//		acutPrintf(_T("no pillar\n"));
+	//	}
+	//}
+#pragma endregion
+
+#pragma region IRM
+	StyleTools::CreateTextStyle(_T("IRM_default"), _T("hztxt.shx"), _T("tssdeng.shx"));
+	PolaIRM irm;
+	irm.setBeamInfo(1, 23, 1200, 1000);
+	irm.setStirrupReinforcementInfo(14, 100, 6);
+	irm.setMainReinforcementInfo(18, 32, 18, 32);
+	irm.setSideReinforcementInfo(10, 25);
+	irm.DrawPolaIRM();
 #pragma endregion
 }

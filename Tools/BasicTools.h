@@ -71,4 +71,7 @@ public:
 
 	// database tools
 	static AcDbObjectIdArray GetAllEntityIdsInDatabase(const TCHAR* layer_name = NULL, AcDbDatabase* database = acdbHostApplicationServices()->workingDatabase());
+
+	// IRM tools
+	static std::vector<int> CalculateReinforcement(int beam_width, int bar_diameter, int bars_num, int cover_thickness, int stirrup_diameter);
 };

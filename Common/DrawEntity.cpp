@@ -205,9 +205,10 @@ AcDbObjectId DrawEntity::HatchPattern(const TCHAR* hatch_pattern_name, const dou
 	return hatch_id;
 }
 
-AcDbObjectId DrawEntity::AddText(const AcGePoint3d& insert_position, const TCHAR* insert_text, const AcDbObjectId text_style, const double& text_height, const double& text_rotation)
+AcDbObjectId DrawEntity::AddText(const AcGePoint3d& insert_position, const TCHAR* insert_text, const AcDbObjectId text_style, const double& text_height, const double& text_rotation, const double& width_factor)
 {
 	AcDbText* text_pointer = new AcDbText(insert_position, insert_text, text_style, text_height, text_rotation);
+	text_pointer->setWidthFactor(width_factor);
 	return AddToModelSpace::AddEntityToModelSpace(text_pointer);
 }
 

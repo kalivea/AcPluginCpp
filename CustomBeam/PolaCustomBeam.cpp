@@ -90,7 +90,7 @@ Acad::ErrorStatus CPolaCustomBeam::dwgOutFields(AcDbDwgFiler * pFiler) const {
 	es = pFiler->writeItem(beam_h_);
 	if (es != Acad::eOk)
 		return es;
-	for (int i = 0; i < vertexes_num_;i++)
+	for (int i = 0; i < vertexes_num_; i++)
 	{
 		es = pFiler->writeItem(beam_viewable_.at(i));
 		if (es != Acad::eOk)
@@ -99,6 +99,12 @@ Acad::ErrorStatus CPolaCustomBeam::dwgOutFields(AcDbDwgFiler * pFiler) const {
 	es = pFiler->writeItem(beam_property_);
 	if (es != Acad::eOk)
 		return es;
+	for (int i = 0;i < vertexes_num_; i++)
+	{
+		es = pFiler->writeItem(beam_segment_direction_.at(i));
+		if (es != Acad::eOk)
+			return es;
+	}
 	return (pFiler->filerStatus());
 }
 
@@ -129,6 +135,7 @@ Acad::ErrorStatus CPolaCustomBeam::dwgInFields(AcDbDwgFiler * pFiler) {
 	beam_vertexes_.setLogicalLength(vertexes_num_);
 	top_offset_vertex_.setLogicalLength(vertexes_num_);
 	bottom_offset_vertex_.setLogicalLength(vertexes_num_);
+	beam_segment_direction_.setLogicalLength(vertexes_num_);
 	for (int i = 0; i < vertexes_num_; i++)
 	{
 		es = pFiler->readItem(&beam_vertexes_.at(i));
@@ -163,6 +170,12 @@ Acad::ErrorStatus CPolaCustomBeam::dwgInFields(AcDbDwgFiler * pFiler) {
 	es = pFiler->readItem(&beam_property_);
 	if (es != Acad::eOk)
 		return es;
+	for (int i = 0;i < vertexes_num_;i++)
+	{
+		es = pFiler->readItem(&beam_segment_direction_.at(i));
+		if (es != Acad::eOk)
+			return es;
+	}
 	return (pFiler->filerStatus());
 }
 
@@ -470,7 +483,7 @@ bool CPolaCustomBeam::IsBeamClosed() const
 AcGeVector3dArray CPolaCustomBeam::getBeamSegmentDirection() const
 {
 	assertReadEnabled();
-	return beam_segment_direction;
+	return beam_segment_direction_;
 }
 
 AcGePoint3d CPolaCustomBeam::getHorizontalMidPoint() const
@@ -558,12 +571,6 @@ void CPolaCustomBeam::setBeamProperty(const Adesk::Int32 & beam_property)
 	beam_property_ = beam_property;
 }
 
-void CPolaCustomBeam::setBeamSegmentDireciton(const AcGeVector3dArray & segment_direction)
-{
-	assertWriteEnabled();
-	beam_segment_direction = segment_direction;
-}
-
 void CPolaCustomBeam::addVertexAt(const int index, const AcGePoint3d & vertex)
 {
 	assertWriteEnabled();
@@ -622,15 +629,16 @@ void CPolaCustomBeam::UpdateOffsetLine(const double& distance)
 void CPolaCustomBeam::GenerateBeamSegmentDirection()
 {
 	assertWriteEnabled();
-	beam_segment_direction.removeAll();
+	beam_segment_direction_.removeAll();
+	beam_segment_direction_.append(AcGeVector3d::kIdentity);
 	for (int i = 0;i < beam_vertexes_.length() - 1;i++)
 	{
-		beam_segment_direction.append(BasicTools::GetVectorBetweenTwoPoint(beam_vertexes_.at(i), beam_vertexes_.at(i + 1)));
+		beam_segment_direction_.append(BasicTools::GetVectorBetweenTwoPoint(beam_vertexes_.at(i), beam_vertexes_.at(i + 1)));
 	}
 }
 
 AcDbObjectId CPolaCustomBeam::DrawBeamWithOffset(CPolaCustomBeam * beam, const double offset_distance)
-{
+{/*
 	int index = 2;
 	TCHAR keyword[256] = { 0 };
 	beam->addViewableAt(0, 0);
@@ -760,6 +768,147 @@ AcDbObjectId CPolaCustomBeam::DrawBeamWithOffset(CPolaCustomBeam * beam, const d
 	}
 
 	beam->close();
+	return beam_id;*/
+	int index = 2;
+	TCHAR keyword[256] = { 0 };
+	beam->addViewableAt(0, 0);
+	AcGePoint3d start_point;
+
+	bool first_point_selected = false;
+	while (!first_point_selected)
+	{
+		if (SelectEntitys::PickPoint(_T("Pick first point (required):\n"), start_point))
+		{
+			first_point_selected = true;
+		}
+		else
+		{
+			acutPrintf(_T("First point selection was canceled. This point is required. Please try again.\n"));
+		}
+	}
+
+	AcGePoint3d previous_point = start_point;
+	AcGePoint3d current_point;
+	AcDbObjectId beam_id = AcDbObjectId::kNull;
+
+	bool second_point_selected = false;
+	while (!second_point_selected)
+	{
+		if (SelectEntitys::PickPoint(_T("Pick next point (required to create a beam):\n"), start_point, current_point))
+		{
+			second_point_selected = true;
+		}
+		else
+		{
+			acutPrintf(_T("Second point selection was canceled. At least two points are required. Please try again.\n"));
+		}
+	}
+
+	if (offset_distance != 0.0)
+	{
+		AcGePoint3d temp_point[2];
+		BasicTools::OffsetLineSegment(start_point, current_point, offset_distance, temp_point);
+		beam->addVertexAt(0, temp_point[0]);
+		beam->addVertexAt(1, temp_point[1]);
+	}
+	else
+	{
+		beam->addVertexAt(0, previous_point);
+		beam->addVertexAt(1, current_point);
+	}
+
+	while (true)
+	{
+		InputValue::GetKeyword(
+			_T("Please enter the visibility of the beam segment: [Visible/Invisible]"),
+			_T("Visible Invisible"), keyword, sizeof(keyword) / sizeof(TCHAR));
+
+		if (_tcscmp(keyword, _T("Visible")) == 0)
+		{
+			beam->addViewableAt(index - 1, 1);
+			break;
+		}
+		else if (_tcscmp(keyword, _T("Invisible")) == 0)
+		{
+			beam->addViewableAt(index - 1, 0);
+			break;
+		}
+		else
+		{
+			acutPrintf(_T("Invalid input. Please enter 'Visible' or 'Invisible'.\n"));
+		}
+	}
+
+	beam->GenerateBeamSegmentDirection();  // 生成第一个梁段的方向
+	beam_id = AddToModelSpace::AddEntityToModelSpace(beam);
+
+	previous_point = current_point;
+	index++;
+
+	while (true)
+	{
+		if (!SelectEntitys::PickPoint(_T("Pick next point (required):\n"), start_point, current_point))
+		{
+			acutPrintf(_T("Beam creation completed with %d points.\n"), index - 1);
+			break;
+		}
+
+		CPolaCustomBeam* beam_ptr = nullptr;
+		if (acdbOpenObject(beam_ptr, beam_id, AcDb::kForWrite) == Acad::eOk)
+		{
+			if (offset_distance != 0.0)
+			{
+				AcGePoint3d temp_point[2];
+				BasicTools::OffsetLineSegment(previous_point, current_point, offset_distance, temp_point);
+				beam_ptr->addVertexAt(index - 1, temp_point[1]);
+			}
+			else
+			{
+				beam_ptr->addVertexAt(index - 1, current_point);
+			}
+
+			while (true)
+			{
+				InputValue::GetKeyword(
+					_T("Please enter the visibility of the beam segment: [Visible/Invisible]"),
+					_T("Visible Invisible"), keyword, sizeof(keyword) / sizeof(TCHAR));
+
+				if (_tcscmp(keyword, _T("Visible")) == 0)
+				{
+					beam_ptr->addViewableAt(index - 1, 1);
+					break;
+				}
+				else if (_tcscmp(keyword, _T("Invisible")) == 0)
+				{
+					beam_ptr->addViewableAt(index - 1, 0);
+					break;
+				}
+				else
+				{
+					acutPrintf(_T("Invalid input. Please enter 'Visible' or 'Invisible'.\n"));
+				}
+			}
+
+			beam_ptr->GenerateBeamSegmentDirection();  // 每添加一个新点后更新梁段方向
+			beam_ptr->close();
+		}
+
+		beam->recordGraphicsModified();
+		acedUpdateDisplay();
+
+		previous_point = current_point;
+		index++;
+	}
+
+	// 最后再次确保所有方向都已生成
+	CPolaCustomBeam* beam_ptr = nullptr;
+	if (acdbOpenObject(beam_ptr, beam_id, AcDb::kForWrite) == Acad::eOk)
+	{
+		beam_ptr->GenerateBeamSegmentDirection();
+		beam_ptr->close();
+	}
+
+	beam->close();
 	return beam_id;
 }
 
@@ -843,6 +992,7 @@ AcDbObjectId CPolaCustomBeam::SelectPillarDrawBeam(CPolaCustomBeam * beam)
 		beam->setBeamVertexes(sort_vertex_array);
 		beam->setBeamViewable(viewable);
 		beam->UpdateOffsetLine(0.5 * beam->getBeamWidth());
+		beam->GenerateBeamSegmentDirection();
 		return AddToModelSpace::AddEntityToModelSpace(beam);
 	}
 	return AcDbObjectId::kNull;

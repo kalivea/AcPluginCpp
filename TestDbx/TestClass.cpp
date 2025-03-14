@@ -557,12 +557,31 @@ void TestClass::Test()
 #pragma endregion
 
 #pragma region IRM
-	StyleTools::CreateTextStyle(_T("IRM_default"), _T("hztxt.shx"), _T("tssdeng.shx"));
-	PolaIRM irm;
-	irm.setBeamInfo(1, 23, 1200, 1000);
-	irm.setStirrupReinforcementInfo(14, 100, 6);
-	irm.setMainReinforcementInfo(18, 32, 18, 32);
-	irm.setSideReinforcementInfo(10, 25);
-	irm.DrawPolaIRM();
+	//StyleTools::CreateTextStyle(_T("IRM_default"), _T("hztxt.shx"), _T("tssdeng.shx"));
+	//PolaIRM irm;
+	//irm.setBeamInfo(1, 23, 1200, 1000);
+	//irm.setStirrupReinforcementInfo(14, 100, 6);
+	//irm.setMainReinforcementInfo(18, 32, 18, 32);
+	//irm.setSideReinforcementInfo(10, 25);
+	//irm.DrawPolaIRM();
 #pragma endregion
+	AcDbObjectIdArray beam_id;
+	SelectEntitys::PickEntitys(_T("Select beam:"), CPolaCustomBeam::desc(), beam_id);
+
+	AcDbObjectPointer<CPolaCustomBeam> beam(beam_id.at(0), OpenMode::kForWrite);
+
+	AcDbObjectIdArray pillar_id;
+	PillarTools::GetAllPillar(pillar_id);
+	for (auto& id : pillar_id)
+	{
+		int i = 0;
+		AcDbObjectPointer<CPolaCustomPillar> pillar(id, OpenMode::kForRead);
+		AcGePoint3d point = pillar->getCenterPoint();
+		if (BeamTools::IsPointInsideBeam(beam, point))
+		{
+			acutPrintf(_T("Point[%d]: (%.3f,%.3f,%.3f)"),i,point.x,point.y,point.z);
+			DrawEntity::AddText(point, _T("A"), StyleTools::InitTextStyle(), 350);
+		}
+		i++;
+	}
 }

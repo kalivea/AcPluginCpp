@@ -8,5 +8,6 @@ class POLADLL_PILLAR_TOOLS_API  PillarTools
 public:
     static bool detectPillar(const AcGePoint3d& point, AcDbObjectId& pillar_id, double& pillar_diameter);
     static bool detectRoundPillar(const AcGePoint3d& point, AcDbObjectId& pillar_id, double& pillar_diameter);
+    static bool GetAllPillar(AcDbObjectIdArray& all_pillar_ids);
 };
 

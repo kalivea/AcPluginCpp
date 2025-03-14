@@ -44,6 +44,9 @@
     <ClInclude Include="BeamTools.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="BeamToolsDef.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="CustomBeam.rc">

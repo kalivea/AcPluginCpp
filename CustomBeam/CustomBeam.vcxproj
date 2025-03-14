@@ -90,6 +90,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BeamTools.h" />
+    <ClInclude Include="BeamToolsDef.h" />
     <ClInclude Include="PolaCustomBeam.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="StdAfx.h" />

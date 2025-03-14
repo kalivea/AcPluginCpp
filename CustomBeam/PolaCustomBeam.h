@@ -116,7 +116,7 @@ private:
 	std::vector<Adesk::Int32> beam_viewable_;		// store viewable of beam.
 
 	Adesk::Int32 beam_property_;					// store property of beam. The sn of beam.
-	AcGeVector3dArray beam_segment_direction;		// store beam segment direction.
+	AcGeVector3dArray beam_segment_direction_;		// store beam segment direction.
 
 public:
 	//           get functions
@@ -141,7 +141,6 @@ public:
 	void setBeamHeight(const double& beam_h);
 	void setBeamViewable(const std::vector<Adesk::Int32>& beam_viewable);
 	void setBeamProperty(const Adesk::Int32& beam_property);
-	void setBeamSegmentDireciton(const AcGeVector3dArray& segment_direction);
 	//			add a single centerline vertex, calculate the offset line veretx.
 private:
 	void addVertexAt(const int index, const AcGePoint3d& vertex);
@@ -155,6 +154,7 @@ public:
 	static AcDbObjectId PickCenterPointDrawBeam(CPolaCustomBeam* beam);
 	static AcDbObjectId PickTopPointDrawBeam(CPolaCustomBeam* beam);
 	static AcDbObjectId PickBottomPointDrawBeam(CPolaCustomBeam* beam);
+
 	static AcDbObjectId SelectPillarDrawBeam(CPolaCustomBeam* beam);
 
 	static bool ModifyViewable(CPolaCustomBeam* beam, int index, Adesk::Int32 viewable);

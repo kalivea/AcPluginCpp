@@ -54,3 +54,8 @@ bool PillarTools::detectRoundPillar(const AcGePoint3d& point, AcDbObjectId& pill
 	}
 	return false;
 }
+
+bool PillarTools::GetAllPillar(AcDbObjectIdArray& all_pillar_ids)
+{
+	return SelectEntitys::GetAllEntitysByType(CPolaCustomPillar::desc(), all_pillar_ids);
+}

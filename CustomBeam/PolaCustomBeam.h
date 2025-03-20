@@ -132,7 +132,6 @@ public:
 	double getBeamLength() const;
 	Adesk::Int32 getBeamSegmentNum() const;
 	bool IsBeamClosed() const;
-private:
 	AcGePoint3d getHorizontalMidPoint() const;
 	//           set functions
 public:

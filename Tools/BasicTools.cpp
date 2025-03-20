@@ -531,6 +531,22 @@ std::vector<int> BasicTools::CalculateReinforcement(int beam_width, int bar_diam
 	return bars_in_row;
 }
 
+int BasicTools::CalculateMaxBarsPerRow(int beam_width, int bar_diameter, int cover_thickness, int stirrup_diameter, int min_spacing_required, double spacing_factor)
+{
+	int effective_width = beam_width - 2 * cover_thickness - 2 * stirrup_diameter;
+	int min_spacing = (std::max)(min_spacing_required, static_cast<int>(spacing_factor * bar_diameter));
+
+	int max_bars_per_row = (effective_width + min_spacing_required) / (bar_diameter + min_spacing_required);
+	return (std::max)(1, max_bars_per_row);
+}
+
+int BasicTools::CalculateMaxBars(int beam_width, int bar_diameter, int cover_thickness, int stirrup_diameter, int min_spacing, double spacing_factor)
+{
+	int max_bars_per_row = CalculateMaxBarsPerRow(beam_width, bar_diameter, cover_thickness, stirrup_diameter, min_spacing, spacing_factor);
+	int max_rows = 3;
+	return max_bars_per_row * max_rows;
+}
+
 /// <summary>
 /// Determine whether two points intersect.
 /// </summary>

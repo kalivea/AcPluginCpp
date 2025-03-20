@@ -74,4 +74,6 @@ public:
 
 	// IRM tools
 	static std::vector<int> CalculateReinforcement(int beam_width, int bar_diameter, int bars_num, int cover_thickness, int stirrup_diameter);
+	static int CalculateMaxBarsPerRow(int beam_width, int bar_diameter, int cover_thickness, int stirrup_diameter, int min_top_spacing, double top_spacing_factor);
+	static int CalculateMaxBars(int beam_width, int bar_diameter, int cover_thickness, int stirrup_diameter, int min_top_spacing, double top_spacing_factor);
 };

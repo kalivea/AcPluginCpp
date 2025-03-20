@@ -78,7 +78,12 @@
 
     //- Declare it as an extern here so that it becomes available in all modules
     extern AcApDataManager<CDocData> DocVars;
-
+#include "SelectEntitys.h"
+#include "PolaCustomBeam.h"
+#include "PolaCustomPillar.h"
+#include "BeamTools.h"
+#include "PillarTools.h"
+#include "InputValidator.h"
                 #pragma pack(pop)
 
     

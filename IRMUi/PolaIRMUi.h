@@ -30,17 +30,53 @@
 
 //-----------------------------------------------------------------------------
 class CPolaIRMUi : public CAdUiBaseDialog {
-	DECLARE_DYNAMIC (CPolaIRMUi)
+	DECLARE_DYNAMIC(CPolaIRMUi)
 
 public:
-	CPolaIRMUi (CWnd *pParent =NULL, HINSTANCE hInstance =NULL) ;
+	CPolaIRMUi(CWnd* pParent = NULL, HINSTANCE hInstance = NULL);
 
-	enum { IDD = IDD_POLAIRMUI} ;
+	enum { IDD = IDD_POLAIRMUI };
 
 protected:
-	virtual void DoDataExchange (CDataExchange *pDX) ;
-	afx_msg LRESULT OnAcadKeepFocus (WPARAM, LPARAM) ;
-	
-
+	virtual void DoDataExchange(CDataExchange* pDX);
+	afx_msg LRESULT OnAcadKeepFocus(WPARAM, LPARAM);
 	DECLARE_MESSAGE_MAP()
-} ;
+public:
+	bool CheckReinforceInfo();
+	afx_msg void OnBnClickedButtonSelBeam();
+	CEdit Edit_beam_name;
+	int beam_sn;
+	CEdit Edit_beam_seg_num;
+	int beam_seg_num;
+	CEdit Edit_beam_b;
+	double beam_b;
+	CEdit Edit_beam_h;
+	double beam_h;
+	AcGePoint3d insert_point;
+
+	CEdit Edit_top_m_r_num;
+	int top_m_r_num = 6496;
+	CEdit Edit_top_m_r_d;
+	int top_m_r_d = 6496;
+	CEdit Edit_bot_m_r_num;
+	int bot_m_r_num = 6496;
+	CEdit Edit_bot_m_r_d;
+	int bot_m_r_d = 6496;
+
+	CEdit Edit_stir_d;
+	int stirrup_d = 6496;
+	CEdit Edit_stir_s;
+	int stirrup_s = 6496;
+	CEdit Edit_stir_limb;
+	int stirrup_limb = 6496;
+
+	afx_msg void OnBnClickedButtonIrm();
+	CEdit Edit_side_num;
+	int side_num = 6496;
+	CEdit Edit_side_d;
+	int side_d = 6496;
+	CEdit Edit_column_num;
+	int column_num = 6496;
+	CEdit Edit_column_d;
+	int column_d = 6496;
+};

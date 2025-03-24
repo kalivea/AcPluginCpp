@@ -42,8 +42,7 @@ protected:
 	afx_msg LRESULT OnAcadKeepFocus(WPARAM, LPARAM);
 	DECLARE_MESSAGE_MAP()
 public:
-	bool CheckReinforceInfo();
-	afx_msg void OnBnClickedButtonSelBeam();
+
 	CEdit Edit_beam_name;
 	int beam_sn;
 	CEdit Edit_beam_seg_num;
@@ -70,7 +69,6 @@ public:
 	CEdit Edit_stir_limb;
 	int stirrup_limb = 6496;
 
-	afx_msg void OnBnClickedButtonIrm();
 	CEdit Edit_side_num;
 	int side_num = 6496;
 	CEdit Edit_side_d;
@@ -79,4 +77,18 @@ public:
 	int column_num = 6496;
 	CEdit Edit_column_d;
 	int column_d = 6496;
+
+	void CheckReinforceInfo();
+
+	afx_msg void OnBnClickedButtonSelBeam();
+	afx_msg void OnBnClickedButtonIrm();
+	afx_msg void OnEnKillfocusEditTopMRNum();
+	afx_msg void OnEnKillfocusEditTopMRD();
+	afx_msg void OnEnKillfocusEditBotMRNum();
+	afx_msg void OnEnKillfocusEditBotMRD();
+	afx_msg void OnEnKillfocusEditStirD();
+	afx_msg void OnEnKillfocusEditStirS();
+	afx_msg void OnEnKillfocusEditStirLimbNum();
+	afx_msg void OnEnKillfocusEditSideNum();
+	afx_msg void OnEnKillfocusEditSideD();
 };

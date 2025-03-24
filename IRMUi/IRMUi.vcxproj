@@ -60,13 +60,13 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
       <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</SmallerTypeCheck>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)Tools;$(SolutionDir)InteractiveTools;$(SolutionDir)CustomBeam;$(SolutionDir)CustomPillar;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)Tools;$(SolutionDir)InteractiveTools;$(SolutionDir)CustomBeam;$(SolutionDir)CustomPillar;$(SolutionDir)IchnographicRepresentingMethod;$(SolutionDir)Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
     </Link>
     <Link>
-      <AdditionalLibraryDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)InteractiveTools\x64\Debug;$(SolutionDir)CustomBeam\x64\Debug;$(SolutionDir)CustomPillar\x64\Debug;$(SolutionDir)Tools\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PolaInteractiveTools.lib;PolaCustomBeam.lib;PolaCustomPillar.lib;PolaTools.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)InteractiveTools\x64\Debug;$(SolutionDir)CustomBeam\x64\Debug;$(SolutionDir)CustomPillar\x64\Debug;$(SolutionDir)Tools\x64\Debug;$(SolutionDir)IchnographicRepresentingMethod\x64\Debug;$(SolutionDir)Common\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PolaInteractiveTools.lib;PolaCustomBeam.lib;PolaCustomPillar.lib;PolaTools.lib;PolaIchnographicRepresentingMethod.lib;PolaCommon.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

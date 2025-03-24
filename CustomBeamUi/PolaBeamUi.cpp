@@ -69,22 +69,13 @@ LRESULT CPolaBeamUi::OnAcadKeepFocus(WPARAM, LPARAM) {
 void CPolaBeamUi::OnBnClickedButtonPickpillar()
 {
 	if (!InputValidator<int>::Validate(Edit_Beam_Sn_, beam_Sn, _T("Beam SN")))
-	{
-		Edit_Beam_Sn_.SetFocus();
 		return;
-	}
 
 	if (!InputValidator<double>::Validate(Edit_Beam_b_, beam_b, _T("Beam width")))
-	{
-		Edit_Beam_b_.SetFocus();
 		return;
-	}
 
 	if (!InputValidator<double>::Validate(Edit_Beam_h_, beam_h, _T("Beam height")))
-	{
-		Edit_Beam_h_.SetFocus();
 		return;
-	}
 
 	AcDbObjectPointer<CPolaCustomBeam> beam;
 	beam.create();
@@ -106,22 +97,14 @@ void CPolaBeamUi::OnBnClickedButtonPickpillar()
 void CPolaBeamUi::OnBnClickedButtonPickoffset()
 {
 	if (!InputValidator<int>::Validate(Edit_Beam_Sn_, beam_Sn, _T("Beam SN")))
-	{
-		Edit_Beam_Sn_.SetFocus();
 		return;
-	}
 
 	if (!InputValidator<double>::Validate(Edit_Beam_b_, beam_b, _T("Beam width")))
-	{
-		Edit_Beam_b_.SetFocus();
 		return;
-	}
 
 	if (!InputValidator<double>::Validate(Edit_Beam_h_, beam_h, _T("Beam height")))
-	{
-		Edit_Beam_h_.SetFocus();
 		return;
-	}
+
 	AcDbObjectPointer<CPolaCustomBeam> beam;
 	beam.create();
 	if (beam.openStatus() != Acad::eOk)
@@ -239,15 +222,10 @@ void CPolaBeamUi::OnBnClickedButtonAddvertex()
 void CPolaBeamUi::OnBnClickedButtonAddjoint()
 {
 	if (!InputValidator<double>::Validate(Edit_Beam_Slab, slab_thickness, _T("Slab thickness")))
-	{
-		Edit_Beam_Slab.SetFocus();
 		return;
-	}
 	if (!InputValidator<double>::Validate(Edit_Beam_Slab_offset, offset_length, _T("Slab offset length")))
-	{
-		Edit_Beam_Slab_offset.SetFocus();
 		return;
-	}
+
 	BeginEditorCommand();
 	AcDbObjectIdArray beam_id;
 	bool isSelectionSuccessful = false;

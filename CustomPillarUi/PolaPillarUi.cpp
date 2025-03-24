@@ -205,15 +205,11 @@ void CPolaPillarUi::OnBnClickedButtonPreview()
 	if (GetCheckedRadioButton(IDC_RADIO_RECT, IDC_RADIO_CIRC) == IDC_RADIO_RECT)
 	{
 		if (!InputValidator<double >::Validate(Edit_Pillar_D_, pillar_d, _T("Pillar width")))
-		{
-			Edit_Pillar_D_.SetFocus();
 			return;
-		}
+
 		if (!InputValidator<double >::Validate(Edit_Pillar_H_, pillar_h, _T("Pillar height")))
-		{
-			Edit_Pillar_H_.SetFocus();
 			return;
-		}
+
 		if (GetCheckedRadioButton(IDC_RADIO_SLINE, IDC_RADIO_DLINE) == IDC_RADIO_SLINE)
 		{
 			ScalePattern(RECTANGLE, pillar_d, pillar_h, SOLID);
@@ -226,15 +222,11 @@ void CPolaPillarUi::OnBnClickedButtonPreview()
 	else
 	{
 		if (!InputValidator<double >::Validate(Edit_Pipe_D_, pipe_d, _T("Pillar pipe diameter")))
-		{
-			Edit_Pipe_D_.SetFocus();
 			return;
-		}
+
 		if (!InputValidator<double >::Validate(Edit_Pipe_T_, pipe_t, _T("Pillar pipe wall thickness")))
-		{
-			Edit_Pipe_T_.SetFocus();
 			return;
-		}
+
 		pillar_d = pipe_d;
 		if (GetCheckedRadioButton(IDC_RADIO_SLINE, IDC_RADIO_DLINE) == IDC_RADIO_SLINE)
 		{
@@ -341,41 +333,28 @@ void CPolaPillarUi::OnPaint()
 void CPolaPillarUi::OnBnClickedButtonSinsert()
 {
 	if (!InputValidator<int>::Validate(Edit_Sn_, pillar_sn, _T("Pillar SN")))
-	{
-		Edit_Sn_.SetFocus();
 		return;
-	}
+
 
 	if (!InputValidator<int>::Validate(Edit_Grade, pillar_conc_grade, _T("Pillar conc grade")))
-	{
-		Edit_Grade.SetFocus();
 		return;
-	}
+
 	if (shape_type == RECTANGLE)
 	{
 		if (!InputValidator<double >::Validate(Edit_Pillar_D_, pillar_d, _T("Pillar width")))
-		{
-			Edit_Pillar_D_.SetFocus();
 			return;
-		}
+
 		if (!InputValidator<double >::Validate(Edit_Pillar_H_, pillar_h, _T("Pillar height")))
-		{
-			Edit_Pillar_H_.SetFocus();
 			return;
-		}
+
 	}
 	else if (shape_type == CIRCLE)
 	{
 		if (!InputValidator<double >::Validate(Edit_Pipe_D_, pipe_d, _T("Pillar pipe diameter")))
-		{
-			Edit_Pipe_D_.SetFocus();
 			return;
-		}
+
 		if (!InputValidator<double >::Validate(Edit_Pipe_T_, pipe_t, _T("Pillar pipe wall thickness")))
-		{
-			Edit_Pipe_T_.SetFocus();
 			return;
-		}
 		pillar_d = pipe_d;
 	}
 	AcDbObjectPointer<CPolaCustomPillar> pillar;
@@ -402,41 +381,29 @@ void CPolaPillarUi::OnBnClickedButtonSinsert()
 void CPolaPillarUi::OnBnClickedButtonMinsert()
 {
 	if (!InputValidator<int>::Validate(Edit_Sn_, pillar_sn, _T("Pillar SN")))
-	{
-		Edit_Sn_.SetFocus();
 		return;
-	}
+
 
 	if (!InputValidator<int>::Validate(Edit_Grade, pillar_conc_grade, _T("Pillar conc grade")))
-	{
-		Edit_Grade.SetFocus();
 		return;
-	}
+
 	if (shape_type == RECTANGLE)
 	{
 		if (!InputValidator<double >::Validate(Edit_Pillar_D_, pillar_d, _T("Pillar width")))
-		{
-			Edit_Pillar_D_.SetFocus();
 			return;
-		}
+
 		if (!InputValidator<double >::Validate(Edit_Pillar_H_, pillar_h, _T("Pillar height")))
-		{
-			Edit_Pillar_H_.SetFocus();
 			return;
-		}
+
 	}
 	else if (shape_type == CIRCLE)
 	{
 		if (!InputValidator<double >::Validate(Edit_Pipe_D_, pipe_d, _T("Pillar pipe diameter")))
-		{
-			Edit_Pipe_D_.SetFocus();
 			return;
-		}
+
 		if (!InputValidator<double >::Validate(Edit_Pipe_T_, pipe_t, _T("Pillar pipe wall thickness")))
-		{
-			Edit_Pipe_T_.SetFocus();
 			return;
-		}
+
 		pillar_d = pipe_d;
 	}
 

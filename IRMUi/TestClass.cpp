@@ -3,7 +3,7 @@
 #include "PolaIRMUi.h"
 void TestClass::TestClassInit()
 {
-	acedRegCmds->addCommand(_T("tmpGroupName"), _T("TestPillar"), _T("TestIRM"), ACRX_CMD_MODAL, Test);
+	acedRegCmds->addCommand(_T("tmpGroupName"), _T("TestIRM"), _T("TestIRM"), ACRX_CMD_MODAL, Test);
 }
 void TestClass::TestClassUnload()
 {
@@ -11,6 +11,7 @@ void TestClass::TestClassUnload()
 }
 void TestClass::Test()
 {
+	StyleTools::CreateTextStyle(_T("IRM_default"), _T("hztxt.shx"), _T("tssdeng.shx"));
 	CAcModuleResourceOverride res;			// TODO
 	CPolaIRMUi ui;
 	if (ui.DoModal() != IDOK)

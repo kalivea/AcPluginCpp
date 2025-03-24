@@ -78,6 +78,7 @@
 
     //- Declare it as an extern here so that it becomes available in all modules
     extern AcApDataManager<CDocData> DocVars;
+#include "StyleTools.h"
 #include "SelectEntitys.h"
 #include "PolaCustomBeam.h"
 #include "PolaCustomPillar.h"

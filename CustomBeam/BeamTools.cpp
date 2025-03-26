@@ -95,6 +95,31 @@ bool BeamTools::IsPointInsideBeam(const CPolaCustomBeam* beam, const AcGePoint3d
 	return false;
 }
 
+bool BeamTools::GetAllPillarInBeam(const CPolaCustomBeam* beam, const AcDbObjectIdArray& pillar_ids)
+{
+	if (beam == nullptr || pillar_ids.isEmpty())
+		return false;
+
+	for (int i = 0; i < pillar_ids.length(); i++)
+	{
+		AcDbObjectId pillarId = pillar_ids[i];
+
+		CPolaCustomPillar* pPillar = nullptr;
+		Acad::ErrorStatus es = acdbOpenObject(pPillar, pillarId, AcDb::kForRead);
+
+		if (es != Acad::eOk || pPillar == nullptr)
+			continue; 
+
+		AcGePoint3d centerPoint = pPillar->getCenterPoint();
+
+		pPillar->close();
+
+		if (!IsPointInsideBeam(beam, centerPoint))
+			return false; 
+	}
+	return !pillar_ids.isEmpty();
+}
+
 bool BeamTools::IsPointOnLine(const AcGePoint3d& point, const AcGePoint3d& line_start, const AcGePoint3d& line_end, const AcGeTol& tol)
 {
 	AcGeLineSeg3d line(line_start, line_end);

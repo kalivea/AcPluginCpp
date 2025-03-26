@@ -30,14 +30,16 @@
 #include "InputValidator.h"
 //-----------------------------------------------------------------------------
 
-enum ShapeType { CIRCLE, RECTANGLE };
-enum LineStyle { DASHED, SOLID };
+
 
 class CPolaPillarUi : public CAdUiBaseDialog {
 	DECLARE_DYNAMIC(CPolaPillarUi)
 
 public:
 	CPolaPillarUi(CWnd* pParent = NULL, HINSTANCE hInstance = NULL);
+
+	enum ShapeType { CIRCLE, RECTANGLE };
+	enum LineStyle { DASHED, SOLID };
 
 	enum { IDD = IDD_POLAPILLARUI };
 public:

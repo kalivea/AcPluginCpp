@@ -29,6 +29,9 @@ private:
 	int beam_mid_addition_reinforcement_d_ = 6496;
 
 	AcGePoint3d insert_point_ = AcGePoint3d(6496, 6496, 6496);
+
+	AcGePoint3dArray column_end_insert_points;
+	AcGePoint3dArray beam_mid_insert_points;
 public:
 	PolaIRM() {};
 	~PolaIRM() {};
@@ -51,8 +54,7 @@ public:
 
 	AcGePoint3d getInsertPoint() const;
 public:
-	AcDbObjectIdArray DrawPolaIRM();
-private:
-
+	AcDbObjectIdArray DrawPolaIrmMain();
+	AcDbObjectIdArray DrawPolaIrmAddition();
 };
 

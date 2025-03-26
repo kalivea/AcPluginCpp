@@ -8,7 +8,7 @@ class POLADLL_BEAM_TOOLS_API BeamTools
 {
 public:
 	static bool IsPointInsideBeam(const CPolaCustomBeam* beam, const AcGePoint3d& point, const AcGeTol& tol = AcGeContext::gTol);
-
+	static bool GetAllPillarInBeam(const CPolaCustomBeam* beam, const AcDbObjectIdArray& pillar_ids);
 private:
 	static bool IsPointOnLine(const AcGePoint3d& point, const AcGePoint3d& line_start, const AcGePoint3d& line_end, const AcGeTol& tol);
 };

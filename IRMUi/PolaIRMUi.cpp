@@ -42,6 +42,8 @@ BEGIN_MESSAGE_MAP(CPolaIRMUi, CAdUiBaseDialog)
 	ON_EN_KILLFOCUS(IDC_EDIT_STIR_LIMB_NUM, &CPolaIRMUi::OnEnKillfocusEditStirLimbNum)
 	ON_EN_KILLFOCUS(IDC_EDIT_SIDE_NUM, &CPolaIRMUi::OnEnKillfocusEditSideNum)
 	ON_EN_KILLFOCUS(IDC_EDIT_SIDE_D, &CPolaIRMUi::OnEnKillfocusEditSideD)
+	ON_BN_CLICKED(IDC_RADIO_TOP, &CPolaIRMUi::OnBnClickedRadioTop)
+	ON_BN_CLICKED(IDC_RADIO_BOTTOM, &CPolaIRMUi::OnBnClickedRadioBottom)
 END_MESSAGE_MAP()
 
 //-----------------------------------------------------------------------------
@@ -78,45 +80,112 @@ LRESULT CPolaIRMUi::OnAcadKeepFocus(WPARAM, LPARAM) {
 	return (TRUE);
 }
 
-void CPolaIRMUi::CheckReinforceInfo()
+bool CPolaIRMUi::CheckReinforceInfo()
 {
-	if (!InputValidator<int>::ValidateRebarDiameter(Edit_stir_d, stirrup_d, _T("Rebar diameter")))
-		return;	
+	if (beam_b == 6496 || beam_h == 6496 || beam_seg_num == 6496)
+	{
+		MessageBox(_T("Press add beam first"));
+		return false;
+	}
 
-	if (!InputValidator<int>::ValidateRebarDiameter(Edit_top_m_r_d, top_m_r_d, _T("Rebar diameter")))
-		return;	
+	struct RebarValidation
+	{
+		CEdit* edit;
+		int* value;
+		const TCHAR* desc;
+		bool hasRange;
+		int min;
+		int max;
+	};
 
-	if (!InputValidator<int>::ValidateRebarDiameter(Edit_bot_m_r_d, bot_m_r_d, _T("Rebar diameter")))
-		return;
-	int max_top_reinforcement = BasicTools::CalculateMaxBars(static_cast<int>(beam_b), top_m_r_d, 45, stirrup_d, 30, 1.5);
-	int max_bot_reinforcement = BasicTools::CalculateMaxBars(static_cast<int>(beam_b), bot_m_r_d, 45, stirrup_d, 25, 1);
+	RebarValidation diameterChecks[] =
+	{
+		{&Edit_stir_d, &stirrup_d, _T("Rebar diameter")},
+		{&Edit_top_m_r_d, &top_m_r_d, _T("Rebar diameter")},
+		{&Edit_bot_m_r_d, &bot_m_r_d, _T("Rebar diameter")}
+	};
 
-	if (!InputValidator<int>::Validate(Edit_top_m_r_num, top_m_r_num, _T("Top main reinforcement bar number"), true, 6496, true, 1, max_top_reinforcement))
-		return;
+	for (const auto& check : diameterChecks)
+	{
+		if (!InputValidator<int>::ValidateRebarDiameter(*check.edit, *check.value, check.desc))
+			return false;
+	}
 
-	if (!InputValidator<int>::Validate(Edit_bot_m_r_num, bot_m_r_num, _T("Bottom main reinforcement bar number"), true, 6496, true, 1, max_bot_reinforcement))
-		return;
+	int max_top_reinforcement = BasicTools::CalculateMaxBars(static_cast<int>(beam_b),
+		top_m_r_d, 45, stirrup_d, 30, 1.5);
+	int max_bot_reinforcement = BasicTools::CalculateMaxBars(static_cast<int>(beam_b),
+		bot_m_r_d, 45, stirrup_d, 25, 1);
+
+	RebarValidation mainRebarChecks[] =
+	{
+		{&Edit_top_m_r_num, &top_m_r_num, _T("Top main reinforcement bar number"), true, 1, max_top_reinforcement},
+		{&Edit_bot_m_r_num, &bot_m_r_num, _T("Bottom main reinforcement bar number"), true, 1, max_bot_reinforcement}
+	};
+
+	for (const auto& check : mainRebarChecks)
+	{
+		if (!InputValidator<int>::Validate(*check.edit, *check.value, check.desc,
+			true, 6496, check.hasRange, check.min, check.max))
+			return false;
+	}
 
 	int max_stirrup_limbs = (std::max)(top_m_r_num, bot_m_r_num);
 	int min_stirrup_limbs = (std::max)(top_m_r_num, bot_m_r_num) / 2;
 
-	if (!InputValidator<int>::Validate(Edit_stir_s, stirrup_s, _T("Stirrup space"), true, 6496, true, 100, 400))
-		return;
+	RebarValidation otherChecks[] =
+	{
+		{&Edit_stir_s, &stirrup_s, _T("Stirrup space"), true, 100, 400},
+		{&Edit_stir_limb, &stirrup_limb, _T("Stirrup limbs"), true, min_stirrup_limbs, max_stirrup_limbs},
+		{&Edit_side_num, &side_num, _T("Side reinforcement bar number"), true, 1, 50},
+		{&Edit_column_num, &column_num, _T("Column end addition reinforcement bar number"), true, 0, 50}
+	};
 
-	if (!InputValidator<int>::Validate(Edit_stir_limb, stirrup_limb, _T("Stirrup limbs"), true, 6496, true, min_stirrup_limbs, max_stirrup_limbs))
-		return;
+	for (const auto& check : otherChecks)
+	{
+		if (!InputValidator<int>::Validate(*check.edit, *check.value, check.desc,
+			true, 6496, check.hasRange, check.min, check.max))
+			return false;
+	}
 
-	if (!InputValidator<int>::Validate(Edit_side_num, side_num, _T("Side reinforcement bar number"), true, 6496, true, 1, 50))
-		return;
+	RebarValidation remainingDiamChecks[] =
+	{
+		{&Edit_side_d, &side_d, _T("Rebar diameter")},
+		{&Edit_column_d, &column_d, _T("Rebar diameter")}
+	};
+	for (const auto& check : remainingDiamChecks)
+	{
+		if (!InputValidator<int>::ValidateRebarDiameter(*check.edit, *check.value, check.desc))
+			return false;
+	}
+	return true;
+}
 
-	if (!InputValidator<int>::ValidateRebarDiameter(Edit_side_d, side_d, _T("Rebar diameter")))
-		return;
+void CPolaIRMUi::SetDefaultValue()
+{
+	top_m_r_d = 28;
+	bot_m_r_d = 28;
+	top_m_r_num = static_cast<int>(beam_b / 100.0);
+	bot_m_r_num = top_m_r_num;
+	stirrup_d = 12;
+	stirrup_s = 100;
+	stirrup_limb = static_cast<int>(top_m_r_num / 2.0);
+	CString m_r_num;
+	m_r_num.Format(_T("%d"), top_m_r_num);
 
-	if (!InputValidator<int>::Validate(Edit_column_num, column_num, _T("Column end addition reinforcement bar number"), true, 6496, true, 0, 50))
-		return;
+	Edit_top_m_r_d.SetWindowTextW(_T("28"));
+	Edit_bot_m_r_d.SetWindowTextW(_T("28"));
 
-	if (!InputValidator<int>::ValidateRebarDiameter(Edit_column_d, column_d, _T("Rebar diameter")))
-		return;
+	Edit_top_m_r_num.SetWindowTextW(m_r_num);
+	Edit_bot_m_r_num.SetWindowTextW(m_r_num);
+
+	Edit_side_d.SetWindowTextW(_T("20"));
+	Edit_side_num.SetWindowTextW(_T("6"));
+
+	CString s_r_num;
+	s_r_num.Format(_T("%d"), stirrup_limb);
+	Edit_stir_d.SetWindowTextW(_T("12"));
+	Edit_stir_s.SetWindowTextW(_T("100"));
+	Edit_stir_limb.SetWindowTextW(s_r_num);
 }
 
 void CPolaIRMUi::OnBnClickedButtonSelBeam()
@@ -154,25 +223,29 @@ void CPolaIRMUi::OnBnClickedButtonSelBeam()
 	beam_height.Format(_T("%d"), static_cast<int>(beam_h));
 	CString beam_segment_num;
 	beam_segment_num.Format(_T("(%d)"), beam_seg_num);
-	insert_point = beam->getHorizontalMidPoint();
+	insert_point = beam->getHorizontalMidPoint() + AcGeVector3d(0, beam_b / 4.0, 0);
 
 	Edit_beam_name.SetWindowTextW(beam_name);
 	Edit_beam_seg_num.SetWindowTextW(beam_segment_num);
 	Edit_beam_b.SetWindowTextW(beam_width);
 	Edit_beam_h.SetWindowTextW(beam_height);
 	CompleteEditorCommand();
+	SetDefaultValue();
 }
 
 void CPolaIRMUi::OnBnClickedButtonIrm()
 {
-	CheckReinforceInfo();
-	PolaIRM irm;
-	irm.setBeamInfo(beam_sn, beam_seg_num, beam_b, beam_h);
-	irm.setStirrupReinforcementInfo(stirrup_d, stirrup_s, stirrup_limb);
-	irm.setMainReinforcementInfo(top_m_r_num, top_m_r_d, bot_m_r_num, bot_m_r_d);
-	irm.setSideReinforcementInfo(side_num, side_d);
-	irm.setInsertPoint(insert_point);
-	irm.DrawPolaIRM();
+	if (CheckReinforceInfo())
+	{
+		PolaIRM irm;
+		irm.setBeamInfo(beam_sn, beam_seg_num, beam_b, beam_h);
+		irm.setStirrupReinforcementInfo(stirrup_d, stirrup_s, stirrup_limb);
+		irm.setMainReinforcementInfo(top_m_r_num, top_m_r_d, bot_m_r_num, bot_m_r_d);
+		irm.setSideReinforcementInfo(side_num, side_d);
+		irm.setInsertPoint(insert_point);
+		EditEntity::SetLayer(irm.DrawPolaIrmMain(), _T("POLA_IRM_MARK"));
+		MessageBox(_T("Add success!"));
+	}
 }
 
 void CPolaIRMUi::OnEnKillfocusEditTopMRNum()
@@ -218,4 +291,22 @@ void CPolaIRMUi::OnEnKillfocusEditSideNum()
 void CPolaIRMUi::OnEnKillfocusEditSideD()
 {
 	InputValidator<int>::ValidateRebarDiameter(Edit_side_d, side_d, _T(" "), false);
+}
+
+void CPolaIRMUi::OnBnClickedRadioTop()
+{
+	direction_flag = UP;
+}
+
+void CPolaIRMUi::OnBnClickedRadioBottom()
+{
+	direction_flag = DOWN;
+}
+
+BOOL CPolaIRMUi::OnInitDialog()
+{
+	CAdUiBaseDialog::OnInitDialog();
+	CheckRadioButton(IDC_RADIO_TOP, IDC_RADIO_BOTTOM, IDC_RADIO_TOP);
+
+	return TRUE;  // return TRUE unless you set the focus to a control
 }

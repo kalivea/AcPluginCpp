@@ -71,6 +71,7 @@
 #define POLA_DLL_IRM
 #include "IRMDef.h"
 #include "PolaCustomBeam.h"
+#include "BeamTools.h"
 #include "EditEntity.h"
 #include "DrawEntity.h"
 #include "SelectEntitys.h"

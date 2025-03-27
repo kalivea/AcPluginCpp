@@ -22,6 +22,8 @@
 #define IDC_EDIT_STIR_LIMB_NUM          118
 #define IDC_EDIT_SIDE_NUM               119
 #define IDC_CUSTOM4                     120
+#define IDC_BUTTON_IRM2                 120
+#define IDC_BUTTON_IRM_ADDITION         120
 #define IDC_EDIT_SIDE_D                 121
 #define IDC_EDIT_C_A_R_NUM              123
 #define IDC_EDIT_C_A_R_D                125

@@ -43,7 +43,9 @@ public:
 	void setColumnEndAdditionReinforcementInfo(int column_end_addition_reinforcement_num, int column_end_addition_reinforcement_d);
 	void setBeamMidAdditionReinforcementInfo(int beam_mid_addition_reinforcement_num, int beam_mid_addition_reinforcement_d);
 
-	void setInsertPoint(AcGePoint3d insert_point);
+	void setInsertPoint(AcGePoint3d& insert_point);
+	void setColumnAdditionInsertPoints(AcGePoint3dArray& column_points);
+	void setBeamMidInsertPoints(AcGePoint3dArray& beam_points);
 
 	void getBeamInfo(int& beam_sn, int& beam_segment_num, double& beam_b, double& beam_h) const;
 	void getMainReinforcementInfo(int& top_main_reinforcement_num, int& top_main_reinforcement_d, int& bottom_main_reinforcement_num, int& bottom_main_reinforcement_d) const;
@@ -52,9 +54,13 @@ public:
 	void getColumnEndAdditionReinforcementInfo(int& column_end_addition_reinforcement_num, int& column_end_addition_reinforcement_d) const;
 	void getBeamMidAdditionReinforcementInfo(int& beam_mid_addition_reinforcement_num, int& beam_mid_addition_reinforcement_d) const;
 
+	AcGePoint3dArray getColumnAdditionInsertPoints() const;
+	AcGePoint3dArray getBeamMidInsertPoints() const;
+
 	AcGePoint3d getInsertPoint() const;
 public:
 	AcDbObjectIdArray DrawPolaIrmMain();
-	AcDbObjectIdArray DrawPolaIrmAddition();
+	AcDbObjectIdArray DrawPolaIrmColumnAddition(const AcGeVector3d& offset);
+	AcDbObjectIdArray DrawPolaIrmBeamAddition(const AcGeVector3d& offset);
 };
 

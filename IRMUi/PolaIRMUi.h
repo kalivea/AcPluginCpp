@@ -54,6 +54,8 @@ public:
 	CEdit Edit_beam_h;
 	double beam_h = 6496;
 	AcGePoint3d insert_point;
+	AcGePoint3dArray column_end_addition;
+	AcGePoint3dArray beam_mid_addition;
 
 	CEdit Edit_top_m_r_num;
 	int top_m_r_num = 6496;
@@ -80,9 +82,14 @@ public:
 	CEdit Edit_column_d;
 	int column_d = 6496;
 
+	CEdit Edit_beam_num;
+	int beam_num = 6496;
+	CEdit Edit_beam_d;
+	int beam_d = 6496;
 	PositionDir direction_flag = UP;
 
-	bool CheckReinforceInfo();
+	bool CheckMainReinforceInfo();
+	bool CheckAdditionReinforceInfo();
 	void SetDefaultValue();
 	afx_msg void OnBnClickedButtonSelBeam();
 	afx_msg void OnBnClickedButtonIrm();
@@ -98,4 +105,6 @@ public:
 	afx_msg void OnBnClickedRadioTop();
 	afx_msg void OnBnClickedRadioBottom();
 	virtual BOOL OnInitDialog();
+	afx_msg void OnBnClickedButtonIrmAddition();
+
 };

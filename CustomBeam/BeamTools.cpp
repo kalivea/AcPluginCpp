@@ -95,27 +95,52 @@ bool BeamTools::IsPointInsideBeam(const CPolaCustomBeam* beam, const AcGePoint3d
 	return false;
 }
 
-bool BeamTools::GetAllPillarInBeam(const CPolaCustomBeam* beam, const AcDbObjectIdArray& pillar_ids)
+bool BeamTools::GetBeamSegmentMidPoint(const CPolaCustomBeam* beam, AcGePoint3dArray& beam_seg_mid)
 {
-	if (beam == nullptr || pillar_ids.isEmpty())
+	beam_seg_mid.removeAll();
+	AcGePoint3dArray mid_point;
+	AcGePoint3dArray beam_vertex = beam->getBeamVertexes();
+	int beam_vertex_num = beam->getVertexesNum();
+	for (int i = 0;i < beam_vertex_num - 1;i++)
+	{
+		beam_seg_mid.append(BasicTools::GetMidPoint(beam_vertex.at(i), beam_vertex.at(i + 1)));
+	}
+	return !beam_seg_mid.isEmpty();
+}
+
+bool BeamTools::GetAllPillarCenterInBeam(const CPolaCustomBeam* beam, AcGePoint3dArray& pillar_center)
+{
+	pillar_center.removeAll();
+	AcDbObjectIdArray in_beam_pillar;
+	GetAllPillarInBeam(beam, in_beam_pillar);
+	for (auto& id : in_beam_pillar)
+	{
+		AcDbObjectPointer<CPolaCustomPillar> pillar;
+		pillar.open(id);
+		pillar_center.append(pillar->getCenterPoint());
+	}
+	return !pillar_center.isEmpty();
+}
+
+bool BeamTools::GetAllPillarInBeam(const CPolaCustomBeam* beam, AcDbObjectIdArray& pillar_ids)
+{
+	pillar_ids.removeAll();
+	if (beam == nullptr)
 		return false;
 
-	for (int i = 0; i < pillar_ids.length(); i++)
+	pillar_ids.setLogicalLength(0);
+	AcDbObjectIdArray all_pillar;
+	PillarTools::GetAllPillar(all_pillar);
+
+	for (auto& id : all_pillar)
 	{
-		AcDbObjectId pillarId = pillar_ids[i];
-
-		CPolaCustomPillar* pPillar = nullptr;
-		Acad::ErrorStatus es = acdbOpenObject(pPillar, pillarId, AcDb::kForRead);
-
-		if (es != Acad::eOk || pPillar == nullptr)
-			continue; 
-
-		AcGePoint3d centerPoint = pPillar->getCenterPoint();
-
-		pPillar->close();
-
-		if (!IsPointInsideBeam(beam, centerPoint))
-			return false; 
+		AcDbObjectPointer<CPolaCustomPillar> pillar;
+		pillar.open(id);
+		AcGePoint3d center_point = pillar->getCenterPoint();
+		if (BeamTools::IsPointInsideBeam(beam, center_point))
+		{
+			pillar_ids.append(id);
+		}
 	}
 	return !pillar_ids.isEmpty();
 }

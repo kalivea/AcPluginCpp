@@ -42,9 +42,19 @@ void PolaIRM::setBeamMidAdditionReinforcementInfo(int beam_mid_addition_reinforc
 	beam_mid_addition_reinforcement_d_ = beam_mid_addition_reinforcement_d;
 }
 
-void PolaIRM::setInsertPoint(AcGePoint3d insert_point)
+void PolaIRM::setInsertPoint(AcGePoint3d& insert_point)
 {
 	insert_point_ = insert_point;
+}
+
+void PolaIRM::setColumnAdditionInsertPoints(AcGePoint3dArray& column_points)
+{
+	column_end_insert_points = column_points;
+}
+
+void PolaIRM::setBeamMidInsertPoints(AcGePoint3dArray& beam_points)
+{
+	beam_mid_insert_points = beam_points;
 }
 
 void PolaIRM::getBeamInfo(int& beam_sn, int& beam_segment_num, double& beam_b, double& beam_h) const
@@ -86,6 +96,16 @@ void PolaIRM::getBeamMidAdditionReinforcementInfo(int& beam_mid_addition_reinfor
 {
 	beam_mid_addition_reinforcement_num = beam_mid_addition_reinforcement_num_;
 	beam_mid_addition_reinforcement_d = beam_mid_addition_reinforcement_d_;
+}
+
+AcGePoint3dArray PolaIRM::getColumnAdditionInsertPoints() const
+{
+	return column_end_insert_points;
+}
+
+AcGePoint3dArray PolaIRM::getBeamMidInsertPoints() const
+{
+	return beam_mid_insert_points;
 }
 
 AcGePoint3d PolaIRM::getInsertPoint() const
@@ -150,16 +170,32 @@ AcDbObjectIdArray PolaIRM::DrawPolaIrmMain()
 	return IRM_ids;
 }
 
-AcDbObjectIdArray PolaIRM::DrawPolaIrmAddition()
+AcDbObjectIdArray PolaIRM::DrawPolaIrmColumnAddition(const AcGeVector3d& offset)
 {
 	AcDbObjectIdArray IRM_ids;
 	std::wstring column_end_info;
 	std::wstringstream column_end_info_stream;
-	column_end_info_stream << column_end_addition_reinforcement_num_ << _T("%%132") << column_end_addition_reinforcement_d_;
+	std::vector<int> reinforcement_per_row = 
+		BasicTools::CalculateReinforcement(static_cast<int>(beam_b_), column_end_addition_reinforcement_d_, column_end_addition_reinforcement_num_, 45, stirrup_reinforcement_d_);
+
+	column_end_info_stream << column_end_addition_reinforcement_num_ << _T("%%132") << column_end_addition_reinforcement_d_ << _T(" ");
+	for (size_t i = 0; i < reinforcement_per_row.size(); ++i)
+	{
+		column_end_info_stream << reinforcement_per_row.at(i);
+		if (i != reinforcement_per_row.size() - 1)
+		{
+			column_end_info_stream << "/";
+		}
+	}
 	column_end_info = column_end_info_stream.str();
 	for (auto& point : column_end_insert_points)
 	{
-		IRM_ids.append(DrawEntity::AddText(point + AcGeVector3d(0, beam_b_ / 2 + 200, 0), column_end_info.c_str()));
+		IRM_ids.append(DrawEntity::AddText(point + offset, column_end_info.c_str()));
 	}
+	return IRM_ids;
+}
+
+AcDbObjectIdArray PolaIRM::DrawPolaIrmBeamAddition(const AcGeVector3d& offset)
+{
 	return AcDbObjectIdArray();
 }

@@ -106,6 +106,26 @@ void EditEntity::SetLinetype(const AcDbObjectIdArray& entity_ids, const TCHAR* l
 	}
 }
 
+void EditEntity::SetTextHorzMode(const AcDbObjectId& text_id, AcDb::TextHorzMode text_horz_mode)
+{
+	AcDbObjectPointer<AcDbText> text;
+	text.open(text_id, OpenMode::kForWrite);
+	if (text.openStatus() == Acad::eOk)
+	{
+		text->setHorizontalMode(text_horz_mode);
+		text->setAlignmentPoint(text->position());
+		text->adjustAlignment();
+	}
+}
+
+void EditEntity::SetTextHorzMode(const AcDbObjectIdArray& text_ids, AcDb::TextHorzMode text_horz_mode)
+{
+	for (auto& text_id : text_ids)
+	{
+		SetTextHorzMode(text_id, text_horz_mode);
+	}
+}
+
 void EditEntity::MoveEntity(const AcDbObjectId& entity_id, const AcGePoint3d& base_point, const AcGePoint3d& target_point)
 {
 	AcDbEntity* entity = nullptr;

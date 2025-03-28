@@ -124,6 +124,36 @@ bool CPolaIRMUi::CheckAdditionReinforceInfo()
 {
 	if (!InputValidator<int>::ValidateRebarDiameter(Edit_stir_d, stirrup_d, _T("Rebar diameter")))
 		return false;
+
+	if (!InputValidator<int>::ValidateRebarDiameter(Edit_top_m_r_d, top_m_r_d, _T("Rebar diameter")))
+		return false;
+
+	if (!InputValidator<int>::ValidateRebarDiameter(Edit_bot_m_r_d, bot_m_r_d, _T("Rebar diameter")))
+		return false;
+	int max_top_reinforcement = BasicTools::CalculateMaxBars(static_cast<int>(beam_b), top_m_r_d, 45, stirrup_d, 30, 1.5);
+	int max_bot_reinforcement = BasicTools::CalculateMaxBars(static_cast<int>(beam_b), bot_m_r_d, 45, stirrup_d, 25, 1);
+
+	if (!InputValidator<int>::Validate(Edit_top_m_r_num, top_m_r_num, _T("Top main reinforcement bar number"), true, 6496, true, 1, max_top_reinforcement))
+		return false;
+
+	if (!InputValidator<int>::Validate(Edit_bot_m_r_num, bot_m_r_num, _T("Bottom main reinforcement bar number"), true, 6496, true, 1, max_bot_reinforcement))
+		return false;
+
+	int max_stirrup_limbs = (std::max)(top_m_r_num, bot_m_r_num);
+	int min_stirrup_limbs = (std::max)(top_m_r_num, bot_m_r_num) / 2;
+
+	if (!InputValidator<int>::Validate(Edit_stir_s, stirrup_s, _T("Stirrup space"), true, 6496, true, 100, 400))
+		return false;
+
+	if (!InputValidator<int>::Validate(Edit_stir_limb, stirrup_limb, _T("Stirrup limbs"), true, 6496, true, min_stirrup_limbs, max_stirrup_limbs))
+		return false;
+
+	if (!InputValidator<int>::Validate(Edit_side_num, side_num, _T("Side reinforcement bar number"), true, 6496, true, 1, 50))
+		return false;
+
+	if (!InputValidator<int>::ValidateRebarDiameter(Edit_side_d, side_d, _T("Rebar diameter")))
+		return false;
+
 	if (!InputValidator<int>::Validate(Edit_column_num, column_num, _T("Column end addition reinforcement bar number"), true, 6496, true, 0, 50))
 		return false;
 	if (!InputValidator<int>::ValidateRebarDiameter(Edit_column_d, column_d, _T("Rebar diameter")))
@@ -200,7 +230,7 @@ void CPolaIRMUi::OnBnClickedButtonSelBeam()
 	CString beam_segment_num;
 	beam_segment_num.Format(_T("(%d)"), beam_seg_num);
 	insert_point = beam->getHorizontalMidPoint() + AcGeVector3d(0, beam_b / 4.0, 0);
-	
+
 	AcGePoint3dArray temp_array;
 	if (BeamTools::GetAllPillarCenterInBeam(beam, temp_array))
 	{
@@ -224,14 +254,13 @@ void CPolaIRMUi::OnBnClickedButtonIrm()
 {
 	if (CheckMainReinforceInfo())
 	{
-		PolaIRM irm;
 		irm.setBeamInfo(beam_sn, beam_seg_num, beam_b, beam_h);
 		irm.setStirrupReinforcementInfo(stirrup_d, stirrup_s, stirrup_limb);
 		irm.setMainReinforcementInfo(top_m_r_num, top_m_r_d, bot_m_r_num, bot_m_r_d);
 		irm.setSideReinforcementInfo(side_num, side_d);
 		irm.setInsertPoint(insert_point);
 		EditEntity::SetLayer(irm.DrawPolaIrmMain(), _T("POLA_IRM_MARK"));
-		MessageBox(_T("Add success!"));
+		MessageBox(_T("Main IRM info add success!"));
 	}
 }
 
@@ -300,11 +329,44 @@ BOOL CPolaIRMUi::OnInitDialog()
 
 void CPolaIRMUi::OnBnClickedButtonIrmAddition()
 {
+	int selected_radio_id = -1;
+	selected_radio_id = GetCheckedRadioButton(IDC_RADIO_TOP, IDC_RADIO_BOTTOM);
+
+	AcGeVector3d offset_vector_column;
+	AcGeVector3d offset_vecror_beam;
+	switch (selected_radio_id)
+	{
+	case IDC_RADIO_TOP:
+		offset_vector_column = AcGeVector3d(0, beam_b / 2.0 + 200, 0);
+		offset_vecror_beam = AcGeVector3d(0, -beam_b / 2.0 - 200 - 350, 0);
+		break;
+	case IDC_RADIO_BOTTOM:
+		offset_vector_column = AcGeVector3d(0, -beam_b / 2.0 - 200 - 350, 0);
+		offset_vecror_beam = AcGeVector3d(0, beam_b / 2.0 + 200, 0);
+	default:
+		break;
+	}
 	if (CheckAdditionReinforceInfo())
 	{
-		PolaIRM irm;
+		AcDbObjectIdArray irm_text;
+		irm.setStirrupReinforcementInfo(stirrup_d, stirrup_s, stirrup_limb);
 		irm.setColumnEndAdditionReinforcementInfo(column_num, column_d);
 		irm.setColumnAdditionInsertPoints(column_end_addition);
-		irm.DrawPolaIrmColumnAddition(AcGeVector3d(0, beam_b / 2.0 + 200, 0));
+		irm_text = irm.DrawPolaIrmColumnAddition(offset_vector_column);
+		EditEntity::SetLayer(irm_text, _T("POLA_IRM_MARK"));
+		EditEntity::SetTextHorzMode(irm_text, AcDb::kTextCenter);
+
+		if (beam_num == 0 || beam_d == 0)
+		{
+			MessageBox(_T("Column end addititon info add success!"));
+			return;
+		}
+		irm_text.removeAll();
+		irm.setBeamMidAdditionReinforcementInfo(beam_num, beam_d);
+		irm.setBeamMidInsertPoints(beam_mid_addition);
+		irm_text = irm.DrawPolaIrmBeamAddition(offset_vecror_beam);
+		EditEntity::SetLayer(irm_text, _T("POLA_IRM_MARK"));
+		EditEntity::SetTextHorzMode(irm_text, AcDb::kTextCenter);
+		MessageBox(_T("Beam mid and Column end addition info add success!"));
 	}
 }

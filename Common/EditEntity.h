@@ -21,6 +21,9 @@ public:
 	static void SetLinetype(const AcDbObjectId& entity_id, const TCHAR* linetype_name, const double& line_type_scale);
 	static void SetLinetype(const AcDbObjectIdArray& entity_ids, const TCHAR* linetype_name, const double& line_type_scale);
 
+	static void SetTextHorzMode(const AcDbObjectId& text_id, AcDb::TextHorzMode text_horz_mode);
+	static void SetTextHorzMode(const AcDbObjectIdArray& text_ids, AcDb::TextHorzMode text_horz_mode);
+
 	// entity edit
 	static void MoveEntity(const AcDbObjectId& entity_id, const AcGePoint3d& base_point, const AcGePoint3d& target_point);
 	static void MoveEntity(const AcDbObjectIdArray& entity_ids, const AcGePoint3d& base_point, const AcGePoint3d& target_point);

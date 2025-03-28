@@ -175,7 +175,7 @@ AcDbObjectIdArray PolaIRM::DrawPolaIrmColumnAddition(const AcGeVector3d& offset)
 	AcDbObjectIdArray IRM_ids;
 	std::wstring column_end_info;
 	std::wstringstream column_end_info_stream;
-	std::vector<int> reinforcement_per_row = 
+	std::vector<int> reinforcement_per_row =
 		BasicTools::CalculateReinforcement(static_cast<int>(beam_b_), column_end_addition_reinforcement_d_, column_end_addition_reinforcement_num_, 45, stirrup_reinforcement_d_);
 
 	column_end_info_stream << column_end_addition_reinforcement_num_ << _T("%%132") << column_end_addition_reinforcement_d_ << _T(" ");
@@ -190,12 +190,33 @@ AcDbObjectIdArray PolaIRM::DrawPolaIrmColumnAddition(const AcGeVector3d& offset)
 	column_end_info = column_end_info_stream.str();
 	for (auto& point : column_end_insert_points)
 	{
-		IRM_ids.append(DrawEntity::AddText(point + offset, column_end_info.c_str()));
+		IRM_ids.append(DrawEntity::AddText(point + offset, column_end_info.c_str(), StyleTools::GetTextStyleId(_T("IRM_default")), 350));
 	}
 	return IRM_ids;
 }
 
 AcDbObjectIdArray PolaIRM::DrawPolaIrmBeamAddition(const AcGeVector3d& offset)
 {
-	return AcDbObjectIdArray();
+	AcDbObjectIdArray IRM_ids;
+	std::wstring beam_mid_info;
+	std::wstringstream beam_mid_info_stream;
+	std::vector<int> reinforcement_per_row =
+		BasicTools::CalculateReinforcement(static_cast<int>(beam_b_), beam_mid_addition_reinforcement_d_, beam_mid_addition_reinforcement_num_, 45, stirrup_reinforcement_d_);
+
+	beam_mid_info_stream << beam_mid_addition_reinforcement_num_ << _T("%%132") << beam_mid_addition_reinforcement_d_ << _T(" ");
+	for (size_t i = reinforcement_per_row.size(); i > 0; --i)
+	{
+		size_t index = i - 1;
+		beam_mid_info_stream << reinforcement_per_row.at(index);
+		if (index != 0)
+		{
+			beam_mid_info_stream << "/";
+		}
+	}
+	beam_mid_info = beam_mid_info_stream.str();
+	for (auto& point : beam_mid_insert_points)
+	{
+		IRM_ids.append(DrawEntity::AddText(point + offset, beam_mid_info.c_str(), StyleTools::GetTextStyleId(_T("IRM_default")), 350));
+	}
+	return IRM_ids;
 }

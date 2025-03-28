@@ -27,7 +27,7 @@
 //-----------------------------------------------------------------------------
 #include "adui.h"
 #include "resource.h"
-
+#include "PolaIRM.h"
 //-----------------------------------------------------------------------------
 class CPolaIRMUi : public CAdUiBaseDialog {
 	DECLARE_DYNAMIC(CPolaIRMUi)
@@ -88,6 +88,7 @@ public:
 	int beam_d = 6496;
 	PositionDir direction_flag = UP;
 
+	PolaIRM irm;
 	bool CheckMainReinforceInfo();
 	bool CheckAdditionReinforceInfo();
 	void SetDefaultValue();
@@ -106,5 +107,4 @@ public:
 	afx_msg void OnBnClickedRadioBottom();
 	virtual BOOL OnInitDialog();
 	afx_msg void OnBnClickedButtonIrmAddition();
-
 };

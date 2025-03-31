@@ -646,20 +646,8 @@ AcGePoint3d BasicTools::ProjectPointToLineSegment(const AcGePoint3d& point, cons
 
 double BasicTools::GetDistancePointToLineSegment(const AcGePoint3d& point, const AcGePoint3d& line_segment_start, const AcGePoint3d& line_segment_end)
 {
-	AcGeVector3d v(line_segment_end - line_segment_start);
-	double len = v.length();
-	if (len == 0.0)
-		return point.distanceTo(line_segment_start);
-	v.normalize();
-	AcGeVector3d w(point - line_segment_start);
-	double c1 = w.dotProduct(v);
-	if (c1 <= 0)
-		return point.distanceTo(line_segment_start);
-	if (c1 >= len)
-		return point.distanceTo(line_segment_end);
-	v *= c1;
-	AcGePoint3d closest_point = line_segment_start + v;
-	return point.distanceTo(closest_point);
+	AcGeLineSeg3d line(line_segment_start,line_segment_end);
+	return line.distanceTo(point);
 }
 
 double BasicTools::GetDistancePointToLineSegment(const AcGePoint3d& point, const AcGeLineSeg3d& line_segment)
@@ -669,17 +657,31 @@ double BasicTools::GetDistancePointToLineSegment(const AcGePoint3d& point, const
 	return GetDistancePointToLineSegment(point, start_point, end_point);
 }
 
-double BasicTools::GetDistancePointToLine(const AcGePoint3d& point, const AcGePoint3d& line_segment_start, const AcGePoint3d& line_segment_end)
+double BasicTools::GetDistancePointToLine(const AcGePoint3d& point, const AcGePoint3d& line_start, const AcGePoint3d& line_end)
 {
-	AcGeVector3d v(line_segment_end - line_segment_start);
-	double len = v.length();
-	if (len == 0.0)
-		return point.distanceTo(line_segment_start);
+	AcGeLine3d line(line_start, line_end);
+	return line.distanceTo(point);
+}
 
-	v.normalize();
-	AcGeVector3d w(point - line_segment_start);
-	AcGeVector3d perp = w.crossProduct(v);
-	return perp.length();
+bool BasicTools::IsParallelLineSeg(const AcGePoint3d& line1_start, const AcGePoint3d& line1_end, const AcGePoint3d& line2_start, const AcGePoint3d& line2_end)
+{
+	AcGeLineSeg3d line1(line1_start, line1_end);
+	AcGeLineSeg3d line2(line2_start, line2_end);
+
+	return line1.isParallelTo(line2);
+}
+
+bool BasicTools::IsParallelLineSeg(const AcGeLineSeg3d& line1, const AcGeLineSeg3d& line2)
+{
+	return line1.isParallelTo(line2);
+}
+
+bool BasicTools::IsParallelLine(const AcGePoint3d& line1_start, const AcGePoint3d& line1_end, const AcGePoint3d& line2_start, const AcGePoint3d& line2_end)
+{
+	AcGeLine3d line1(line1_start, line1_end);
+	AcGeLine3d line2(line2_start, line2_end);
+
+	return line1.isParallelTo(line2);
 }
 
 /// <summary>

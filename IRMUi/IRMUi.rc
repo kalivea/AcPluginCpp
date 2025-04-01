@@ -129,13 +129,20 @@ BEGIN
     LTEXT           "跨中附加筋",IDC_STATIC,154,181,41,13
     EDITTEXT        IDC_EDIT_B_A_R_NUM,219,179,24,14,ES_AUTOHSCROLL
     EDITTEXT        IDC_EDIT_B_A_R_D,255,179,24,14,ES_AUTOHSCROLL
-    LTEXT           "（若无填 0  6）",IDC_STATIC,151,191,60,13
+    LTEXT           "（若无填 0    6）",IDC_STATIC,150,191,60,13
     LTEXT           "检查钢筋输入信息并添加到梁",IDC_STATIC,13,210,150,12
     PUSHBUTTON      "Click me",IDC_BUTTON_IRM,182,208,50,14
     LTEXT           "检查附加钢筋信息并添加到梁",IDC_STATIC,14,229,150,12
     PUSHBUTTON      "Click me",IDC_BUTTON_IRM_ADDITION,182,226,50,14
     DEFPUSHBUTTON   "确定",IDOK,191,249,50,14
     PUSHBUTTON      "取消",IDCANCEL,243,249,50,14
+    CONTROL         IDC_RADIO_BOTTOM,IDC_STATIC,"Static",SS_BITMAP | SS_REALSIZEIMAGE,104,112,8,11
+    CONTROL         IDC_RADIO_BOTTOM,IDC_STATIC,"Static",SS_BITMAP | SS_REALSIZEIMAGE,67,136,8,11
+    CONTROL         IDC_RADIO_BOTTOM,IDC_STATIC,"Static",SS_BITMAP | SS_REALSIZEIMAGE,104,158,8,11
+    CONTROL         IDC_RADIO_BOTTOM,IDC_STATIC,"Static",SS_BITMAP | SS_REALSIZEIMAGE,104,180,8,11
+    CONTROL         IDC_RADIO_BOTTOM,IDC_STATIC,"Static",SS_BITMAP | SS_REALSIZEIMAGE,227,112,8,11
+    CONTROL         IDC_RADIO_BOTTOM,IDC_STATIC,"Static",SS_BITMAP | SS_REALSIZEIMAGE,245,180,8,11
+    CONTROL         IDC_RADIO_BOTTOM,IDC_STATIC,"Static",SS_BITMAP | SS_REALSIZEIMAGE,190,190,8,11
 END
 
 
@@ -165,8 +172,67 @@ END
 
 IDD_POLAIRMUI AFX_DIALOG_LAYOUT
 BEGIN
-    0
+    0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 10, 10,
+    0, 0, 10, 10,
+    0, 0, 10, 10,
+    0, 0, 10, 10,
+    0, 0, 10, 10,
+    0, 0, 10, 10,
+    0, 0, 10, 10
 END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_BITMAP_BAR          BITMAP                  "BAR.bmp"
 
 
 /////////////////////////////////////////////////////////////////////////////

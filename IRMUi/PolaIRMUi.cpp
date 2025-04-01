@@ -226,15 +226,15 @@ void CPolaIRMUi::OnBnClickedButtonSelBeam()
 	{
 	case IDC_RADIO_TOP:
 		beam_name.Format(_T("TKL%d"), beam_sn);
-		t = PolaIRM::TOP;
+		beam_type = PolaIRM::TOP;
 		break;
 	case IDC_RADIO_MID:
 		beam_name.Format(_T("ZKL%d"), beam_sn);
-		t = PolaIRM::MID;
+		beam_type = PolaIRM::MID;
 		break;
 	case IDC_RADIO_BOTTOM:
 		beam_name.Format(_T("DKL%d"), beam_sn);
-		t = PolaIRM::BOT;
+		beam_type = PolaIRM::BOT;
 		break;
 	default:
 		break;
@@ -275,7 +275,7 @@ void CPolaIRMUi::OnBnClickedButtonIrm()
 		irm.setMainReinforcementInfo(top_m_r_num, top_m_r_d, bot_m_r_num, bot_m_r_d);
 		irm.setSideReinforcementInfo(side_num, side_d);
 		irm.setInsertPoint(insert_point);
-		EditEntity::SetLayer(irm.DrawPolaIrmMain(t), _T("POLA_IRM_MARK"));
+		EditEntity::SetLayer(irm.DrawPolaIrmMain(beam_type), _T("POLA_IRM_MARK"));
 		MessageBox(_T("Main IRM info add success!"));
 	}
 }
@@ -336,12 +336,9 @@ BOOL CPolaIRMUi::OnInitDialog()
 
 void CPolaIRMUi::OnBnClickedButtonIrmAddition()
 {
-	int selected_radio_id = -1;
-	selected_radio_id = GetCheckedRadioButton(IDC_RADIO_TOP, IDC_RADIO_BOTTOM);
-
 	AcGeVector3d offset_vector_column;
 	AcGeVector3d offset_vecror_beam;
-	switch (selected_radio_id)
+	switch (beam_type)
 	{
 	case IDC_RADIO_TOP:
 		offset_vector_column = AcGeVector3d(0, beam_b / 2.0 + 200, 0);

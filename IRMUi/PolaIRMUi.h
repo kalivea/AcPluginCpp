@@ -86,7 +86,7 @@ public:
 	int beam_d = 6496;
 
 	PolaIRM irm;
-	PolaIRM::Type t;
+	PolaIRM::Type beam_type;
 	bool CheckMainReinforceInfo();
 	bool CheckAdditionReinforceInfo();
 	void SetDefaultValue();

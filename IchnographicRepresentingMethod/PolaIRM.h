@@ -2,6 +2,8 @@
 #include "StdAfx.h"
 class POLADLL_IRM_API PolaIRM
 {
+public:
+	enum Type { TOP, MID, BOT };
 private:
 	int beam_sn_ = 6496;
 	int beam_segment_num_ = 6496;
@@ -32,6 +34,8 @@ private:
 
 	AcGePoint3dArray column_end_insert_points;
 	AcGePoint3dArray beam_mid_insert_points;
+
+	Type beam_type = TOP;
 public:
 	PolaIRM() {};
 	~PolaIRM() {};
@@ -59,7 +63,7 @@ public:
 
 	AcGePoint3d getInsertPoint() const;
 public:
-	AcDbObjectIdArray DrawPolaIrmMain();
+	AcDbObjectIdArray DrawPolaIrmMain(Type type);
 	AcDbObjectIdArray DrawPolaIrmColumnAddition(const AcGeVector3d& offset);
 	AcDbObjectIdArray DrawPolaIrmBeamAddition(const AcGeVector3d& offset);
 };

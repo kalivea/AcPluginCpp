@@ -35,8 +35,6 @@ class CPolaIRMUi : public CAdUiBaseDialog {
 public:
 	CPolaIRMUi(CWnd* pParent = NULL, HINSTANCE hInstance = NULL);
 
-	enum PositionDir { UP, DOWN };
-
 	enum { IDD = IDD_POLAIRMUI };
 
 protected:
@@ -86,9 +84,9 @@ public:
 	int beam_num = 6496;
 	CEdit Edit_beam_d;
 	int beam_d = 6496;
-	PositionDir direction_flag = UP;
 
 	PolaIRM irm;
+	PolaIRM::Type t;
 	bool CheckMainReinforceInfo();
 	bool CheckAdditionReinforceInfo();
 	void SetDefaultValue();
@@ -103,8 +101,6 @@ public:
 	afx_msg void OnEnKillfocusEditStirLimbNum();
 	afx_msg void OnEnKillfocusEditSideNum();
 	afx_msg void OnEnKillfocusEditSideD();
-	afx_msg void OnBnClickedRadioTop();
-	afx_msg void OnBnClickedRadioBottom();
 	virtual BOOL OnInitDialog();
 	afx_msg void OnBnClickedButtonIrmAddition();
 };

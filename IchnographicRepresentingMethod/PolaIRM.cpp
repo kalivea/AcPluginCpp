@@ -113,7 +113,7 @@ AcGePoint3d PolaIRM::getInsertPoint() const
 	return insert_point_;
 }
 
-AcDbObjectIdArray PolaIRM::DrawPolaIrmMain()
+AcDbObjectIdArray PolaIRM::DrawPolaIrmMain(Type type)
 {
 	AcDbObjectIdArray IRM_ids;
 	std::vector<int> reinforcement_per_row = BasicTools::CalculateReinforcement(static_cast<int>(beam_b_), top_main_reinforcement_d_, top_main_reinforcement_num_, 45, stirrup_reinforcement_d_);
@@ -122,6 +122,20 @@ AcDbObjectIdArray PolaIRM::DrawPolaIrmMain()
 	// ----------------------------------------Beam info text------------------------------
 	std::wstring beam_info;
 	std::wstringstream beam_info_stream;
+	switch (type)
+	{
+	case PolaIRM::TOP:
+		beam_info_stream << _T("T");
+		break;
+	case PolaIRM::MID:
+		beam_info_stream << _T("Z");
+		break;
+	case PolaIRM::BOT:
+		beam_info_stream << _T("D");
+		break;
+	default:
+		break;
+	}
 	beam_info_stream <<
 		_T("KL") << beam_sn_ << _T(" ") << _T("(") << beam_segment_num_ << _T(")") << static_cast<int>(beam_b_) << _T("¡Á") << static_cast<int>(beam_h_);
 	beam_info = beam_info_stream.str();

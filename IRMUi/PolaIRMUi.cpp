@@ -42,8 +42,6 @@ BEGIN_MESSAGE_MAP(CPolaIRMUi, CAdUiBaseDialog)
 	ON_EN_KILLFOCUS(IDC_EDIT_STIR_LIMB_NUM, &CPolaIRMUi::OnEnKillfocusEditStirLimbNum)
 	ON_EN_KILLFOCUS(IDC_EDIT_SIDE_NUM, &CPolaIRMUi::OnEnKillfocusEditSideNum)
 	ON_EN_KILLFOCUS(IDC_EDIT_SIDE_D, &CPolaIRMUi::OnEnKillfocusEditSideD)
-	ON_BN_CLICKED(IDC_RADIO_TOP, &CPolaIRMUi::OnBnClickedRadioTop)
-	ON_BN_CLICKED(IDC_RADIO_BOTTOM, &CPolaIRMUi::OnBnClickedRadioBottom)
 	ON_BN_CLICKED(IDC_BUTTON_IRM_ADDITION, &CPolaIRMUi::OnBnClickedButtonIrmAddition)
 END_MESSAGE_MAP()
 
@@ -222,7 +220,25 @@ void CPolaIRMUi::OnBnClickedButtonSelBeam()
 	beam_sn = beam->getBeamProperty();
 	beam_seg_num = beam->getBeamSegmentNum();
 	CString beam_name;
-	beam_name.Format(_T("KL%d"), beam_sn);
+	int selected_radio_id = -1;
+	selected_radio_id = GetCheckedRadioButton(IDC_RADIO_TOP, IDC_RADIO_BOTTOM);
+	switch (selected_radio_id)
+	{
+	case IDC_RADIO_TOP:
+		beam_name.Format(_T("TKL%d"), beam_sn);
+		t = PolaIRM::TOP;
+		break;
+	case IDC_RADIO_MID:
+		beam_name.Format(_T("ZKL%d"), beam_sn);
+		t = PolaIRM::MID;
+		break;
+	case IDC_RADIO_BOTTOM:
+		beam_name.Format(_T("DKL%d"), beam_sn);
+		t = PolaIRM::BOT;
+		break;
+	default:
+		break;
+	}
 	CString beam_width;
 	beam_width.Format(_T("%d"), static_cast<int>(beam_b));
 	CString beam_height;
@@ -259,7 +275,7 @@ void CPolaIRMUi::OnBnClickedButtonIrm()
 		irm.setMainReinforcementInfo(top_m_r_num, top_m_r_d, bot_m_r_num, bot_m_r_d);
 		irm.setSideReinforcementInfo(side_num, side_d);
 		irm.setInsertPoint(insert_point);
-		EditEntity::SetLayer(irm.DrawPolaIrmMain(), _T("POLA_IRM_MARK"));
+		EditEntity::SetLayer(irm.DrawPolaIrmMain(t), _T("POLA_IRM_MARK"));
 		MessageBox(_T("Main IRM info add success!"));
 	}
 }
@@ -309,15 +325,6 @@ void CPolaIRMUi::OnEnKillfocusEditSideD()
 	InputValidator<int>::ValidateRebarDiameter(Edit_side_d, side_d, _T(" "), false);
 }
 
-void CPolaIRMUi::OnBnClickedRadioTop()
-{
-	direction_flag = UP;
-}
-
-void CPolaIRMUi::OnBnClickedRadioBottom()
-{
-	direction_flag = DOWN;
-}
 
 BOOL CPolaIRMUi::OnInitDialog()
 {
@@ -337,6 +344,10 @@ void CPolaIRMUi::OnBnClickedButtonIrmAddition()
 	switch (selected_radio_id)
 	{
 	case IDC_RADIO_TOP:
+		offset_vector_column = AcGeVector3d(0, beam_b / 2.0 + 200, 0);
+		offset_vecror_beam = AcGeVector3d(0, -beam_b / 2.0 - 200 - 350, 0);
+		break;
+	case IDC_RADIO_MID:
 		offset_vector_column = AcGeVector3d(0, beam_b / 2.0 + 200, 0);
 		offset_vecror_beam = AcGeVector3d(0, -beam_b / 2.0 - 200 - 350, 0);
 		break;

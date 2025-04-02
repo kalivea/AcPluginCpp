@@ -60,6 +60,9 @@ public:
 	static bool IsParallelLineSeg(const AcGePoint3d& line1_start, const AcGePoint3d& line1_end, const AcGePoint3d& line2_strat, const AcGePoint3d& line2_end);
 	static bool IsParallelLineSeg(const AcGeLineSeg3d& line1, const AcGeLineSeg3d& line2);
 	static bool IsParallelLine(const AcGePoint3d& line1_start, const AcGePoint3d& line1_end, const AcGePoint3d& line2_start, const AcGePoint3d& line2_end);
+
+	static AcGePoint3dArray GetPolyLineIntersections(const AcDbPolyline& line1, const AcDbPolyline& line2);
+
 	// math tools: Numerical tools
 	static double Max(const double& num1, const double& num2);
 	static double Min(const double& num1, const double& num2);

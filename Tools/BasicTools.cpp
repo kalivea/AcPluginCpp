@@ -646,7 +646,7 @@ AcGePoint3d BasicTools::ProjectPointToLineSegment(const AcGePoint3d& point, cons
 
 double BasicTools::GetDistancePointToLineSegment(const AcGePoint3d& point, const AcGePoint3d& line_segment_start, const AcGePoint3d& line_segment_end)
 {
-	AcGeLineSeg3d line(line_segment_start,line_segment_end);
+	AcGeLineSeg3d line(line_segment_start, line_segment_end);
 	return line.distanceTo(point);
 }
 
@@ -682,6 +682,29 @@ bool BasicTools::IsParallelLine(const AcGePoint3d& line1_start, const AcGePoint3
 	AcGeLine3d line2(line2_start, line2_end);
 
 	return line1.isParallelTo(line2);
+}
+
+AcGePoint3dArray BasicTools::GetPolyLineIntersections(const AcDbPolyline& line1, const AcDbPolyline& line2)
+{
+	AcGePoint3dArray intersection_points;
+
+	if (!line1.isKindOf(AcDbPolyline::desc()) || !line2.isKindOf(AcDbPolyline::desc()))
+	{
+		return intersection_points;
+	}
+
+	AcDbCurve* curve = const_cast<AcDbPolyline*>(&line1);
+	AcDbCurve* curve2 = const_cast<AcDbPolyline*>(&line2);
+
+	AcGePoint3dArray points;
+	AcDb::Intersect intersetct_type = AcDb::kOnBothOperands;
+	Acad::ErrorStatus es = curve->intersectWith(curve2, intersetct_type, points);
+
+	if (es == Acad::eOk)
+	{
+		intersection_points = points;
+	}
+	return intersection_points;
 }
 
 /// <summary>

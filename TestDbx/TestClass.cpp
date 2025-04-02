@@ -565,7 +565,7 @@ void TestClass::Test()
 	//irm.setSideReinforcementInfo(10, 25);
 	//irm.DrawPolaIRM();
 #pragma endregion
-	AcDbObjectIdArray beam_id;
+	/*AcDbObjectIdArray beam_id;
 	SelectEntitys::PickEntitys(_T("Select beam:"), CPolaCustomBeam::desc(), beam_id);
 
 	AcDbObjectPointer<CPolaCustomBeam> beam(beam_id.at(0), OpenMode::kForWrite);
@@ -583,5 +583,16 @@ void TestClass::Test()
 			DrawEntity::AddText(point, _T("A"), StyleTools::InitTextStyle(), 350);
 		}
 		i++;
+	}*/
+	AcDbObjectIdArray line;
+	SelectEntitys::PickEntitys(_T("polyline"), AcDbPolyline::desc(), line);
+
+
+	AcDbObjectPointer<AcDbPolyline> line1(line.at(0), OpenMode::kForWrite);
+	AcDbObjectPointer<AcDbPolyline> line2(line.at(1), OpenMode::kForWrite);
+	AcGePoint3dArray center = BasicTools::GetPolyLineIntersections(*line1, *line2);
+	for (auto& p : center)
+	{
+		DrawEntity::DrawCircle(p, 10);
 	}
 }

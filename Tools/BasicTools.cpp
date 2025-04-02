@@ -264,7 +264,6 @@ bool BasicTools::OffsetPolyLine(const AcDbPolyline& center_line, const double& d
 
 		if (isClosed && temp_array.length() > 1)
 		{
-
 			const AcGePoint3d& first = temp_array.first();
 			const AcGePoint3d& last = temp_array.last();
 
@@ -693,12 +692,12 @@ AcGePoint3dArray BasicTools::GetPolyLineIntersections(const AcDbPolyline& line1,
 		return intersection_points;
 	}
 
-	AcDbCurve* curve = const_cast<AcDbPolyline*>(&line1);
+	AcDbCurve* curve1 = const_cast<AcDbPolyline*>(&line1);
 	AcDbCurve* curve2 = const_cast<AcDbPolyline*>(&line2);
 
 	AcGePoint3dArray points;
 	AcDb::Intersect intersetct_type = AcDb::kOnBothOperands;
-	Acad::ErrorStatus es = curve->intersectWith(curve2, intersetct_type, points);
+	Acad::ErrorStatus es = curve1->intersectWith(curve2, intersetct_type, points);
 
 	if (es == Acad::eOk)
 	{

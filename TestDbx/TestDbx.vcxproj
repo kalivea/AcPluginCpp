@@ -60,8 +60,9 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)Tools\;$(SolutionDir)Common\;$(SolutionDir)Grid\;$(SolutionDir)CustomPillar\;$(SolutionDir)InteractiveTools\;$(SolutionDir)CustomBeam\;$(SolutionDir)EntityReactor\</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)Tools\;$(SolutionDir)Common\;$(SolutionDir)Grid\;$(SolutionDir)CustomPillar\;$(SolutionDir)InteractiveTools\;$(SolutionDir)CustomBeam\;$(SolutionDir)EntityReactor\;$(SolutionDir)IchnographicRepresentingMethod\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)Tools\;$(SolutionDir)Common\;$(SolutionDir)Grid\;$(SolutionDir)CustomPillar\;$(SolutionDir)InteractiveTools\;$(SolutionDir)CustomBeam\;$(SolutionDir)EntityReactor\;$(SolutionDir)IchnographicRepresentingMethod\;$(SolutionDir)CustomEntityIntersection\</AdditionalIncludeDirectories>
       <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</SmallerTypeCheck>
+      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
     </ClCompile>
     <Link>
     </Link>
@@ -70,9 +71,12 @@
       <AdditionalLibraryDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)Tools\x64\Release\;$(SolutionDir)Grid\x64\Release\;$(SolutionDir)Common\x64\Release\;$(SolutionDir)CustomPillar\x64\Release\;$(SolutionDir)InteractiveTools\x64\Release\;$(SolutionDir)CustomBeam\x64\Release\;$(SolutionDir)EntityReactor\x64\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Link>
-      <AdditionalLibraryDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)Tools\x64\Debug\;$(SolutionDir)Grid\x64\Debug\;$(SolutionDir)Common\x64\Debug\;$(SolutionDir)CustomPillar\x64\Debug\;$(SolutionDir)InteractiveTools\x64\Debug\;$(SolutionDir)CustomBeam\x64\Debug\;$(SolutionDir)EntityReactor\x64\Debug;$(SolutionDir)IchnographicRepresentingMethod\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PolaTools.lib;PolaCommon.lib;PolaGrid.lib;PolaCustomPillar.lib;PolaInteractiveTools.lib;PolaCustomBeam.lib;PolaEntityReactor.lib;PolaIchnographicRepresentingMethod.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)Tools\x64\Debug\;$(SolutionDir)Grid\x64\Debug\;$(SolutionDir)Common\x64\Debug\;$(SolutionDir)CustomPillar\x64\Debug\;$(SolutionDir)InteractiveTools\x64\Debug\;$(SolutionDir)CustomBeam\x64\Debug\;$(SolutionDir)EntityReactor\x64\Debug;$(SolutionDir)IchnographicRepresentingMethod\x64\Debug;$(SolutionDir)CustomEntityIntersection\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PolaTools.lib;PolaCommon.lib;PolaGrid.lib;PolaCustomPillar.lib;PolaInteractiveTools.lib;PolaCustomBeam.lib;PolaEntityReactor.lib;PolaIchnographicRepresentingMethod.lib;PolaCustomEntityIntersection.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <Bscmake>
+      <PreserveSbr Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</PreserveSbr>
+    </Bscmake>
   </ItemDefinitionGroup>
   <ItemGroup>
     <Reference Include="System" />

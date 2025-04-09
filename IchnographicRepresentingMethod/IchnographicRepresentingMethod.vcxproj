@@ -61,6 +61,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)CustomBeam\;$(SolutionDir)Common\;$(SolutionDir)Tools\;$(SolutionDir)InteractiveTools;$(SolutionDir)CustomPillar;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</SmallerTypeCheck>
+      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
     </ClCompile>
     <Link>
     </Link>
@@ -68,6 +69,9 @@
       <AdditionalLibraryDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)CustomBeam\x64\Debug;$(SolutionDir)Common\x64\Debug;$(SolutionDir)InteractiveTools\x64\Debug;$(SolutionDir)Tools\x64\Debug;$(SolutionDir)CustomPillar\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PolaTools.lib;PolaCommon.lib;PolaCustomBeam.lib;PolaInteractiveTools.lib;PolaCustomPillar.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <Bscmake>
+      <PreserveSbr Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</PreserveSbr>
+    </Bscmake>
   </ItemDefinitionGroup>
   <ItemGroup>
     <Reference Include="System" />

@@ -226,58 +226,63 @@ bool BasicTools::OffsetPolyLine(const AcDbPolyline& center_line, const double& d
 {
 	offset_vertex_array.removeAll();
 	AcDbVoidPtrArray offset_curves;
-	Acad::ErrorStatus error_status = center_line.getOffsetCurves(distance, offset_curves);
 
-	if (error_status != Acad::eOk)
-	{
+	if (distance == 0.0 || center_line.numVerts() < 2)
 		return false;
-	}
 
-	bool result = false;
+	Acad::ErrorStatus error_status = center_line.getOffsetCurves(distance, offset_curves);
+	if (error_status != Acad::eOk)
+		return false;
+
+	std::vector<std::unique_ptr<AcDbEntity>> entities;
+	entities.reserve(offset_curves.length());
+
+	bool has_valid_offset = false;
 	const int curve_count = offset_curves.length();
 
 	for (int i = 0; i < curve_count; ++i)
 	{
-		AcDbEntity* entity = static_cast<AcDbEntity*>(offset_curves[i]);
+		auto* entity = static_cast<AcDbEntity*>(offset_curves[i]);
 		if (!entity || !entity->isKindOf(AcDbPolyline::desc()))
-			continue;
-
-		AcDbPolyline* offset_polyline = AcDbPolyline::cast(entity);
-		if (!offset_polyline)
 		{
 			delete entity;
 			continue;
 		}
 
-		const bool isClosed = offset_polyline->isClosed();
+		auto offset_polyline = std::unique_ptr<AcDbPolyline>(AcDbPolyline::cast(entity));
+		if (!offset_polyline)
+			continue;
+
+		const bool is_closed = offset_polyline->isClosed();
 		const int vertex_count = offset_polyline->numVerts();
 		AcGePoint3dArray temp_array;
+		temp_array.setLogicalLength(vertex_count + (is_closed ? 1 : 0));
 
+		int valid_points = 0;
 		for (int j = 0; j < vertex_count; ++j)
 		{
 			AcGePoint2d point;
 			if (offset_polyline->getPointAt(j, point) == Acad::eOk)
-			{
-				temp_array.append(Point2dToPoint3d(point));
-			}
+				temp_array[valid_points++] = Point2dToPoint3d(point);
 		}
+		temp_array.setLogicalLength(valid_points);
 
-		if (isClosed && temp_array.length() > 1)
+		if (is_closed && valid_points > 1)
 		{
-			const AcGePoint3d& first = temp_array.first();
-			const AcGePoint3d& last = temp_array.last();
-
+			const AcGePoint3d& first = temp_array[0];
+			const AcGePoint3d& last = temp_array[valid_points - 1];
 			if (!first.isEqualTo(last))
-			{
 				temp_array.append(first);
-			}
 		}
 
-		offset_vertex_array.append(temp_array);
-		delete entity;
-		result = true;
+		if (valid_points > 0)
+		{
+			offset_vertex_array.append(temp_array);
+			has_valid_offset = true;
+		}
+		entities.push_back(std::move(offset_polyline));
 	}
-	return result;
+	return has_valid_offset;
 }
 
 bool BasicTools::OffsetPolyLine(const AcGePoint3dArray& center_array, const double& distance, AcGePoint3dArray& offset_vertex_array)
@@ -704,6 +709,36 @@ AcGePoint3dArray BasicTools::GetPolyLineIntersections(const AcDbPolyline& line1,
 		intersection_points = points;
 	}
 	return intersection_points;
+}
+
+AcGePoint3dArray BasicTools::GetPolyLineIntersections(const AcGePoint3dArray& line1_vertex, const AcGePoint3dArray& line2_vertex)
+{
+	AcDbObjectPointer<AcDbPolyline> line1;
+	AcDbObjectPointer<AcDbPolyline> line2;
+
+	line1.create();
+	line2.create();
+	for (int i = 0;i < line1_vertex.length();i++)
+	{
+		line1->addVertexAt(i, BasicTools::Point3dToPoint2d(line1_vertex.at(i)));
+	}
+	for (int i = 0;i < line2_vertex.length();i++)
+	{
+		line2->addVertexAt(i, BasicTools::Point3dToPoint2d(line2_vertex.at(i)));
+	}
+	return GetPolyLineIntersections(*line1, *line2);
+}
+
+AcGePoint3dArray BasicTools::GetPolylineVertex(const AcDbPolyline& poly_line)
+{
+	AcGePoint3dArray vertex_array;
+	for (int i = 0;i < static_cast<int>(poly_line.numVerts());i++)
+	{
+		AcGePoint2d point;
+		poly_line.getPointAt(i, point);
+		vertex_array.append(BasicTools::Point2dToPoint3d(point));
+	}
+	return vertex_array;
 }
 
 /// <summary>

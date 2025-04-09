@@ -584,15 +584,18 @@ void TestClass::Test()
 		}
 		i++;
 	}*/
-	AcDbObjectIdArray line;
-	SelectEntitys::PickEntitys(_T("polyline"), AcDbPolyline::desc(), line);
+	//AcDbObjectIdArray line;
+	//SelectEntitys::PickEntitys(_T("polyline"), AcDbPolyline::desc(), line);
 
 
-	AcDbObjectPointer<AcDbPolyline> line1(line.at(0), OpenMode::kForWrite);
-	AcDbObjectPointer<AcDbPolyline> line2(line.at(1), OpenMode::kForWrite);
-	AcGePoint3dArray center = BasicTools::GetPolyLineIntersections(*line1, *line2);
-	for (auto& p : center)
-	{
-		DrawEntity::DrawCircle(p, 10);
-	}
+	//AcDbObjectPointer<AcDbPolyline> line1(line.at(0), OpenMode::kForWrite);
+	//AcDbObjectPointer<AcDbPolyline> line2(line.at(1), OpenMode::kForWrite);
+
+	////AcGePoint3dArray center = BasicTools::GetPolyLineIntersections(BasicTools::GetPolylineVertex(*line1), BasicTools::GetPolylineVertex(*line2));
+	//AcGePoint3dArray center = BasicTools::GetPolyLineIntersections(*line1, *line2);
+	//for (auto& p : center)
+	//{
+	//	EditEntity::SetColor(DrawEntity::DrawCircle(p, 30), 2);
+	//}
+	
 }

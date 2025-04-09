@@ -25,7 +25,7 @@
 //-      but are changed infrequently
 //-----------------------------------------------------------------------------
 #pragma once
-#define ACPLUGINCPP_MODULE
+#define CUSTOMENTITYINTERSECTION_MODULE
 
 /*#ifndef
 #define _ALLOW_RTCc_IN_STL
@@ -33,9 +33,9 @@
 
 #pragma pack(push, 8)
 #pragma warning(disable : 4786 4996)
-//#pragma warning(disable: 4098)
+    //#pragma warning(disable: 4098)
 
-//-----------------------------------------------------------------------------
+    //-----------------------------------------------------------------------------
 #define STRICT
 
 #ifndef VC_EXTRALEAN
@@ -51,55 +51,24 @@
 #define _WIN32_WINNT 0x0601
 #endif
 
-
-		//- ObjectARX and OMF headers needs this
+    
+        //- ObjectARX and OMF headers needs this
 #include <map>
 
-	//-----------------------------------------------------------------------------
+    //-----------------------------------------------------------------------------
 #include <afxwin.h> //- MFC core and standard components
 #include <afxext.h> //- MFC extensions
 #include <afxcmn.h> //- MFC support for Windows Common Controls
 
-				//-----------------------------------------------------------------------------
-	//- Include ObjectDBX/ObjectARX headers
-	//- Uncomment one of the following lines to bring a given library in your project.
-	//#define _BREP_SUPPORT_					//- Support for the BRep API
-	//#define _HLR_SUPPORT_						//- Support for the Hidden Line Removal API
-	//#define _AMODELER_SUPPORT_				//- Support for the AModeler API
-		//#define _ASE_SUPPORT_							//- Support for the ASI/ASE API
-	//#define _RENDER_SUPPORT_					//- Support for the AutoCAD Render API
-		//#define _ARX_CUSTOM_DRAG_N_DROP_	//- Support for the ObjectARX Drag'n Drop API
-	//#define _INC_LEAGACY_HEADERS_			//- Include legacy headers in this project
-#include "arxHeaders.h"
+                //-----------------------------------------------------------------------------
+    //- Include ObjectDBX/ObjectARX headers
+    //- Uncomment one of the following lines to bring a given library in your project.
+    //#define _BREP_SUPPORT_					//- Support for the BRep API
+    //#define _HLR_SUPPORT_						//- Support for the Hidden Line Removal API
+    //#define _AMODELER_SUPPORT_				//- Support for the AModeler API
+    #include "dbxHeaders.h"
+    #include "AcExtensionModule.h" //- Needed for AutoCAD MFC extension even if not present in the RealDWG SDK
+#include "BasicTools.h"
+                        #pragma pack(pop)
 
-
-//-----------------------------------------------------------------------------
-#include "DocData.h" //- Your document specific data class holder
-#include "AddToModelSpace.h"		//add entity to model space
-#include "DrawEntity.h"				//draw all entity 
-
-
-#include "TestClass.h"				//test class
-#include "BasicTools.h"				//some custom useful geometry basic tools
-#include <corecrt_math_defines.h>	//math defines
-#include "EditEntity.h"				//edit entity
-
-//#include "Entrance.h"				//draw standard,u-style entrance
-//#include "StandardEntrance.h"
-//#include "UstyleEntrance.h"
-
-#include "StyleTools.h"				//set default text,dim style [and so on (TODO)]
-#include "Grid.h"					//draw architecture grid 
-#include "PolaCustomPillar.h"
-#include "SelectEntitys.h"			//select entitys
-#include "InputValue.h"
-#include "PolaCustomBeam.h"
-
-#include "PillarTools.h"
-#include "BeamTools.h"
-#include "PolaLine.h"
-	//- Declare it as an extern here so that it becomes available in all modules
-extern AcApDataManager<CDocData> DocVars;
-
-#pragma pack(pop)
-
+    

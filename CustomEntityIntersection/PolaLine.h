@@ -51,71 +51,82 @@
 class DLLIMPEXP CPolaLine : public AcDbEntity {
 
 public:
-	ACRX_DECLARE_MEMBERS(CPolaLine) ;
+	ACRX_DECLARE_MEMBERS(CPolaLine);
 
+	enum LineType { SOLID, DASHED, HIDDEN };
+
+	struct DrawSegment
+	{
+		AcGePoint3d top_start_point;
+		AcGePoint3d top_end_point;
+
+		AcGePoint3d bottom_start_point;
+		AcGePoint3d bottom_end_point;
+
+		LineType type;				// The drawing style of this segment
+	};
 protected:
-	static Adesk::UInt32 kCurrentVersionNumber ;
+	static Adesk::UInt32 kCurrentVersionNumber;
 
 public:
-	CPolaLine () ;
-	virtual ~CPolaLine () ;
+	CPolaLine();
+	virtual ~CPolaLine();
 
 	//----- AcDbObject protocols
 	//- Dwg Filing protocol
-	virtual Acad::ErrorStatus dwgOutFields (AcDbDwgFiler *pFiler) const ;
-	virtual Acad::ErrorStatus dwgInFields (AcDbDwgFiler *pFiler) ;
+	virtual Acad::ErrorStatus dwgOutFields(AcDbDwgFiler* pFiler) const;
+	virtual Acad::ErrorStatus dwgInFields(AcDbDwgFiler* pFiler);
 
 	//----- AcDbEntity protocols
 	//- Graphics protocol
 protected:
-	virtual Adesk::Boolean subWorldDraw (AcGiWorldDraw *mode) ;
-	virtual Adesk::UInt32 subSetAttributes (AcGiDrawableTraits *traits) ;
+	virtual Adesk::Boolean subWorldDraw(AcGiWorldDraw* mode);
+	virtual Adesk::UInt32 subSetAttributes(AcGiDrawableTraits* traits);
 
 	//- Osnap points protocol
 public:
-	virtual Acad::ErrorStatus subGetOsnapPoints (
+	virtual Acad::ErrorStatus subGetOsnapPoints(
 		AcDb::OsnapMode osnapMode,
 		Adesk::GsMarker gsSelectionMark,
-		const AcGePoint3d &pickPoint,
-		const AcGePoint3d &lastPoint,
-		const AcGeMatrix3d &viewXform,
-		AcGePoint3dArray &snapPoints,
-		AcDbIntArray &geomIds) const ;
-	virtual Acad::ErrorStatus subGetOsnapPoints (
+		const AcGePoint3d& pickPoint,
+		const AcGePoint3d& lastPoint,
+		const AcGeMatrix3d& viewXform,
+		AcGePoint3dArray& snapPoints,
+		AcDbIntArray& geomIds) const;
+	virtual Acad::ErrorStatus subGetOsnapPoints(
 		AcDb::OsnapMode osnapMode,
 		Adesk::GsMarker gsSelectionMark,
-		const AcGePoint3d &pickPoint,
-		const AcGePoint3d &lastPoint,
-		const AcGeMatrix3d &viewXform,
-		AcGePoint3dArray &snapPoints,
-		AcDbIntArray &geomIds,
-		const AcGeMatrix3d &insertionMat) const ;
+		const AcGePoint3d& pickPoint,
+		const AcGePoint3d& lastPoint,
+		const AcGeMatrix3d& viewXform,
+		AcGePoint3dArray& snapPoints,
+		AcDbIntArray& geomIds,
+		const AcGeMatrix3d& insertionMat) const;
 
 	//- Grip points protocol
-	virtual Acad::ErrorStatus subGetGripPoints (AcGePoint3dArray &gripPoints, AcDbIntArray &osnapModes, AcDbIntArray &geomIds) const ;
-	virtual Acad::ErrorStatus subMoveGripPointsAt (const AcDbIntArray &indices, const AcGeVector3d &offset) ;
-	virtual Acad::ErrorStatus subGetGripPoints (
-		AcDbGripDataPtrArray &grips, const double curViewUnitSize, const int gripSize, 
-		const AcGeVector3d &curViewDir, const int bitflags) const ;
-	virtual Acad::ErrorStatus subMoveGripPointsAt (const AcDbVoidPtrArray &gripAppData, const AcGeVector3d &offset, const int bitflags) ;
+	virtual Acad::ErrorStatus subGetGripPoints(AcGePoint3dArray& gripPoints, AcDbIntArray& osnapModes, AcDbIntArray& geomIds) const;
+	virtual Acad::ErrorStatus subMoveGripPointsAt(const AcDbIntArray& indices, const AcGeVector3d& offset);
+	virtual Acad::ErrorStatus subGetGripPoints(
+		AcDbGripDataPtrArray& grips, const double curViewUnitSize, const int gripSize,
+		const AcGeVector3d& curViewDir, const int bitflags) const;
+	virtual Acad::ErrorStatus subMoveGripPointsAt(const AcDbVoidPtrArray& gripAppData, const AcGeVector3d& offset, const int bitflags);
 private:
 
 	// save to dwg files.
 	AcGePoint3dArray center_vertex_;				// store  vertexes of beam.
-	AcGePoint3dArray top_offset_vertex_;
-	AcGePoint3dArray bottom_offset_vertex_;
-
 	Adesk::Int32 center_num_;
-	Adesk::Int32 top_num_;
-	Adesk::Int32 bottom_num_;
+	double line_width_;
 
-	std::vector<Adesk::Int32> line_mode_;
-
+	std::vector<DrawSegment> line_seg;
 public:
 	void SetCenterVertex(const AcGePoint3dArray& center_vertex);
-	void UpdateOffsetLine(const double& distance);
-	void SetLineMode(const std::vector<Adesk::Int32>& line_mode);
-} ;
+	void SetLineWidth(double line_width) { line_width_ = line_width; }
+	void GenerateOffsetLine(AcGePoint3dArray& top_line, AcGePoint3dArray& bottom_line);
+	void GenerateOriginalDrawSegment();
+	bool ModifyDrawSegmentAt(int index, CPolaLine::LineType type);
+	void CheckCollision(CPolaLine& other);
+	int GetSegmentIndex(const AcGePoint3d point);
+};
 
 #ifdef CUSTOMENTITYINTERSECTION_MODULE
 ACDB_REGISTER_OBJECT_ENTRY_AUTO(CPolaLine)

@@ -61,6 +61,14 @@ Acad::ErrorStatus CPolaLine::dwgOutFields(AcDbDwgFiler * pFiler) const {
 	//----- Output params
 	//.....
 
+	es = pFiler->writeItem(center_num_);
+	es = pFiler->writeItem(line_width_);
+
+	for (int i = 0;i < center_num_;i++)
+	{
+		es = pFiler->writeItem(center_vertex_.at(i));
+	}
+
 	return (pFiler->filerStatus());
 }
 
@@ -82,7 +90,13 @@ Acad::ErrorStatus CPolaLine::dwgInFields(AcDbDwgFiler * pFiler) {
 	//	return (Acad::eMakeMeProxy) ;
 	//----- Read params
 	//.....
+	es = pFiler->readItem(&center_num_);
+	es = pFiler->readItem(&line_width_);
 
+	for (int i = 0;i < center_num_;i++)
+	{
+		es = pFiler->readItem(&center_vertex_.at(i));
+	}
 	return (pFiler->filerStatus());
 }
 
@@ -90,26 +104,8 @@ Acad::ErrorStatus CPolaLine::dwgInFields(AcDbDwgFiler * pFiler) {
 //----- AcDbEntity protocols
 Adesk::Boolean CPolaLine::subWorldDraw(AcGiWorldDraw * mode) {
 	assertReadEnabled();
-
-	for (int i = 0;i < top_num_;i++)
-	{
-		if (line_mode_.at(i) == -1)
-			continue;
-		AcDbLine temp_top_seg(top_offset_vertex_.at(i), top_offset_vertex_.at(i + 1));
-		temp_top_seg.worldDraw(mode);
-	}
-	for (int i = 0;i < bottom_num_;i++)
-	{
-		if (line_mode_.at(i) == -1)
-			continue;
-		AcDbLine temp_bot_seg(bottom_offset_vertex_.at(i), bottom_offset_vertex_.at(i + 1));
-		temp_bot_seg.worldDraw(mode);
-	}
-	for (int i = 0;i < center_num_;i++)
-	{
-		AcDbLine temp_cen_seg(center_vertex_.at(i), center_vertex_.at(i + 1));
-		temp_cen_seg.worldDraw(mode);
-	}
+	AcGePoint3dArray top, bot;
+	GenerateOffsetLine(top, bot);
 
 	return (AcDbEntity::subWorldDraw(mode));
 }
@@ -205,18 +201,131 @@ void CPolaLine::SetCenterVertex(const AcGePoint3dArray & center_vertex)
 	center_num_ = center_vertex_.length();
 }
 
-void CPolaLine::UpdateOffsetLine(const double& distance)
+void CPolaLine::GenerateOffsetLine(AcGePoint3dArray & top_line, AcGePoint3dArray & bottom_line)
 {
-	assertWriteEnabled();
-	top_offset_vertex_.removeAll();
-	bottom_offset_vertex_.removeAll();
-	AcGePoint3dArray temp_top, temp_bottom;
-	BasicTools::OffsetPolyLine(top_offset_vertex_, distance, temp_top);
-	BasicTools::OffsetPolyLine(bottom_offset_vertex_, -distance, temp_bottom);
-	for (int i = 0; i < temp_top.length(); i++)
+	top_line.removeAll();
+	bottom_line.removeAll();
+
+	for (int i = 0; i < center_vertex_.length(); ++i)
 	{
-		top_offset_vertex_.append(temp_top.at(i));
-		bottom_offset_vertex_.append(temp_bottom.at(i));
+		if (i == 0 || i == center_vertex_.length() - 1)
+		{
+			AcGeVector3d dir;
+			if (i == 0)
+				dir = center_vertex_[1] - center_vertex_[0];
+			else
+				dir = center_vertex_[i] - center_vertex_[i - 1];
+
+			AcGeVector3d perp = dir.perpVector().normal() * (line_width_ / 2);
+			top_line.append(center_vertex_[i] + perp);
+			bottom_line.append(center_vertex_[i] - perp);
+		}
+		else
+		{
+			AcGeVector3d dirPrev = (center_vertex_[i] - center_vertex_[i - 1]).normalize();
+			AcGeVector3d dirNext = (center_vertex_[i + 1] - center_vertex_[i]).normalize();
+			AcGeVector3d bisector = (dirPrev + dirNext).normalize();
+			double angleFactor = 1.0 / sin(dirPrev.angleTo(bisector));
+			AcGeVector3d offset = bisector.perpVector().normal() * (line_width_ / 2 * angleFactor);
+
+			top_line.append(center_vertex_[i] + offset);
+			bottom_line.append(center_vertex_[i] - offset);
+		}
 	}
+
+}
+
+void CPolaLine::GenerateOriginalDrawSegment()
+{
+	line_seg.clear();
+	int cnt = center_vertex_.length();
+	AcGePoint3dArray top, bot;
+	GenerateOffsetLine(top, bot);
+	for (int i = 0;i < cnt - 1;i++)
+	{
+		DrawSegment seg;
+		seg.top_start_point = top.at(i);
+		seg.top_end_point = top.at(i + 1);
+		seg.bottom_start_point = bot.at(i);
+		seg.bottom_end_point = bot.at(i + 1);
+
+		seg.type = LineType::SOLID;
+	}
+}
+
+bool CPolaLine::ModifyDrawSegmentAt(int index, CPolaLine::LineType type)
+{
+	if (index < 0 || index >= line_seg.size())
+		return false;
+
+	line_seg.at(index).type = type;
+	return true;
+}
+
+void CPolaLine::CheckCollision(CPolaLine & other)
+{
+	GenerateOriginalDrawSegment();
+	other.GenerateOriginalDrawSegment();
+
+	for (auto it_this = line_seg.begin();it_this != line_seg.end();it_this++)
+	{
+		for (auto it_other = other.line_seg.begin();it_other != other.line_seg.end();it_other++)
+		{
+			AcGeLine3d this_top(it_this->top_start_point, it_this->top_end_point);
+			AcGeLine3d this_bot(it_this->bottom_start_point, it_this->bottom_end_point);
+
+			AcGeLine3d other_top(it_other->top_start_point, it_other->top_end_point);
+			AcGeLine3d other_bot(it_other->bottom_start_point, it_other->bottom_end_point);
+
+			AcGePoint3d top_start_point;
+			if (!this_top.intersectWith(other_top, top_start_point))
+				continue;
+			AcGePoint3d bot_end_point;
+			if (!this_top.intersectWith(other_bot, bot_end_point))
+				continue;
+		}
+	}
+}
+
+int CPolaLine::GetSegmentIndex(const AcGePoint3d point)
+{
+	if (center_vertex_.length() < 2)
+		return -1;
+	double min_distance = DBL_MAX;
+	int closest_segment_index = -1;
+
+	for (int i = 0; i < center_vertex_.length() - 1; i++)
+	{
+		AcGePoint3d start_point = center_vertex_[i];
+		AcGePoint3d end_point = center_vertex_[i + 1];
+
+		AcGeLineSeg3d segment(start_point, end_point);
+
+		AcGePoint3d closest_point;
+		closest_point = segment.closestPointTo(point);
+
+		if (segment.isOn(closest_point, AcGeContext::gTol))
+		{
+			double dist = point.distanceTo(closest_point);
+			if (dist < min_distance)
+			{
+				min_distance = dist;
+				closest_segment_index = i;
+			}
+		}
+	}
+	if (closest_segment_index == -1)
+	{
+		for (int i = 0; i < center_vertex_.length(); i++)
+		{
+			double dist = point.distanceTo(center_vertex_[i]);
+			if (dist < min_distance)
+			{
+				min_distance = dist;
+				closest_segment_index = (i == center_vertex_.length() - 1) ? i - 1 : i;
+			}
+		}
+	}
+	return closest_segment_index;
 }
 

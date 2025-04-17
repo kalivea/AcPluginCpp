@@ -28,6 +28,11 @@ AcGePoint3d BasicTools::GetMidPoint(const AcGePoint3d& start_point, const AcGePo
 {
 	return AcGePoint3d((start_point.x + end_point.x) / 2.0, (start_point.y + end_point.y) / 2.0, (start_point.z + end_point.z) / 2.0);
 }
+
+AcGePoint3d BasicTools::GetMidPoint(const AcDbExtents& extents)
+{
+	return GetMidPoint(extents.minPoint(), extents.maxPoint());
+}
 /// <summary>
 /// Determine whether three points are collinear.
 /// </summary>
@@ -792,11 +797,28 @@ bool BasicTools::IsBlockExist(const TCHAR* block_name)
 	}
 }
 
-AcDbObjectId BasicTools::GetBlockId(const TCHAR* block_name)
+//AcDbObjectId BasicTools::GetBlockId(const TCHAR* block_name)
+//{
+//	AcDbBlockTable* block_table = nullptr;
+//	AcDbObjectId block_object_id = AcDbObjectId::kNull;
+//	acdbHostApplicationServices()->workingDatabase()->getBlockTable(block_table, OpenMode::kForRead);
+//	if (IsBlockExist(block_name))
+//	{
+//		block_table->getAt(block_name, block_object_id);
+//		block_table->close();
+//	}
+//	else
+//	{
+//		block_table->close();
+//	}
+//	return block_object_id;
+//}
+
+AcDbObjectId BasicTools::GetBlockId(const TCHAR* block_name, AcDbDatabase* database)
 {
 	AcDbBlockTable* block_table = nullptr;
 	AcDbObjectId block_object_id = AcDbObjectId::kNull;
-	acdbHostApplicationServices()->workingDatabase()->getBlockTable(block_table, OpenMode::kForRead);
+	database->getBlockTable(block_table, OpenMode::kForRead);
 	if (IsBlockExist(block_name))
 	{
 		block_table->getAt(block_name, block_object_id);
@@ -807,4 +829,82 @@ AcDbObjectId BasicTools::GetBlockId(const TCHAR* block_name)
 		block_table->close();
 	}
 	return block_object_id;
+}
+
+bool BasicTools::SetBlockInsertPointToCenter(AcDbObjectId blockDefId)
+{
+	AcDbBlockTableRecord* block_def = nullptr;
+	if (acdbOpenObject(block_def, blockDefId, AcDb::kForWrite) != Acad::eOk)
+		return false;
+
+	AcDbExtents block_extents;
+	bool hasExtents = false;
+
+	AcDbBlockTableRecordIterator* block_table_record_iterator = nullptr;
+	block_def->newIterator(block_table_record_iterator);
+
+	for (block_table_record_iterator->start(); !block_table_record_iterator->done(); block_table_record_iterator->step())
+	{
+		AcDbEntity* entity = nullptr;
+		if (block_table_record_iterator->getEntity(entity, AcDb::kForRead) == Acad::eOk)
+		{
+			AcDbExtents entity_extents;
+			if (entity->getGeomExtents(entity_extents) == Acad::eOk)
+			{
+				if (!hasExtents)
+				{
+					block_extents = entity_extents;
+					hasExtents = true;
+				}
+				else
+				{
+					block_extents.addExt(entity_extents);
+				}
+			}
+			entity->close();
+		}
+	}
+
+	if (!hasExtents)
+	{
+		delete block_table_record_iterator;
+		block_def->close();
+		return false;
+	}
+
+	AcGePoint3d center_point = GetMidPoint(block_extents);
+
+	delete block_table_record_iterator;
+	block_def->newIterator(block_table_record_iterator);
+
+	for (block_table_record_iterator->start(); !block_table_record_iterator->done(); block_table_record_iterator->step())
+	{
+		AcDbEntity* entity = nullptr;
+		if (block_table_record_iterator->getEntity(entity, AcDb::kForWrite) == Acad::eOk)
+		{
+			AcGeMatrix3d xform_matrix;
+			xform_matrix.setTranslation(-center_point.asVector());
+			entity->transformBy(xform_matrix);
+			entity->close();
+		}
+	}
+
+	delete block_table_record_iterator;
+	block_def->close();
+	return true;
+}
+
+AcDbObjectId BasicTools::InsertBlockRef(AcDbObjectId block_def_id, const AcGePoint3d& insert_point, double scale, double rotation)
+{
+	AcDbBlockReference* block_ref = new AcDbBlockReference(insert_point, block_def_id);
+	block_ref->setRotation(rotation);
+	SetScale(block_ref, scale);
+}
+
+void BasicTools::SetScale(AcDbBlockReference* block_ref, double scale)
+{
+	if (block_ref == nullptr)
+		throw;
+	AcGeScale3d block_scale(scale, scale, scale);
+	block_ref->setScaleFactors(block_scale);
 }

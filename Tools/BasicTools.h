@@ -18,6 +18,7 @@ public:
 
 	// math tools: Geometry
 	static AcGePoint3d GetMidPoint(const AcGePoint3d& start_point, const AcGePoint3d& end_point);
+	static AcGePoint3d GetMidPoint(const AcDbExtents& extents);
 	static bool IsCollinearPoint(const AcGePoint3d& point1, const AcGePoint3d& point2, const AcGePoint3d& point3);
 	static AcGePoint3d AdsPointToPoint3d(const ads_point& ads_point);
 	static AcGePoint2d Point3dToPoint2d(const AcGePoint3d& point3d);
@@ -75,8 +76,11 @@ public:
 
 	// block tools
 	static bool IsBlockExist(const TCHAR* block_name);
-	static AcDbObjectId GetBlockId(const TCHAR* block_name);
-
+	//static AcDbObjectId GetBlockId(const TCHAR* block_name);
+	static AcDbObjectId GetBlockId(const TCHAR* block_name, AcDbDatabase* database = acdbHostApplicationServices()->workingDatabase());
+	static bool SetBlockInsertPointToCenter(AcDbObjectId blockDefId);
+	static AcDbObjectId InsertBlockRef(AcDbObjectId block_def_id, const AcGePoint3d& insert_point, double scale, double rotation);
+	static void SetScale(AcDbBlockReference* block_ref, double scale);
 	// database tools
 	static AcDbObjectIdArray GetAllEntityIdsInDatabase(const TCHAR* layer_name = NULL, AcDbDatabase* database = acdbHostApplicationServices()->workingDatabase());
 

@@ -1,8 +1,8 @@
 #include "stdafx.h"
-#include "DwgTools.h"
-#include "BasicTools.h"
+#include "EditDwg.h"
+#include "EditBlock.h"
 
-AcDbObjectId DwgTools::CopyBlockDefFromOtherDwg(const TCHAR* file_name, const TCHAR* block_def_name)
+AcDbObjectId EditDwg::CopyBlockDefFromOtherDwg(const TCHAR* file_name, const TCHAR* block_def_name)
 {
 	AcDbObjectId block_ref_id = AcDbObjectId::kNull;
 
@@ -77,11 +77,11 @@ AcDbObjectId DwgTools::CopyBlockDefFromOtherDwg(const TCHAR* file_name, const TC
 	return block_ref_id;
 }
 
-AcDbObjectId DwgTools::InsertDwgBlockDef(TCHAR* file_name, TCHAR* block_name, bool overwrite, AcDbDatabase* database)
+AcDbObjectId EditDwg::InsertDwgAsBlockDef(const TCHAR* file_name, const TCHAR* block_name, bool overwrite, AcDbDatabase* database)
 {
 	try
 	{
-		AcDbObjectId block_def_id = BasicTools::GetBlockId(block_name, database);
+		AcDbObjectId block_def_id = EditBlock::GetBlockId(block_name, database);
 
 		if (!block_def_id.isNull() && overwrite)
 		{
@@ -121,7 +121,7 @@ AcDbObjectId DwgTools::InsertDwgBlockDef(TCHAR* file_name, TCHAR* block_name, bo
 			}
 
 
-			if (!BasicTools::SetBlockInsertPointToCenter(block_def_id))
+			if (!EditBlock::SetBlockInsertPointToCenter(block_def_id))
 			{
 				acutPrintf(_T("Failed to set block insert point to center for '%s'"), block_name);
 			}

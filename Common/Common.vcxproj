@@ -92,6 +92,8 @@
     <ClCompile Include="AddToModelSpace.cpp" />
     <ClCompile Include="Common.cpp" />
     <ClCompile Include="DrawEntity.cpp" />
+    <ClCompile Include="EditBlock.cpp" />
+    <ClCompile Include="EditDwg.cpp" />
     <ClCompile Include="EditEntity.cpp" />
     <ClCompile Include="StdAfx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -102,6 +104,8 @@
     <ClInclude Include="AddToModelSpace.h" />
     <ClInclude Include="CommonDef.h" />
     <ClInclude Include="DrawEntity.h" />
+    <ClInclude Include="EditBlock.h" />
+    <ClInclude Include="EditDwg.h" />
     <ClInclude Include="EditEntity.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="StdAfx.h" />

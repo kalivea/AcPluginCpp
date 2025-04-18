@@ -141,7 +141,7 @@ void Grid::SetAttribute(AcDbBlockReference* block_reference, const TCHAR* tag, c
 
 AcDbObjectId Grid::InsertVerticalAxis(const AcGePoint3d& insert_point)
 {
-	AcDbBlockReference* block_reference = new AcDbBlockReference(insert_point, BasicTools::GetBlockId(_T("grid_v")));
+	AcDbBlockReference* block_reference = new AcDbBlockReference(insert_point, EditBlock::GetBlockId(_T("grid_v")));
 	AcDbBlockTableRecord* block_table_record = nullptr;
 	acdbOpenObject(block_table_record, block_reference->blockTableRecord());
 	if (block_table_record->hasAttributeDefinitions())
@@ -169,7 +169,7 @@ AcDbObjectId Grid::InsertVerticalAxis(const AcGePoint3d& insert_point)
 
 AcDbObjectId Grid::InsertHorizonAxis(const AcGePoint3d& insert_point)
 {
-	AcDbBlockReference* block_reference = new AcDbBlockReference(insert_point, BasicTools::GetBlockId(_T("grid_h")));
+	AcDbBlockReference* block_reference = new AcDbBlockReference(insert_point, EditBlock::GetBlockId(_T("grid_h")));
 	AcDbBlockTableRecord* block_table_record = nullptr;
 	acdbOpenObject(block_table_record, block_reference->blockTableRecord());
 	if (block_table_record->hasAttributeDefinitions())

@@ -74,18 +74,13 @@ public:
 	static AcGePoint3dArray DistanceToPointArrayX(const AcGePoint3d& first_point, const double distance[], const int& cnt);
 	static AcGePoint3dArray DistanceToPointArrayY(const AcGePoint3d& first_point, const double distance[], const int& cnt);
 
-	// block tools
-	static bool IsBlockExist(const TCHAR* block_name);
-	//static AcDbObjectId GetBlockId(const TCHAR* block_name);
-	static AcDbObjectId GetBlockId(const TCHAR* block_name, AcDbDatabase* database = acdbHostApplicationServices()->workingDatabase());
-	static bool SetBlockInsertPointToCenter(AcDbObjectId blockDefId);
-	static AcDbObjectId InsertBlockRef(AcDbObjectId block_def_id, const AcGePoint3d& insert_point, double scale, double rotation);
-	static void SetScale(AcDbBlockReference* block_ref, double scale);
-	// database tools
 	static AcDbObjectIdArray GetAllEntityIdsInDatabase(const TCHAR* layer_name = NULL, AcDbDatabase* database = acdbHostApplicationServices()->workingDatabase());
 
 	// IRM tools
 	static std::vector<int> CalculateReinforcement(int beam_width, int bar_diameter, int bars_num, int cover_thickness, int stirrup_diameter);
 	static int CalculateMaxBarsPerRow(int beam_width, int bar_diameter, int cover_thickness, int stirrup_diameter, int min_top_spacing, double top_spacing_factor);
 	static int CalculateMaxBars(int beam_width, int bar_diameter, int cover_thickness, int stirrup_diameter, int min_top_spacing, double top_spacing_factor);
+
+	// string tools
+	static std::basic_string<TCHAR> EscapeBackslashes(const TCHAR* path);
 };

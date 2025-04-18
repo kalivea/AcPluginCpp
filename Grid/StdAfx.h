@@ -75,6 +75,6 @@
 #include "BasicTools.h"
 #include "StyleTools.h"
 #include "AddToModelSpace.h"
-
+#include "EditBlock.h"
 #define POLA_DLL_GRID
 #include "GridDef.h"

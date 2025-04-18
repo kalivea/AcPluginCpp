@@ -30,9 +30,6 @@
     <ClCompile Include="BasicTools.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DwgTools.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="StdAfx.h">
@@ -48,9 +45,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ToolsDef.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DwgTools.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

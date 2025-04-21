@@ -245,15 +245,14 @@ void CPolaIRMUi::OnBnClickedButtonSelBeam()
 	beam_height.Format(_T("%d"), static_cast<int>(beam_h));
 	CString beam_segment_num;
 	beam_segment_num.Format(_T("(%d)"), beam_seg_num);
-	insert_point = beam->getHorizontalMidPoint() + AcGeVector3d(0, beam_b / 4.0, 0);
-
+	insert_point = beam->getFirstSegmentMidPoint();
 	AcGePoint3dArray temp_array;
 	if (BeamTools::GetAllPillarCenterInBeam(beam, temp_array))
 	{
 		column_end_addition = temp_array;
 	}
 
-	if (BeamTools::GetBeamSegmentMidPoint(beam, temp_array))
+	if (BeamTools::GetAllBeamSegmentMidPoint(beam, temp_array))
 	{
 		beam_mid_addition = temp_array;
 	}
@@ -338,7 +337,9 @@ void CPolaIRMUi::OnBnClickedButtonIrmAddition()
 {
 	AcGeVector3d offset_vector_column;
 	AcGeVector3d offset_vecror_beam;
-	switch (beam_type)
+	int selected_radio_id = -1;
+	selected_radio_id = GetCheckedRadioButton(IDC_RADIO_TOP, IDC_RADIO_BOTTOM);
+	switch (selected_radio_id)
 	{
 	case IDC_RADIO_TOP:
 		offset_vector_column = AcGeVector3d(0, beam_b / 2.0 + 200, 0);

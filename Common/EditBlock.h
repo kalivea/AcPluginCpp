@@ -4,7 +4,6 @@
 class POLADLL_COMMON_API EditBlock
 {
 public:
-
 	static bool IsBlockExist(const TCHAR* block_name, AcDbDatabase* database = acdbHostApplicationServices()->workingDatabase());
 	static AcDbObjectId GetBlockId(const TCHAR* block_name, AcDbDatabase* database = acdbHostApplicationServices()->workingDatabase());
 	static bool SetBlockInsertPointToCenter(AcDbObjectId blockDefId);

@@ -9,7 +9,7 @@ class POLADLL_BEAM_TOOLS_API BeamTools
 {
 public:
 	static bool IsPointInsideBeam(const CPolaCustomBeam* beam, const AcGePoint3d& point, const AcGeTol& tol = AcGeContext::gTol);
-	static bool GetBeamSegmentMidPoint(const CPolaCustomBeam* beam, AcGePoint3dArray& beam_seg_mid);
+	static bool GetAllBeamSegmentMidPoint(const CPolaCustomBeam* beam, AcGePoint3dArray& beam_seg_mid);
 	static bool GetAllPillarCenterInBeam(const CPolaCustomBeam* beam, AcGePoint3dArray& pillar_center);
 	static bool GetAllPillarInBeam(const CPolaCustomBeam* beam, AcDbObjectIdArray& pillar_ids);
 private:

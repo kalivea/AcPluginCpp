@@ -531,6 +531,11 @@ AcGePoint3d CPolaCustomBeam::getHorizontalMidPoint() const
 	return beam_vertexes_[0];
 }
 
+AcGePoint3d CPolaCustomBeam::getFirstSegmentMidPoint() const
+{
+	return BasicTools::GetMidPoint(beam_vertexes_.at(0), beam_vertexes_.at(1));
+}
+
 void CPolaCustomBeam::setBeamVertexes(const AcGePoint3dArray & beam_vertexes)
 {
 	assertWriteEnabled();
@@ -1186,14 +1191,18 @@ AcDbObjectId CPolaCustomBeam::addBeamSnInfo()
 {
 	if (beam_vertexes_.isEmpty())
 		return AcDbObjectId::kNull;
-	AcGePoint3d insert_point = AcGePoint3d(getHorizontalMidPoint().x - 3000, getHorizontalMidPoint().y + beam_b_ / 2 + 500, 0);
+	int insert_seg_index = GetSegmentIndex(getHorizontalMidPoint());
+	AcGeVector3d insert_point_offset(0, beam_b_, 0);
+	AcGePoint3d insert_point = BasicTools::GetMidPoint(beam_vertexes_.at(insert_seg_index - 1), beam_vertexes_.at(insert_seg_index)) + insert_point_offset;
 	std::wstring info;
 	std::wstringstream info_stream;
 
 	info_stream << _T("KL") << beam_property_ << _T(" ") << static_cast<int>(beam_b_) << _T("*") << static_cast<int>(beam_h_);
 	info = info_stream.str();
 
-	return DrawEntity::AddText(insert_point, info.c_str(), StyleTools::InitTextStyle(), 450);
+	AcDbObjectId text_id = DrawEntity::AddText(insert_point, info.c_str(), StyleTools::InitTextStyle(), 450);
+	EditEntity::SetTextHorzMode(text_id, AcDb::TextHorzMode::kTextCenter);
+	return text_id;
 }
 
 Acad::ErrorStatus CPolaCustomBeam::InsertVertex(const AcGePoint3d & insert_point)

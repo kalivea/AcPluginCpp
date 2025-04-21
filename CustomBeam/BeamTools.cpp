@@ -95,7 +95,7 @@ bool BeamTools::IsPointInsideBeam(const CPolaCustomBeam* beam, const AcGePoint3d
 	return false;
 }
 
-bool BeamTools::GetBeamSegmentMidPoint(const CPolaCustomBeam* beam, AcGePoint3dArray& beam_seg_mid)
+bool BeamTools::GetAllBeamSegmentMidPoint(const CPolaCustomBeam* beam, AcGePoint3dArray& beam_seg_mid)
 {
 	beam_seg_mid.removeAll();
 	AcGePoint3dArray mid_point;

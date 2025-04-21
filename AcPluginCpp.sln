@@ -88,6 +88,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CustomEntityIntersection", 
 		{F87873B0-2B5D-4D52-8FD5-BE1CDC50B2E3} = {F87873B0-2B5D-4D52-8FD5-BE1CDC50B2E3}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "InsertStandardDwg", "InsertStandardDwg\InsertStandardDwg.vcxproj", "{A9EA7E29-84E1-4DC8-A94C-A891ACC8D8F6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -146,6 +148,10 @@ Global
 		{3E60FEFC-1980-4B94-84E4-1CEB46B8B1A6}.Debug|x64.Build.0 = Debug|x64
 		{3E60FEFC-1980-4B94-84E4-1CEB46B8B1A6}.Release|x64.ActiveCfg = Release|x64
 		{3E60FEFC-1980-4B94-84E4-1CEB46B8B1A6}.Release|x64.Build.0 = Release|x64
+		{A9EA7E29-84E1-4DC8-A94C-A891ACC8D8F6}.Debug|x64.ActiveCfg = Debug|x64
+		{A9EA7E29-84E1-4DC8-A94C-A891ACC8D8F6}.Debug|x64.Build.0 = Debug|x64
+		{A9EA7E29-84E1-4DC8-A94C-A891ACC8D8F6}.Release|x64.ActiveCfg = Release|x64
+		{A9EA7E29-84E1-4DC8-A94C-A891ACC8D8F6}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

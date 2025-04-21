@@ -133,6 +133,7 @@ public:
 	Adesk::Int32 getBeamSegmentNum() const;
 	bool IsBeamClosed() const;
 	AcGePoint3d getHorizontalMidPoint() const;
+	AcGePoint3d getFirstSegmentMidPoint() const;
 	//           set functions
 public:
 	void setBeamVertexes(const AcGePoint3dArray& beam_vertexes);

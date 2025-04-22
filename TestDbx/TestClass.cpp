@@ -4,9 +4,6 @@
 #include "PolaIRM.h"
 #include "EditDwg.h"
 
-#include <Windows.h>
-#include <commdlg.h>
-#include <tchar.h>
 void TestClass::TestClassInit()
 {
 	acedRegCmds->addCommand(_T("tmpGroupName"), _T("TestClass"), _T("TestClass"), ACRX_CMD_MODAL, Test);
@@ -19,7 +16,7 @@ void TestClass::Test()
 {
 	OPENFILENAME open_file_name;
 	TCHAR file_path[MAX_PATH] = { 0 };
-
+	TCHAR* default_path = _T("C:\\Users\\Polaris\\Desktop\\7-Í¼Ö½Ä£¿é");
 	ZeroMemory(&open_file_name, sizeof(open_file_name));
 	open_file_name.lStructSize = sizeof(open_file_name);
 	open_file_name.hwndOwner = NULL;
@@ -27,6 +24,7 @@ void TestClass::Test()
 	open_file_name.nMaxFile = sizeof(file_path) / sizeof(*file_path);
 	open_file_name.lpstrFilter = _T("All Files\0*.*\0Text Files\0*.txt\0");
 	open_file_name.nFilterIndex = 1;
+	open_file_name.lpstrInitialDir = default_path;
 	open_file_name.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_EXPLORER;
 
 	if (GetOpenFileName(&open_file_name))

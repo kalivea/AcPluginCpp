@@ -20,25 +20,29 @@
 //
 
 //-----------------------------------------------------------------------------
-//----- InsertUi.h : Declaration of the CInsertUi
-//-----------------------------------------------------------------------------
+//----- SheetCAC.h : Declaration of the CSheetCAC
 #pragma once
 
 //-----------------------------------------------------------------------------
-#include "adui.h"
-#include "resource.h"
+#include "acui.h"
+
 //-----------------------------------------------------------------------------
-class CInsertUi : public CAdUiBaseDialog {
-	DECLARE_DYNAMIC (CInsertUi)
+class CSheetCAC : public CAcUiTabChildDialog {
+	DECLARE_DYNAMIC (CSheetCAC)
 
 public:
-	CInsertUi (CWnd *pParent =NULL, HINSTANCE hInstance =NULL) ;
+	CSheetCAC (CWnd *pParent =NULL, HINSTANCE hInstance =NULL) ;
 
-	enum { IDD = IDD_INSERTUI} ;
+	enum { IDD = IDD_DIALOG_CAC};
+
+public:
+	//----- Called when this tab is activated.
+	virtual void OnTabActivation (BOOL bActivate) ;
+	//----- Called when a tab is de-activated and another is about to be activated. 
+	virtual BOOL OnTabChanging () ;
 
 protected:
 	virtual void DoDataExchange (CDataExchange *pDX) ;
-	afx_msg LRESULT OnAcadKeepFocus (WPARAM, LPARAM) ;
 
 	DECLARE_MESSAGE_MAP()
 } ;

@@ -1,4 +1,4 @@
-// (C) Copyright 2002-2007 by Autodesk, Inc. 
+// (C) Copyright 2002-2012 by Autodesk, Inc. 
 //
 // Permission to use, copy, modify, and distribute this software in
 // object code form for any purpose and without fee is hereby granted, 
@@ -20,31 +20,8 @@
 //
 
 //-----------------------------------------------------------------------------
-//----- InsertUi.cpp : Implementation of CInsertUi
+//------ StdAfx.cpp : source file that includes just the standard includes
+//------  StdAfx.pch will be the pre-compiled header
+//------  StdAfx.obj will contain the pre-compiled type information
 //-----------------------------------------------------------------------------
 #include "StdAfx.h"
-#include "resource.h"
-#include "InsertUi.h"
-
-//-----------------------------------------------------------------------------
-IMPLEMENT_DYNAMIC (CInsertUi, CAdUiBaseDialog)
-
-BEGIN_MESSAGE_MAP(CInsertUi, CAdUiBaseDialog)
-	ON_MESSAGE(WM_ACAD_KEEPFOCUS, OnAcadKeepFocus)
-END_MESSAGE_MAP()
-
-//-----------------------------------------------------------------------------
-CInsertUi::CInsertUi (CWnd *pParent /*=NULL*/, HINSTANCE hInstance /*=NULL*/) : CAdUiBaseDialog (CInsertUi::IDD, pParent, hInstance) {
-}
-
-//-----------------------------------------------------------------------------
-void CInsertUi::DoDataExchange (CDataExchange *pDX) {
-	CAdUiBaseDialog::DoDataExchange (pDX) ;
-}
-
-//-----------------------------------------------------------------------------
-//----- Needed for modeless dialogs to keep focus.
-//----- Return FALSE to not keep the focus, return TRUE to keep the focus
-LRESULT CInsertUi::OnAcadKeepFocus (WPARAM, LPARAM) {
-	return (TRUE) ;
-}

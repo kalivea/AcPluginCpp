@@ -20,7 +20,7 @@
 //
 
 //-----------------------------------------------------------------------------
-//- InsertStandardDwg.cpp : Initialization functions
+//- InsertDwg.cpp : Initialization functions
 //-----------------------------------------------------------------------------
 #include "StdAfx.h"
 #include "resource.h"
@@ -28,7 +28,7 @@
 
 //-----------------------------------------------------------------------------
 //- Define the sole extension module object.
-AC_IMPLEMENT_EXTENSION_MODULE(InsertStandardDwgDLL)
+AC_IMPLEMENT_EXTENSION_MODULE(InsertDwgDLL)
 //- Now you can use the CAcModuleResourceOverride class in
 //- your application to switch to the correct resource instance.
 //- Please see the ObjectARX Documentation for more details
@@ -42,10 +42,10 @@ BOOL WINAPI DllMain (HINSTANCE hInstance, DWORD dwReason, LPVOID lpReserved) {
 
 	if ( dwReason == DLL_PROCESS_ATTACH ) {
         _hdllInstance =hInstance ;
-		InsertStandardDwgDLL.AttachInstance (hInstance) ;
+		InsertDwgDLL.AttachInstance (hInstance) ;
 		InitAcUiDLL () ;
 	} else if ( dwReason == DLL_PROCESS_DETACH ) {
-		InsertStandardDwgDLL.DetachInstance () ;
+		InsertDwgDLL.DetachInstance () ;
 	}
 	return (TRUE) ;
 }

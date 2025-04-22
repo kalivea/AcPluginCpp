@@ -25,7 +25,7 @@
 //-      but are changed infrequently
 //-----------------------------------------------------------------------------
 #pragma once
-#define INSERTSTANDARDDWG_MODULE
+#define INSERTDWG_MODULE
 
 /*#ifndef
 #define _ALLOW_RTCc_IN_STL
@@ -79,12 +79,6 @@
     //- Declare it as an extern here so that it becomes available in all modules
     extern AcApDataManager<CDocData> DocVars;
 
-#include <Windows.h>
-#include <commdlg.h>
-#include <tchar.h>
-
-#include "EditBlock.h"
-#include "EditDwg.h"
                 #pragma pack(pop)
 
     

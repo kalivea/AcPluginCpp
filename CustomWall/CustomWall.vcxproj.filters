@@ -18,19 +18,10 @@
     <ClCompile Include="StdAfx.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="DocData.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="acrxEntryPoint.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="InsertStandardDwg.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="InsertUi.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="TestClass.cpp">
+    <ClCompile Include="CustomWall.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -38,21 +29,12 @@
     <ClInclude Include="StdAfx.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="DocData.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Resource.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="InsertUi.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="TestClass.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="InsertStandardDwg.rc">
+    <ResourceCompile Include="CustomWall.rc">
       <Filter>资源文件</Filter>
     </ResourceCompile>
   </ItemGroup>

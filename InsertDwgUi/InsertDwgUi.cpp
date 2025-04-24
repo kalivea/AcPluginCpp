@@ -1,4 +1,4 @@
-// (C) Copyright 2002-2007 by Autodesk, Inc. 
+// (C) Copyright 2002-2012 by Autodesk, Inc. 
 //
 // Permission to use, copy, modify, and distribute this software in
 // object code form for any purpose and without fee is hereby granted, 
@@ -20,29 +20,33 @@
 //
 
 //-----------------------------------------------------------------------------
-//----- SheetCAC.h : Declaration of the CSheetCAC
-#pragma once
+//- InsertDwgUi.cpp : Initialization functions
+//-----------------------------------------------------------------------------
+#include "StdAfx.h"
+#include "resource.h"
+#include <afxdllx.h>
 
 //-----------------------------------------------------------------------------
-#include "acui.h"
+//- Define the sole extension module object.
+AC_IMPLEMENT_EXTENSION_MODULE(InsertDwgUiDLL)
+//- Now you can use the CAcModuleResourceOverride class in
+//- your application to switch to the correct resource instance.
+//- Please see the ObjectARX Documentation for more details
 
 //-----------------------------------------------------------------------------
-class CSheetCAC : public CAcUiTabChildDialog {
-	DECLARE_DYNAMIC (CSheetCAC)
+//- DLL Entry Point
+extern "C"
+BOOL WINAPI DllMain (HINSTANCE hInstance, DWORD dwReason, LPVOID lpReserved) {
+	//- Remove this if you use lpReserved
+	UNREFERENCED_PARAMETER(lpReserved) ;
 
-public:
-	CSheetCAC (CWnd *pParent =NULL, HINSTANCE hInstance =NULL) ;
+	if ( dwReason == DLL_PROCESS_ATTACH ) {
+        _hdllInstance =hInstance ;
+		InsertDwgUiDLL.AttachInstance (hInstance) ;
+		InitAcUiDLL () ;
+	} else if ( dwReason == DLL_PROCESS_DETACH ) {
+		InsertDwgUiDLL.DetachInstance () ;
+	}
+	return (TRUE) ;
+}
 
-	enum { IDD = IDD_DIALOG_CAC};
-
-public:
-	//----- Called when this tab is activated.
-	virtual void OnTabActivation (BOOL bActivate) ;
-	//----- Called when a tab is de-activated and another is about to be activated. 
-	virtual BOOL OnTabChanging () ;
-
-protected:
-	virtual void DoDataExchange (CDataExchange *pDX) ;
-
-	DECLARE_MESSAGE_MAP()
-} ;

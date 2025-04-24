@@ -20,25 +20,39 @@
 //
 
 //-----------------------------------------------------------------------------
-//----- OptionSheet.h : Declaration of the COptionSheet
+//----- Shielding.cpp : Implementation of CShielding
 //-----------------------------------------------------------------------------
-#pragma once
+#include "StdAfx.h"
+#include "resource.h"
+#include "Shielding.h"
 
 //-----------------------------------------------------------------------------
-#include "acui.h"
+IMPLEMENT_DYNAMIC (CShielding, CAcUiTabChildDialog)
+
+BEGIN_MESSAGE_MAP(CShielding, CAcUiTabChildDialog)
+END_MESSAGE_MAP()
 
 //-----------------------------------------------------------------------------
-class COptionSheet : public CAcUiTabMainDialog {
-	DECLARE_DYNAMIC (COptionSheet)
+CShielding::CShielding (CWnd *pParent /*=NULL*/, HINSTANCE hInstance /*=NULL*/) : CAcUiTabChildDialog (pParent, hInstance) {
+}
 
-public:
-	COptionSheet (CWnd *pParent =NULL, HINSTANCE hInstance =NULL) ;
+//-----------------------------------------------------------------------------
+void CShielding::DoDataExchange (CDataExchange *pDX) {
+	CAcUiTabChildDialog::DoDataExchange (pDX) ;
+}
 
-	enum { IDD = IDD_OPTION_SHEET} ;
+//-----------------------------------------------------------------------------
+//----- Called when this tab is activated. The default implementation does nothing
+void CShielding::OnTabActivation (BOOL bActivate) {
+	// TODO: Add your code here
+}
 
-protected:
-	virtual void DoDataExchange (CDataExchange *pDX) ;
-	afx_msg LRESULT OnAcadKeepFocus (WPARAM, LPARAM) ;
+//-----------------------------------------------------------------------------
+//----- Called when a tab is de-activated and another is about to be activated. 
+//----- The default implementation returns TRUE, allowing the change. 
+//----- Return FALSE to prevent the tab switch.
+BOOL CShielding::OnTabChanging () {
+	// TODO: Add your code here
 
-	DECLARE_MESSAGE_MAP()
-} ;
+	return (TRUE) ;
+}

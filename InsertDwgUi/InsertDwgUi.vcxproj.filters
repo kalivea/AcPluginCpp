@@ -24,13 +24,25 @@
     <ClCompile Include="acrxEntryPoint.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="InsertDwg.cpp">
+    <ClCompile Include="InsertDwgUi.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="OptionSheet.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="SheetCAC.cpp">
+    <ClCompile Include="CutAndCover.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CoverAndCut.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="UnderCutting.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Shielding.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="TestClass.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -47,12 +59,24 @@
     <ClInclude Include="OptionSheet.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="SheetCAC.h">
+    <ClInclude Include="CutAndCover.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="CoverAndCut.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="UnderCutting.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Shielding.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="TestClass.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="InsertDwg.rc">
+    <ResourceCompile Include="InsertDwgUi.rc">
       <Filter>资源文件</Filter>
     </ResourceCompile>
   </ItemGroup>

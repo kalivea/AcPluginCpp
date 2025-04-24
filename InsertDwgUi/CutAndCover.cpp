@@ -20,30 +20,30 @@
 //
 
 //-----------------------------------------------------------------------------
-//----- SheetCAC.cpp : Implementation of CSheetCAC
+//----- CutAndCover.cpp : Implementation of CCutAndCover
 //-----------------------------------------------------------------------------
 #include "StdAfx.h"
 #include "resource.h"
-#include "SheetCAC.h"
+#include "CutAndCover.h"
 
 //-----------------------------------------------------------------------------
-IMPLEMENT_DYNAMIC (CSheetCAC, CAcUiTabChildDialog)
+IMPLEMENT_DYNAMIC (CCutAndCover, CAcUiTabChildDialog)
 
-BEGIN_MESSAGE_MAP(CSheetCAC, CAcUiTabChildDialog)
+BEGIN_MESSAGE_MAP(CCutAndCover, CAcUiTabChildDialog)
 END_MESSAGE_MAP()
 
 //-----------------------------------------------------------------------------
-CSheetCAC::CSheetCAC (CWnd *pParent /*=NULL*/, HINSTANCE hInstance /*=NULL*/) : CAcUiTabChildDialog (pParent, hInstance) {
+CCutAndCover::CCutAndCover (CWnd *pParent /*=NULL*/, HINSTANCE hInstance /*=NULL*/) : CAcUiTabChildDialog (pParent, hInstance) {
 }
 
 //-----------------------------------------------------------------------------
-void CSheetCAC::DoDataExchange (CDataExchange *pDX) {
+void CCutAndCover::DoDataExchange (CDataExchange *pDX) {
 	CAcUiTabChildDialog::DoDataExchange (pDX) ;
 }
 
 //-----------------------------------------------------------------------------
 //----- Called when this tab is activated. The default implementation does nothing
-void CSheetCAC::OnTabActivation (BOOL bActivate) {
+void CCutAndCover::OnTabActivation (BOOL bActivate) {
 	// TODO: Add your code here
 }
 
@@ -51,7 +51,7 @@ void CSheetCAC::OnTabActivation (BOOL bActivate) {
 //----- Called when a tab is de-activated and another is about to be activated. 
 //----- The default implementation returns TRUE, allowing the change. 
 //----- Return FALSE to prevent the tab switch.
-BOOL CSheetCAC::OnTabChanging () {
+BOOL CCutAndCover::OnTabChanging () {
 	// TODO: Add your code here
 
 	return (TRUE) ;

@@ -20,31 +20,45 @@
 //
 
 //-----------------------------------------------------------------------------
-//----- OptionSheet.cpp : Implementation of COptionSheet
+//----- CoverAndCut.cpp : Implementation of CCoverAndCut
 //-----------------------------------------------------------------------------
 #include "StdAfx.h"
 #include "resource.h"
-#include "OptionSheet.h"
+#include "CoverAndCut.h"
 
 //-----------------------------------------------------------------------------
-IMPLEMENT_DYNAMIC (COptionSheet, CAcUiTabMainDialog)
+IMPLEMENT_DYNAMIC (CCoverAndCut, CAcUiTabChildDialog)
 
-BEGIN_MESSAGE_MAP(COptionSheet, CAcUiTabMainDialog)
-	ON_MESSAGE(WM_ACAD_KEEPFOCUS, OnAcadKeepFocus)
+BEGIN_MESSAGE_MAP(CCoverAndCut, CAcUiTabChildDialog)
+	ON_BN_CLICKED(IDC_BUTTON_DLQ, &CCoverAndCut::OnBnClickedButtonDlq)
 END_MESSAGE_MAP()
 
 //-----------------------------------------------------------------------------
-COptionSheet::COptionSheet (CWnd *pParent /*=NULL*/, HINSTANCE hInstance /*=NULL*/) : CAcUiTabMainDialog (COptionSheet::IDD, pParent, hInstance) {
+CCoverAndCut::CCoverAndCut (CWnd *pParent /*=NULL*/, HINSTANCE hInstance /*=NULL*/) : CAcUiTabChildDialog (pParent, hInstance) {
 }
 
 //-----------------------------------------------------------------------------
-void COptionSheet::DoDataExchange (CDataExchange *pDX) {
-	CAcUiTabMainDialog::DoDataExchange (pDX) ;
+void CCoverAndCut::DoDataExchange (CDataExchange *pDX) {
+	CAcUiTabChildDialog::DoDataExchange (pDX) ;
 }
 
 //-----------------------------------------------------------------------------
-//----- Needed for modeless dialogs to keep focus.
-//----- Return FALSE to not keep the focus, return TRUE to keep the focus
-LRESULT COptionSheet::OnAcadKeepFocus (WPARAM, LPARAM) {
+//----- Called when this tab is activated. The default implementation does nothing
+void CCoverAndCut::OnTabActivation (BOOL bActivate) {
+	// TODO: Add your code here
+}
+
+//-----------------------------------------------------------------------------
+//----- Called when a tab is de-activated and another is about to be activated. 
+//----- The default implementation returns TRUE, allowing the change. 
+//----- Return FALSE to prevent the tab switch.
+BOOL CCoverAndCut::OnTabChanging () {
+	// TODO: Add your code here
+
 	return (TRUE) ;
+}
+
+void CCoverAndCut::OnBnClickedButtonDlq()
+{
+	// TODO: 在此添加控件通知处理程序代码
 }

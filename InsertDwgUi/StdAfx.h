@@ -25,7 +25,7 @@
 //-      but are changed infrequently
 //-----------------------------------------------------------------------------
 #pragma once
-#define INSERTDWG_MODULE
+#define INSERTDWGUI_MODULE
 
 /*#ifndef
 #define _ALLOW_RTCc_IN_STL

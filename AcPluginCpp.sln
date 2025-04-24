@@ -94,7 +94,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CustomWall", "CustomWall\Cu
 		{F87873B0-2B5D-4D52-8FD5-BE1CDC50B2E3} = {F87873B0-2B5D-4D52-8FD5-BE1CDC50B2E3}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "InsertDwg", "InsertDwg\InsertDwg.vcxproj", "{22EB7BE4-D628-4D9B-B5D9-330256A07DD3}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "InsertDwgUi", "InsertDwgUi\InsertDwgUi.vcxproj", "{ADBE7E00-0D16-4DD0-B56D-ACA57084850F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -158,10 +158,10 @@ Global
 		{01C6B378-6576-42F7-9C66-FDBD190067F1}.Debug|x64.Build.0 = Debug|x64
 		{01C6B378-6576-42F7-9C66-FDBD190067F1}.Release|x64.ActiveCfg = Release|x64
 		{01C6B378-6576-42F7-9C66-FDBD190067F1}.Release|x64.Build.0 = Release|x64
-		{22EB7BE4-D628-4D9B-B5D9-330256A07DD3}.Debug|x64.ActiveCfg = Debug|x64
-		{22EB7BE4-D628-4D9B-B5D9-330256A07DD3}.Debug|x64.Build.0 = Debug|x64
-		{22EB7BE4-D628-4D9B-B5D9-330256A07DD3}.Release|x64.ActiveCfg = Release|x64
-		{22EB7BE4-D628-4D9B-B5D9-330256A07DD3}.Release|x64.Build.0 = Release|x64
+		{ADBE7E00-0D16-4DD0-B56D-ACA57084850F}.Debug|x64.ActiveCfg = Debug|x64
+		{ADBE7E00-0D16-4DD0-B56D-ACA57084850F}.Debug|x64.Build.0 = Debug|x64
+		{ADBE7E00-0D16-4DD0-B56D-ACA57084850F}.Release|x64.ActiveCfg = Release|x64
+		{ADBE7E00-0D16-4DD0-B56D-ACA57084850F}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,4 +1,4 @@
-// (C) Copyright 2002-2012 by Autodesk, Inc. 
+// (C) Copyright 2002-2007 by Autodesk, Inc. 
 //
 // Permission to use, copy, modify, and distribute this software in
 // object code form for any purpose and without fee is hereby granted, 
@@ -20,33 +20,29 @@
 //
 
 //-----------------------------------------------------------------------------
-//- InsertDwg.cpp : Initialization functions
-//-----------------------------------------------------------------------------
-#include "StdAfx.h"
-#include "resource.h"
-#include <afxdllx.h>
+//----- Shielding.h : Declaration of the CShielding
+#pragma once
 
 //-----------------------------------------------------------------------------
-//- Define the sole extension module object.
-AC_IMPLEMENT_EXTENSION_MODULE(InsertDwgDLL)
-//- Now you can use the CAcModuleResourceOverride class in
-//- your application to switch to the correct resource instance.
-//- Please see the ObjectARX Documentation for more details
+#include "acui.h"
 
 //-----------------------------------------------------------------------------
-//- DLL Entry Point
-extern "C"
-BOOL WINAPI DllMain (HINSTANCE hInstance, DWORD dwReason, LPVOID lpReserved) {
-	//- Remove this if you use lpReserved
-	UNREFERENCED_PARAMETER(lpReserved) ;
+class CShielding : public CAcUiTabChildDialog {
+	DECLARE_DYNAMIC (CShielding)
 
-	if ( dwReason == DLL_PROCESS_ATTACH ) {
-        _hdllInstance =hInstance ;
-		InsertDwgDLL.AttachInstance (hInstance) ;
-		InitAcUiDLL () ;
-	} else if ( dwReason == DLL_PROCESS_DETACH ) {
-		InsertDwgDLL.DetachInstance () ;
-	}
-	return (TRUE) ;
-}
+public:
+	CShielding (CWnd *pParent =NULL, HINSTANCE hInstance =NULL) ;
 
+	enum { IDD = IDD_SHIELD_PAGE};
+
+public:
+	//----- Called when this tab is activated.
+	virtual void OnTabActivation (BOOL bActivate) ;
+	//----- Called when a tab is de-activated and another is about to be activated. 
+	virtual BOOL OnTabChanging () ;
+
+protected:
+	virtual void DoDataExchange (CDataExchange *pDX) ;
+
+	DECLARE_MESSAGE_MAP()
+} ;

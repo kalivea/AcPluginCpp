@@ -27,6 +27,18 @@
     <ClCompile Include="PaletteUi.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="PolaPaletteChild.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="PolaPalette.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="PolaPaletteSet.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="TestClass.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="StdAfx.h">
@@ -36,6 +48,18 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Resource.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="PolaPaletteChild.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="PolaPalette.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="PolaPaletteSet.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="TestClass.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

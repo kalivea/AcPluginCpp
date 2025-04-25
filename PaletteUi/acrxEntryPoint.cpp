@@ -24,9 +24,15 @@
 //-----------------------------------------------------------------------------
 #include "StdAfx.h"
 #include "resource.h"
-
+#include "PolaPalette.h"
+#include "PolaPaletteSet.h"
+#include "TestClass.h"
 //-----------------------------------------------------------------------------
 #define szRDS _RXST("Pola")
+
+CPolaPaletteSet* palette_set = nullptr;
+CPolaPalette* pola_palette = nullptr;
+CAdUiPalette* cad_palette = nullptr;
 
 //-----------------------------------------------------------------------------
 //----- ObjectARX EntryPoint
@@ -40,7 +46,7 @@ public:
 
 		// You *must* call On_kInitAppMsg here
 		AcRx::AppRetCode retCode =AcRxArxApp::On_kInitAppMsg (pkt) ;
-		
+		TestClass::TestClassInit();
 		// TODO: Add your initialization code here
 
 		return (retCode) ;
@@ -51,7 +57,7 @@ public:
 
 		// You *must* call On_kUnloadAppMsg here
 		AcRx::AppRetCode retCode =AcRxArxApp::On_kUnloadAppMsg (pkt) ;
-
+		TestClass::TestClassUnload();
 		// TODO: Unload dependencies here
 
 		return (retCode) ;

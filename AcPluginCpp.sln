@@ -98,6 +98,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "InsertDwgUi", "InsertDwgUi\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PaletteUi", "PaletteUi\PaletteUi.vcxproj", "{5CD49382-133B-4D35-968A-0A28ECF4278D}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DockControlBarUi", "DockControlBarUi\DockControlBarUi.vcxproj", "{1ABF6661-2002-4456-BAD0-E6E410137B17}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -168,6 +170,10 @@ Global
 		{5CD49382-133B-4D35-968A-0A28ECF4278D}.Debug|x64.Build.0 = Debug|x64
 		{5CD49382-133B-4D35-968A-0A28ECF4278D}.Release|x64.ActiveCfg = Release|x64
 		{5CD49382-133B-4D35-968A-0A28ECF4278D}.Release|x64.Build.0 = Release|x64
+		{1ABF6661-2002-4456-BAD0-E6E410137B17}.Debug|x64.ActiveCfg = Debug|x64
+		{1ABF6661-2002-4456-BAD0-E6E410137B17}.Debug|x64.Build.0 = Debug|x64
+		{1ABF6661-2002-4456-BAD0-E6E410137B17}.Release|x64.ActiveCfg = Release|x64
+		{1ABF6661-2002-4456-BAD0-E6E410137B17}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

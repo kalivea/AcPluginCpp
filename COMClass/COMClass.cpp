@@ -1,4 +1,4 @@
-// (C) Copyright 2002-2007 by Autodesk, Inc. 
+// (C) Copyright 2002-2012 by Autodesk, Inc. 
 //
 // Permission to use, copy, modify, and distribute this software in
 // object code form for any purpose and without fee is hereby granted, 
@@ -20,28 +20,33 @@
 //
 
 //-----------------------------------------------------------------------------
-//----- PolaPaletteChild.h : Declaration of the CPolaPaletteChild
+//- COMClass.cpp : Initialization functions
 //-----------------------------------------------------------------------------
-#pragma once
-
-//-----------------------------------------------------------------------------
-#include "adui.h"
+#include "StdAfx.h"
 #include "resource.h"
+#include <afxdllx.h>
+
 //-----------------------------------------------------------------------------
-class CPolaPaletteChild : public CAdUiBaseDialog {
-	DECLARE_DYNAMIC (CPolaPaletteChild)
+//- Define the sole extension module object.
+AC_IMPLEMENT_EXTENSION_MODULE(COMClassDLL)
+//- Now you can use the CAcModuleResourceOverride class in
+//- your application to switch to the correct resource instance.
+//- Please see the ObjectARX Documentation for more details
 
-public:
-	CPolaPaletteChild (CWnd *pParent =NULL, HINSTANCE hInstance =NULL) ;
+//-----------------------------------------------------------------------------
+//- DLL Entry Point
+extern "C"
+BOOL WINAPI DllMain (HINSTANCE hInstance, DWORD dwReason, LPVOID lpReserved) {
+	//- Remove this if you use lpReserved
+	UNREFERENCED_PARAMETER(lpReserved) ;
 
-	enum { IDD = IDD_POLAPALETTECHILD} ;
+	if ( dwReason == DLL_PROCESS_ATTACH ) {
+        _hdllInstance =hInstance ;
+		COMClassDLL.AttachInstance (hInstance) ;
+		InitAcUiDLL () ;
+	} else if ( dwReason == DLL_PROCESS_DETACH ) {
+		COMClassDLL.DetachInstance () ;
+	}
+	return (TRUE) ;
+}
 
-protected:
-	virtual void DoDataExchange (CDataExchange *pDX) ;
-	afx_msg LRESULT OnAcadKeepFocus (WPARAM, LPARAM) ;
-
-	DECLARE_MESSAGE_MAP()
-public:
-	afx_msg void OnBnClickedPrintHello();
-	afx_msg void OnPaint();
-} ;

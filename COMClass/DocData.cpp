@@ -1,4 +1,4 @@
-// (C) Copyright 2002-2007 by Autodesk, Inc. 
+// (C) Copyright 2002-2012 by Autodesk, Inc. 
 //
 // Permission to use, copy, modify, and distribute this software in
 // object code form for any purpose and without fee is hereby granted, 
@@ -20,28 +20,24 @@
 //
 
 //-----------------------------------------------------------------------------
-//----- PolaPaletteChild.h : Declaration of the CPolaPaletteChild
+//----- DocData.cpp : Implementation file
 //-----------------------------------------------------------------------------
-#pragma once
+#include "StdAfx.h"
 
 //-----------------------------------------------------------------------------
-#include "adui.h"
-#include "resource.h"
+//----- The one and only document manager object. You can use the DocVars object to retrieve
+//----- document specific data throughout your application
+AcApDataManager<CDocData> DocVars ;
+
 //-----------------------------------------------------------------------------
-class CPolaPaletteChild : public CAdUiBaseDialog {
-	DECLARE_DYNAMIC (CPolaPaletteChild)
+//----- Implementation of the document data class.
+CDocData::CDocData () {
+}
 
-public:
-	CPolaPaletteChild (CWnd *pParent =NULL, HINSTANCE hInstance =NULL) ;
+//-----------------------------------------------------------------------------
+CDocData::CDocData (const CDocData &data) {
+}
 
-	enum { IDD = IDD_POLAPALETTECHILD} ;
-
-protected:
-	virtual void DoDataExchange (CDataExchange *pDX) ;
-	afx_msg LRESULT OnAcadKeepFocus (WPARAM, LPARAM) ;
-
-	DECLARE_MESSAGE_MAP()
-public:
-	afx_msg void OnBnClickedPrintHello();
-	afx_msg void OnPaint();
-} ;
+//-----------------------------------------------------------------------------
+CDocData::~CDocData () {
+}

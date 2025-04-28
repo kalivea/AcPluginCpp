@@ -100,6 +100,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PaletteUi", "PaletteUi\Pale
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DockControlBarUi", "DockControlBarUi\DockControlBarUi.vcxproj", "{1ABF6661-2002-4456-BAD0-E6E410137B17}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "COMClass", "COMClass\COMClass.vcxproj", "{22F39CB9-A33C-4B03-9CBF-D0F25310631D}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "COMMenu", "COMMenu\COMMenu.vcxproj", "{3541DCCA-DB98-466D-934C-C9D6EAF0083D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -174,6 +178,14 @@ Global
 		{1ABF6661-2002-4456-BAD0-E6E410137B17}.Debug|x64.Build.0 = Debug|x64
 		{1ABF6661-2002-4456-BAD0-E6E410137B17}.Release|x64.ActiveCfg = Release|x64
 		{1ABF6661-2002-4456-BAD0-E6E410137B17}.Release|x64.Build.0 = Release|x64
+		{22F39CB9-A33C-4B03-9CBF-D0F25310631D}.Debug|x64.ActiveCfg = Debug|x64
+		{22F39CB9-A33C-4B03-9CBF-D0F25310631D}.Debug|x64.Build.0 = Debug|x64
+		{22F39CB9-A33C-4B03-9CBF-D0F25310631D}.Release|x64.ActiveCfg = Release|x64
+		{22F39CB9-A33C-4B03-9CBF-D0F25310631D}.Release|x64.Build.0 = Release|x64
+		{3541DCCA-DB98-466D-934C-C9D6EAF0083D}.Debug|x64.ActiveCfg = Debug|x64
+		{3541DCCA-DB98-466D-934C-C9D6EAF0083D}.Debug|x64.Build.0 = Debug|x64
+		{3541DCCA-DB98-466D-934C-C9D6EAF0083D}.Release|x64.ActiveCfg = Release|x64
+		{3541DCCA-DB98-466D-934C-C9D6EAF0083D}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -24,17 +24,16 @@
 //-----------------------------------------------------------------------------
 #include "StdAfx.h"
 #include "resource.h"
-#include "PolaDockCtrlBar.h"
+#include "TestClass.h"
 //-----------------------------------------------------------------------------
 #define szRDS _RXST("Pola")
-
-CPolaDockCtrlBar* dock_ctrl_bar = nullptr;
+ bool isMenuLoad = false;
 //-----------------------------------------------------------------------------
 //----- ObjectARX EntryPoint
-class CDockControlBarUiApp : public AcRxArxApp {
+class CCOMMenuApp : public AcRxArxApp {
 
 public:
-	CDockControlBarUiApp() : AcRxArxApp() {}
+	CCOMMenuApp() : AcRxArxApp() {}
 
 	virtual AcRx::AppRetCode On_kInitAppMsg(void* pkt) {
 		// TODO: Load dependencies here
@@ -43,18 +42,7 @@ public:
 		AcRx::AppRetCode retCode = AcRxArxApp::On_kInitAppMsg(pkt);
 
 		// TODO: Add your initialization code here
-				// show dock bar
-		CAcModuleResourceOverride res;
-		if (dock_ctrl_bar == nullptr)
-		{
-			dock_ctrl_bar = new CPolaDockCtrlBar();
-			dock_ctrl_bar->Create(acedGetAcadFrame(), (LPCSTR)_T("dock bar"));
-			dock_ctrl_bar->SetWindowTextW(_T("Pola dock bar"));
-			dock_ctrl_bar->EnableDocking(CBRS_ALIGN_ANY);
-		}
-		acedGetAcadFrame()->FloatControlBar(dock_ctrl_bar, CPoint(50, 100), CBRS_ALIGN_TOP); //³õÊ¼Î»ÖÃ//CBRS_ALIGN_TOP   Orients the control bar vertically.
-		acedGetAcadFrame()->ShowControlBar(dock_ctrl_bar, TRUE, TRUE);//void ShowControlBar( C
-
+		TestClass::TestClassInit();
 		return (retCode);
 	}
 
@@ -65,12 +53,7 @@ public:
 		AcRx::AppRetCode retCode = AcRxArxApp::On_kUnloadAppMsg(pkt);
 
 		// TODO: Unload dependencies here
-		if (dock_ctrl_bar != nullptr)
-		{
-			dock_ctrl_bar->DestroyWindow();
-			delete dock_ctrl_bar;
-			dock_ctrl_bar = nullptr;
-		}
+		TestClass::TestClassUnload();
 		return (retCode);
 	}
 
@@ -78,7 +61,7 @@ public:
 	}
 
 	// The ACED_ARXCOMMAND_ENTRY_AUTO macro can be applied to any static member 
-	// function of the CDockControlBarUiApp class.
+	// function of the CCOMMenuApp class.
 	// The function should take no arguments and return nothing.
 	//
 	// NOTE: ACED_ARXCOMMAND_ENTRY_AUTO has overloads where you can provide resourceid and
@@ -90,14 +73,14 @@ public:
 	//   locCmdId - resource ID for localized command
 
 	// Modal Command with localized name
-	// ACED_ARXCOMMAND_ENTRY_AUTO(CDockControlBarUiApp, PolaMyGroup, MyCommand, MyCommandLocal, ACRX_CMD_MODAL)
+	// ACED_ARXCOMMAND_ENTRY_AUTO(CCOMMenuApp, PolaMyGroup, MyCommand, MyCommandLocal, ACRX_CMD_MODAL)
 	static void PolaMyGroupMyCommand() {
-		// Put your command code here
+		//Put your command code here
+
 
 	}
-
 	// Modal Command with pickfirst selection
-	// ACED_ARXCOMMAND_ENTRY_AUTO(CDockControlBarUiApp, PolaMyGroup, MyPickFirst, MyPickFirstLocal, ACRX_CMD_MODAL | ACRX_CMD_USEPICKSET)
+	// ACED_ARXCOMMAND_ENTRY_AUTO(CCOMMenuApp, PolaMyGroup, MyPickFirst, MyPickFirstLocal, ACRX_CMD_MODAL | ACRX_CMD_USEPICKSET)
 	static void PolaMyGroupMyPickFirst() {
 		ads_name result;
 		int iRet = acedSSGet(ACRX_T("_I"), NULL, NULL, NULL, result);
@@ -114,13 +97,13 @@ public:
 	}
 
 	// Application Session Command with localized name
-	// ACED_ARXCOMMAND_ENTRY_AUTO(CDockControlBarUiApp, PolaMyGroup, MySessionCmd, MySessionCmdLocal, ACRX_CMD_MODAL | ACRX_CMD_SESSION)
+	// ACED_ARXCOMMAND_ENTRY_AUTO(CCOMMenuApp, PolaMyGroup, MySessionCmd, MySessionCmdLocal, ACRX_CMD_MODAL | ACRX_CMD_SESSION)
 	static void PolaMyGroupMySessionCmd() {
 		// Put your command code here
 	}
 
 	// The ACED_ADSFUNCTION_ENTRY_AUTO / ACED_ADSCOMMAND_ENTRY_AUTO macros can be applied to any static member 
-	// function of the CDockControlBarUiApp class.
+	// function of the CCOMMenuApp class.
 	// The function may or may not take arguments and have to return RTNORM, RTERROR, RTCAN, RTFAIL, RTREJ to AutoCAD, but use
 	// acedRetNil, acedRetT, acedRetVoid, acedRetInt, acedRetReal, acedRetStr, acedRetPoint, acedRetName, acedRetList, acedRetVal to return
 	// a value to the Lisp interpreter.
@@ -135,7 +118,7 @@ public:
 	// Lisp Function is similar to ARX Command but it creates a lisp 
 	// callable function. Many return types are supported not just string
 	// or integer.
-	// ACED_ADSFUNCTION_ENTRY_AUTO(CDockControlBarUiApp, MyLispFunction, false)
+	// ACED_ADSFUNCTION_ENTRY_AUTO(CCOMMenuApp, MyLispFunction, false)
 	static int ads_MyLispFunction() {
 		//struct resbuf *args =acedGetArgs () ;
 
@@ -152,10 +135,10 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-IMPLEMENT_ARX_ENTRYPOINT(CDockControlBarUiApp)
+IMPLEMENT_ARX_ENTRYPOINT(CCOMMenuApp)
 
-ACED_ARXCOMMAND_ENTRY_AUTO(CDockControlBarUiApp, PolaMyGroup, MyCommand, MyCommandLocal, ACRX_CMD_MODAL, NULL)
-ACED_ARXCOMMAND_ENTRY_AUTO(CDockControlBarUiApp, PolaMyGroup, MyPickFirst, MyPickFirstLocal, ACRX_CMD_MODAL | ACRX_CMD_USEPICKSET, NULL)
-ACED_ARXCOMMAND_ENTRY_AUTO(CDockControlBarUiApp, PolaMyGroup, MySessionCmd, MySessionCmdLocal, ACRX_CMD_MODAL | ACRX_CMD_SESSION, NULL)
-ACED_ADSSYMBOL_ENTRY_AUTO(CDockControlBarUiApp, MyLispFunction, false)
+ACED_ARXCOMMAND_ENTRY_AUTO(CCOMMenuApp, PolaMyGroup, MyCommand, MyCommandLocal, ACRX_CMD_MODAL, NULL)
+ACED_ARXCOMMAND_ENTRY_AUTO(CCOMMenuApp, PolaMyGroup, MyPickFirst, MyPickFirstLocal, ACRX_CMD_MODAL | ACRX_CMD_USEPICKSET, NULL)
+ACED_ARXCOMMAND_ENTRY_AUTO(CCOMMenuApp, PolaMyGroup, MySessionCmd, MySessionCmdLocal, ACRX_CMD_MODAL | ACRX_CMD_SESSION, NULL)
+ACED_ADSSYMBOL_ENTRY_AUTO(CCOMMenuApp, MyLispFunction, false)
 

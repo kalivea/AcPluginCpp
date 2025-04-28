@@ -26,17 +26,16 @@
 
 //-----------------------------------------------------------------------------
 #include "acui.h"
-
+#include "PolaChildDlg.h"
 //-----------------------------------------------------------------------------
 class CPolaDockCtrlBar : public CAcUiDockControlBar {
 	DECLARE_DYNAMIC (CPolaDockCtrlBar)
 
 public:
-
+	CPolaChildDlg* child_dlg;
 public:
 	CPolaDockCtrlBar ();
 	virtual ~CPolaDockCtrlBar ();
-
 
 	virtual BOOL Create (CWnd *pParent, LPCSTR lpszTitle) ;
 protected:

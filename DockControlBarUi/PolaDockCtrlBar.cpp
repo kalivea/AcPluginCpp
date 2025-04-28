@@ -45,6 +45,7 @@ static CLSID clsCPolaDockCtrlBar = {0xeab78c04, 0x2194, 0x47ad, {0xa4, 0xf2, 0xa
 
 //-----------------------------------------------------------------------------
 CPolaDockCtrlBar::CPolaDockCtrlBar () : CAcUiDockControlBar() {
+	child_dlg = nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -87,11 +88,19 @@ BOOL CPolaDockCtrlBar::Create (CWnd *pParent, LPCSTR lpszTitle) {
 int CPolaDockCtrlBar::OnCreate (LPCREATESTRUCT lpCreateStruct) {
 	if ( CAcUiDockControlBar::OnCreate (lpCreateStruct) == -1 )
 		return (-1) ;
-
+	CAcModuleResourceOverride res;
+	child_dlg = new CPolaChildDlg();
+	child_dlg->Create(IDD_DIALOG, this);
+	child_dlg->MoveWindow(0, 0, 160, 160, true);
 	return (0) ;
 }
 
 //-----------------------------------------------------------------------------
 void CPolaDockCtrlBar::SizeChanged (CRect *lpRect, BOOL bFloating, int flags) {
+	CAcModuleResourceOverride res;
+	if (child_dlg != nullptr)
+	{
+		child_dlg->SetWindowPos(this, lpRect->left, lpRect->top, lpRect->Width(), lpRect->Height(), SWP_NOZORDER);
+	}
 }
 

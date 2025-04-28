@@ -1,4 +1,4 @@
-// (C) Copyright 2002-2007 by Autodesk, Inc. 
+// (C) Copyright 2002-2012 by Autodesk, Inc. 
 //
 // Permission to use, copy, modify, and distribute this software in
 // object code form for any purpose and without fee is hereby granted, 
@@ -20,28 +20,8 @@
 //
 
 //-----------------------------------------------------------------------------
-//----- PolaPaletteChild.h : Declaration of the CPolaPaletteChild
+//------ StdAfx.cpp : source file that includes just the standard includes
+//------  StdAfx.pch will be the pre-compiled header
+//------  StdAfx.obj will contain the pre-compiled type information
 //-----------------------------------------------------------------------------
-#pragma once
-
-//-----------------------------------------------------------------------------
-#include "adui.h"
-#include "resource.h"
-//-----------------------------------------------------------------------------
-class CPolaPaletteChild : public CAdUiBaseDialog {
-	DECLARE_DYNAMIC (CPolaPaletteChild)
-
-public:
-	CPolaPaletteChild (CWnd *pParent =NULL, HINSTANCE hInstance =NULL) ;
-
-	enum { IDD = IDD_POLAPALETTECHILD} ;
-
-protected:
-	virtual void DoDataExchange (CDataExchange *pDX) ;
-	afx_msg LRESULT OnAcadKeepFocus (WPARAM, LPARAM) ;
-
-	DECLARE_MESSAGE_MAP()
-public:
-	afx_msg void OnBnClickedPrintHello();
-	afx_msg void OnPaint();
-} ;
+#include "StdAfx.h"

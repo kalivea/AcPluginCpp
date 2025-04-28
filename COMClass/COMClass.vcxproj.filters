@@ -24,10 +24,7 @@
     <ClCompile Include="acrxEntryPoint.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="IRMUi.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="PolaIRMUi.cpp">
+    <ClCompile Include="COMClass.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="TestClass.cpp">
@@ -44,7 +41,13 @@
     <ClInclude Include="Resource.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="PolaIRMUi.h">
+    <ClInclude Include="CAcadApplication.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="CAcadDocument.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="CAcadModelSpace.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="TestClass.h">
@@ -52,16 +55,11 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="IRMUi.rc">
+    <ResourceCompile Include="COMClass.rc">
       <Filter>资源文件</Filter>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="BAR.bmp">
-      <Filter>资源文件</Filter>
-    </Image>
   </ItemGroup>
 </Project>

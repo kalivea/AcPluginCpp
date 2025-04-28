@@ -32,6 +32,7 @@ IMPLEMENT_DYNAMIC (CPolaPaletteChild, CAdUiBaseDialog)
 BEGIN_MESSAGE_MAP(CPolaPaletteChild, CAdUiBaseDialog)
 	ON_MESSAGE(WM_ACAD_KEEPFOCUS, OnAcadKeepFocus)
 	ON_BN_CLICKED(IDC_PRINT_HELLO, &CPolaPaletteChild::OnBnClickedPrintHello)
+	ON_WM_PAINT()
 END_MESSAGE_MAP()
 
 //-----------------------------------------------------------------------------
@@ -56,4 +57,15 @@ void CPolaPaletteChild::OnBnClickedPrintHello()
 	// TODO: 在此添加控件通知处理程序代码
 	DrawEntity::DrawCircle(AcGePoint3d(0, 0, 0), 100);
 	acDocManager->unlockDocument(acDocManager->curDocument());
+}
+
+void CPolaPaletteChild::OnPaint()
+{
+	CPaintDC dc(this); // device context for painting
+	// TODO: 在此处添加消息处理程序代码
+	// 不为绘图消息调用 CAdUiBaseDialog::OnPaint()
+	CRect rect;
+	GetClientRect(rect);
+	dc.FillSolidRect(rect, RGB(59, 68, 83));		// cad dark mode background color
+	CAdUiBaseDialog::OnPaint();
 }

@@ -24,10 +24,12 @@
 //-----------------------------------------------------------------------------
 #include "StdAfx.h"
 #include "resource.h"
-
+#include "TestClass.h"
 //-----------------------------------------------------------------------------
 #define szRDS _RXST("Pola")
 
+static bool g_menuAdded = false;
+static HMENU g_hNewMenu = NULL;
 //-----------------------------------------------------------------------------
 //----- ObjectARX EntryPoint
 class CMenuBarUiApp : public AcRxArxApp {
@@ -40,7 +42,7 @@ public:
 
 		// You *must* call On_kInitAppMsg here
 		AcRx::AppRetCode retCode =AcRxArxApp::On_kInitAppMsg (pkt) ;
-		
+		TestClass::TestClassInit();
 		// TODO: Add your initialization code here
 
 		return (retCode) ;
@@ -53,7 +55,7 @@ public:
 		AcRx::AppRetCode retCode =AcRxArxApp::On_kUnloadAppMsg (pkt) ;
 
 		// TODO: Unload dependencies here
-
+		TestClass::TestClassUnload();
 		return (retCode) ;
 	}
 

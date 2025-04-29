@@ -63,6 +63,9 @@
     </ClCompile>
     <Link>
     </Link>
+    <Link>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">AdApplicationFrame.lib;acui24.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -76,11 +79,13 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="TestClass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DocData.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="StdAfx.h" />
+    <ClInclude Include="TestClass.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MenuBarUi.rc" />

@@ -1,4 +1,4 @@
-// (C) Copyright 2002-2007 by Autodesk, Inc. 
+// (C) Copyright 2002-2012 by Autodesk, Inc. 
 //
 // Permission to use, copy, modify, and distribute this software in
 // object code form for any purpose and without fee is hereby granted, 
@@ -20,37 +20,33 @@
 //
 
 //-----------------------------------------------------------------------------
-//----- PolaChildDlg.cpp : Implementation of CPolaChildDlg
+//- DialogBarUi.cpp : Initialization functions
 //-----------------------------------------------------------------------------
 #include "StdAfx.h"
 #include "resource.h"
-#include "PolaChildDlg.h"
+#include <afxdllx.h>
 
 //-----------------------------------------------------------------------------
-IMPLEMENT_DYNAMIC (CPolaChildDlg, CAcUiDialog)
-
-BEGIN_MESSAGE_MAP(CPolaChildDlg, CAcUiDialog)
-	ON_MESSAGE(WM_ACAD_KEEPFOCUS, OnAcadKeepFocus)
-	ON_BN_CLICKED(IDC_DRAWLINE, &CPolaChildDlg::OnBnClickedDrawline)
-END_MESSAGE_MAP()
-
-//-----------------------------------------------------------------------------
-CPolaChildDlg::CPolaChildDlg (CWnd *pParent /*=NULL*/, HINSTANCE hInstance /*=NULL*/) : CAcUiDialog (CPolaChildDlg::IDD, pParent, hInstance) {
-}
+//- Define the sole extension module object.
+AC_IMPLEMENT_EXTENSION_MODULE(DialogBarUiDLL)
+//- Now you can use the CAcModuleResourceOverride class in
+//- your application to switch to the correct resource instance.
+//- Please see the ObjectARX Documentation for more details
 
 //-----------------------------------------------------------------------------
-void CPolaChildDlg::DoDataExchange (CDataExchange *pDX) {
-	CAcUiDialog::DoDataExchange (pDX) ;
-}
+//- DLL Entry Point
+extern "C"
+BOOL WINAPI DllMain (HINSTANCE hInstance, DWORD dwReason, LPVOID lpReserved) {
+	//- Remove this if you use lpReserved
+	UNREFERENCED_PARAMETER(lpReserved) ;
 
-//-----------------------------------------------------------------------------
-//----- Needed for modeless dialogs to keep focus.
-//----- Return FALSE to not keep the focus, return TRUE to keep the focus
-LRESULT CPolaChildDlg::OnAcadKeepFocus (WPARAM, LPARAM) {
+	if ( dwReason == DLL_PROCESS_ATTACH ) {
+        _hdllInstance =hInstance ;
+		DialogBarUiDLL.AttachInstance (hInstance) ;
+		InitAcUiDLL () ;
+	} else if ( dwReason == DLL_PROCESS_DETACH ) {
+		DialogBarUiDLL.DetachInstance () ;
+	}
 	return (TRUE) ;
 }
 
-void CPolaChildDlg::OnBnClickedDrawline()  
-{  
-	acDocManager->sendStringToExecute(curDoc(), _T("TESTPILLAR "));
-}

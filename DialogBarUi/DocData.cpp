@@ -1,4 +1,4 @@
-// (C) Copyright 2002-2007 by Autodesk, Inc. 
+// (C) Copyright 2002-2012 by Autodesk, Inc. 
 //
 // Permission to use, copy, modify, and distribute this software in
 // object code form for any purpose and without fee is hereby granted, 
@@ -20,37 +20,24 @@
 //
 
 //-----------------------------------------------------------------------------
-//----- PolaChildDlg.cpp : Implementation of CPolaChildDlg
+//----- DocData.cpp : Implementation file
 //-----------------------------------------------------------------------------
 #include "StdAfx.h"
-#include "resource.h"
-#include "PolaChildDlg.h"
 
 //-----------------------------------------------------------------------------
-IMPLEMENT_DYNAMIC (CPolaChildDlg, CAcUiDialog)
-
-BEGIN_MESSAGE_MAP(CPolaChildDlg, CAcUiDialog)
-	ON_MESSAGE(WM_ACAD_KEEPFOCUS, OnAcadKeepFocus)
-	ON_BN_CLICKED(IDC_DRAWLINE, &CPolaChildDlg::OnBnClickedDrawline)
-END_MESSAGE_MAP()
+//----- The one and only document manager object. You can use the DocVars object to retrieve
+//----- document specific data throughout your application
+AcApDataManager<CDocData> DocVars ;
 
 //-----------------------------------------------------------------------------
-CPolaChildDlg::CPolaChildDlg (CWnd *pParent /*=NULL*/, HINSTANCE hInstance /*=NULL*/) : CAcUiDialog (CPolaChildDlg::IDD, pParent, hInstance) {
+//----- Implementation of the document data class.
+CDocData::CDocData () {
 }
 
 //-----------------------------------------------------------------------------
-void CPolaChildDlg::DoDataExchange (CDataExchange *pDX) {
-	CAcUiDialog::DoDataExchange (pDX) ;
+CDocData::CDocData (const CDocData &data) {
 }
 
 //-----------------------------------------------------------------------------
-//----- Needed for modeless dialogs to keep focus.
-//----- Return FALSE to not keep the focus, return TRUE to keep the focus
-LRESULT CPolaChildDlg::OnAcadKeepFocus (WPARAM, LPARAM) {
-	return (TRUE) ;
-}
-
-void CPolaChildDlg::OnBnClickedDrawline()  
-{  
-	acDocManager->sendStringToExecute(curDoc(), _T("TESTPILLAR "));
+CDocData::~CDocData () {
 }

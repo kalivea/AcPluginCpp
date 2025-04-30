@@ -31,6 +31,7 @@ IMPLEMENT_DYNAMIC (CPolaChildDlg, CAcUiDialog)
 
 BEGIN_MESSAGE_MAP(CPolaChildDlg, CAcUiDialog)
 	ON_MESSAGE(WM_ACAD_KEEPFOCUS, OnAcadKeepFocus)
+	ON_BN_CLICKED(IDC_DRAWLINE, &CPolaChildDlg::OnBnClickedDrawline)
 END_MESSAGE_MAP()
 
 //-----------------------------------------------------------------------------
@@ -47,4 +48,9 @@ void CPolaChildDlg::DoDataExchange (CDataExchange *pDX) {
 //----- Return FALSE to not keep the focus, return TRUE to keep the focus
 LRESULT CPolaChildDlg::OnAcadKeepFocus (WPARAM, LPARAM) {
 	return (TRUE) ;
+}
+
+void CPolaChildDlg::OnBnClickedDrawline()
+{
+	
 }

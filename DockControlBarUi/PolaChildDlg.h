@@ -41,4 +41,6 @@ protected:
 	afx_msg LRESULT OnAcadKeepFocus (WPARAM, LPARAM) ;
 
 	DECLARE_MESSAGE_MAP()
+public:
+	afx_msg void OnBnClickedDrawline();
 } ;

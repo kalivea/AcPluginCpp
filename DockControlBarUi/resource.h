@@ -3,7 +3,6 @@
 // π© DockControlBarUi.rc  π”√
 //
 #define IDS_PROJNAME                    100
-#define IDC_BUTTON1                     100
 #define IDC_DRAWLINE                    100
 #define IDD_DIALOG                      102
 

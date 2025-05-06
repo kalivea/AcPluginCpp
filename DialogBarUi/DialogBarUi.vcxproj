@@ -59,6 +59,7 @@
       <AdditionalOptions>/Wv:17.00.61030 %(AdditionalOptions)</AdditionalOptions>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
+      <SmallerTypeCheck Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</SmallerTypeCheck>
     </ClCompile>
     <Link>
     </Link>
@@ -71,15 +72,21 @@
     <ClCompile Include="acrxEntryPoint.cpp" />
     <ClCompile Include="DialogBarUi.cpp" />
     <ClCompile Include="DocData.cpp" />
+    <ClCompile Include="PolaMenu.cpp" />
+    <ClCompile Include="PolaMenuDlgBar.cpp" />
     <ClCompile Include="StdAfx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="TestClass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DocData.h" />
+    <ClInclude Include="PolaMenu.h" />
+    <ClInclude Include="PolaMenuDlgBar.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="StdAfx.h" />
+    <ClInclude Include="TestClass.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="DialogBarUi.rc" />

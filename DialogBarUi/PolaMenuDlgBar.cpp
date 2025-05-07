@@ -33,10 +33,17 @@ IMPLEMENT_DYNAMIC(CPolaMenuDlgBar, CAdUiDialogBar)
 
 BEGIN_MESSAGE_MAP(CPolaMenuDlgBar, CAdUiDialogBar)
 	ON_MESSAGE(WM_ACAD_KEEPFOCUS, OnAcadKeepFocus)
+	ON_WM_PAINT()
+	ON_WM_SIZE()
+	ON_COMMAND_RANGE(IMENU_ITEM_ID, IMENU_ITEM_ID + 100, OnMenuSelect)
 END_MESSAGE_MAP()
 
 //-----------------------------------------------------------------------------
 CPolaMenuDlgBar::CPolaMenuDlgBar(CWnd* pParent /*=NULL*/, HINSTANCE hInstance /*=NULL*/) : CAdUiDialogBar(/*CPolaMenuDlgBar::IDD, pParent, hInstance*/) {
+	isShow = TRUE;
+	alignment_mode = 0;
+	isOnce = TRUE;
+	Load();
 }
 
 CPolaMenuDlgBar::~CPolaMenuDlgBar()
@@ -113,10 +120,21 @@ void CPolaMenuDlgBar::OnPaint()
 		int nID = IMENU_ITEM_ID;
 		menu_.Set(saMenu, nID);
 
-		CMenu m_menu; // 成员变量（确保生命周期）
-		m_menu.CreateMenu(); // 创建空的主菜单栏
+		CMenu m_menu;
+		CMenu subMenu;
+		subMenu.CreatePopupMenu();
+		subMenu.AppendMenu(MF_STRING, IMENU_ITEM_ID + 10, _T("OK"));
 
-		// 使用示例：
+		m_menu.CreateMenu();
+		m_menu.AppendMenu(MF_POPUP, (UINT)subMenu.m_hMenu, _T("1111"));
+
+
+		m_menu.AppendMenu(MF_STRING, IMENU_ITEM_ID + 1, _T("1121"));
+		m_menu.InsertMenu(1, MF_STRING, IMENU_ITEM_ID + 3, _T("sss"));
+
+		m_menu.InsertMenu(0, MF_POPUP | MF_BYPOSITION | MF_STRING);
+		m_menu.InsertMenu(0, MF_POPUP | MF_BYPOSITION | MF_STRING, (UINT)subMenu.m_hMenu, _T("TEST"));
+
 		SetMenu(&menu_.menu_);
 	}
 }
@@ -124,6 +142,10 @@ void CPolaMenuDlgBar::OnPaint()
 void CPolaMenuDlgBar::OnSize(UINT nType, int cx, int cy)
 {
 	CAdUiDialogBar::OnSize(nType, cx, cy);
+}
+
+void CPolaMenuDlgBar::OnMenuSelect(UINT nID)
+{
 }
 
 BOOL CPolaMenuDlgBar::Create(CFrameWnd* parent_wnd, CString name)
@@ -178,3 +200,5 @@ void CPolaMenuDlgBar::Load()
 	BOOL bTemp = GetPrivateProfileIntW(_T("Settings"), _T("show"), 0, config_path);
 	isShow = (bTemp != 0);
 }
+
+

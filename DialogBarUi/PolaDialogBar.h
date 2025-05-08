@@ -20,48 +20,32 @@
 //
 
 //-----------------------------------------------------------------------------
-//----- PolaMenuDlgBar.h : Declaration of the CPolaMenuDlgBar
+//----- PolaDialogBar.h : Declaration of the CPolaDialogBar
 //-----------------------------------------------------------------------------
 #pragma once
 
 //-----------------------------------------------------------------------------
 #include "adui.h"
 #include "resource.h"
-#include "PolaMenu.h"
 //-----------------------------------------------------------------------------
-class CPolaMenuDlgBar : public CAdUiDialogBar {
-	DECLARE_DYNAMIC(CPolaMenuDlgBar)
+class CPolaDialogBar : public CAdUiDialogBar {
+	DECLARE_DYNAMIC (CPolaDialogBar)
 
 public:
-	CPolaMenuDlgBar(CWnd* pParent = NULL, HINSTANCE hInstance = NULL);
-	virtual ~CPolaMenuDlgBar();
-	enum { IDD = IDD_DIALOG1 };
+	CPolaDialogBar (CWnd *pParent =NULL, HINSTANCE hInstance =NULL) ;
+	BOOL Create(CFrameWnd* pParentWnd, CString csName);
+	enum { IDD = IDD_POLADIALOGBAR} ;
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);
-	virtual void OnUpdateCmdUI(CFrameWnd* pTarget, BOOL bDisableIfNoHndler);
-
-	afx_msg LRESULT OnAcadKeepFocus(WPARAM, LPARAM);
-
-	afx_msg void OnSetFrameFocus();
-	afx_msg void OnBarStyleChange(DWORD dwOldStyle, DWORD dwNewStyle);
-	afx_msg void OnClose();
-	afx_msg void OnBtnCassMnu();
-	afx_msg void OnPaint();
-	afx_msg void OnSize(UINT nType, int cx, int cy);
+	virtual void DoDataExchange (CDataExchange *pDX) ;
+	afx_msg LRESULT OnAcadKeepFocus (WPARAM, LPARAM) ;
 	afx_msg void OnMenuSelect(UINT nID);
-
 	DECLARE_MESSAGE_MAP()
 public:
-	BOOL Create(CFrameWnd* parent_wnd, CString name);
-
-	bool isShow;
-	Adesk::UInt32 alignment_mode;
-	CString path;
-	bool isOnce;
-	PolaMenu menu_;
-	void Save();
-	void ShowBar(bool show = true);
-protected:
-	void Load();
-};
+	CMenu m_menu;
+	CButton* pButton;
+	afx_msg void OnPaint();
+	afx_msg void OnSize(UINT nType, int cx, int cy);
+	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	afx_msg void OnButtonClicked();
+} ;

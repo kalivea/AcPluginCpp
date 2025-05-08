@@ -79,9 +79,6 @@
     //- Declare it as an extern here so that it becomes available in all modules
     extern AcApDataManager<CDocData> DocVars;
 
-    //定义两个宏留着用
-#define IDC_MENUID 9001
-#define IMENU_ITEM_ID 9002
                 #pragma pack(pop)
 
     

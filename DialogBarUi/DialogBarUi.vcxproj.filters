@@ -27,13 +27,10 @@
     <ClCompile Include="DialogBarUi.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="PolaDialogBar.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
     <ClCompile Include="TestClass.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="PolaMenuDlgBar.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="PolaMenu.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -47,13 +44,10 @@
     <ClInclude Include="Resource.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="PolaDialogBar.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
     <ClInclude Include="TestClass.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="PolaMenuDlgBar.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="PolaMenu.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

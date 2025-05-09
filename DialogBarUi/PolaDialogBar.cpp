@@ -135,3 +135,16 @@ void CPolaDialogBar::OnButtonClicked()
 
 	m_menu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y, this);
 }
+
+BOOL CPolaDialogBar::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo)
+{
+	// TODO: 在此添加专用代码和/或调用基类
+
+	return CAdUiDialogBar::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
+}
+
+void CPolaDialogBar::OnUpdateCmdUI(CFrameWnd* pTarget, BOOL bDisableIfNoHandler)
+{
+	// TODO: 在此添加专用代码和/或调用基类
+	CAdUiDialogBar::OnUpdateCmdUI(pTarget, FALSE);
+}

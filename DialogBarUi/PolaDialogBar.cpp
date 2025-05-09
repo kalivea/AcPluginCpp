@@ -34,7 +34,7 @@ BEGIN_MESSAGE_MAP(CPolaDialogBar, CAdUiDialogBar)
 	ON_WM_PAINT()
 	ON_WM_SIZE()
 	ON_WM_CREATE()
-	ON_BN_CLICKED(64000, OnButtonClicked)
+	ON_BN_CLICKED(IDC_MY_BUTTON, OnButtonClicked)
 	ON_COMMAND_RANGE(ID_MENU_ITEM_1, ID_MENU_ITEM_3, OnMenuSelect)
 
 END_MESSAGE_MAP()
@@ -63,6 +63,7 @@ BOOL CPolaDialogBar::Create(CFrameWnd* pParentWnd, CString csName)
 //-----------------------------------------------------------------------------
 void CPolaDialogBar::DoDataExchange (CDataExchange *pDX) {
 	CAdUiDialogBar::DoDataExchange (pDX) ;
+	DDX_Control(pDX, IDC_MY_BUTTON, *pButton); // 关联按钮控件变量
 }
 
 //-----------------------------------------------------------------------------
@@ -70,6 +71,7 @@ void CPolaDialogBar::DoDataExchange (CDataExchange *pDX) {
 //----- Return FALSE to not keep the focus, return TRUE to keep the focus
 LRESULT CPolaDialogBar::OnAcadKeepFocus (WPARAM, LPARAM) {
 	return (TRUE) ;
+	//return false;
 }
 
 void CPolaDialogBar::OnMenuSelect(UINT nID)
@@ -93,7 +95,7 @@ void CPolaDialogBar::OnPaint()
 	CPaintDC dc(this); // device context for painting
 
 	// TODO: 在此处添加消息处理程序代码
-	// 不为绘图消息调用 CAdUiDialogBar::OnPaint()
+	CAdUiDialogBar::OnPaint();
 	
 }
 
@@ -110,32 +112,26 @@ int CPolaDialogBar::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (CAdUiDialogBar::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
+	if (!m_menu.CreatePopupMenu())
+	{
+		AfxMessageBox(_T("菜单创建失败！"));
+		return -1;
+	}
 	// TODO:  在此添加您专用的创建代码
-	m_menu.CreatePopupMenu();
 	m_menu.AppendMenu(MF_STRING, ID_MENU_ITEM_1, _T("菜单项 1"));
 	m_menu.AppendMenu(MF_STRING, ID_MENU_ITEM_2, _T("菜单项 2"));
 	m_menu.AppendMenu(MF_STRING, ID_MENU_ITEM_3, _T("菜单项 3"));
 
-	CRect rect(10, 10, 100, 30);
-	pButton = new CButton();
-	if (!pButton->Create(_T("菜单"), WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, rect, this, 64000))
-	{
-		AfxMessageBox(_T("按钮创建失败！"));
-		delete pButton;
-		pButton = nullptr;
-		return -1;
-	}
 
-	CFont* pFont = CFont::FromHandle((HFONT)GetStockObject(DEFAULT_GUI_FONT));
-	pButton->SetFont(pFont);
-	pButton->EnableWindow(TRUE); // 显式启用按钮
-	GetDockingFrame()->SetFocus();
+	//GetDockingFrame()->SetFocus();
 	return 0;
 }
 
 void CPolaDialogBar::OnButtonClicked()
 {
+	CAcModuleResourceOverride resOverride; // 确保资源正确
 	CPoint point;
 	GetCursorPos(&point);
+
 	m_menu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y, this);
 }

@@ -44,6 +44,7 @@ protected:
 public:
 	CMenu m_menu;
 	CButton* pButton;
+	CDialog pDlg;
 	afx_msg void OnPaint();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);

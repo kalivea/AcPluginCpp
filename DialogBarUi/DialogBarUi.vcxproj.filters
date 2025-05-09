@@ -27,10 +27,7 @@
     <ClCompile Include="DialogBarUi.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="PolaDialogBar.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="TestClass.cpp">
+    <ClCompile Include="CPolaMenu.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -44,10 +41,7 @@
     <ClInclude Include="Resource.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="PolaDialogBar.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="TestClass.h">
+    <ClInclude Include="CPolaMenu.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

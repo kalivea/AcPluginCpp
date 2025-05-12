@@ -126,6 +126,30 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// Menu
+//
+
+IDR_MENU1 MENU
+BEGIN
+    POPUP "test1"
+    BEGIN
+        MENUITEM "test1.1",                     ID_TEST1_TEST1
+        MENUITEM "test1.2",                     ID_TEST1_TEST2
+    END
+    POPUP "test2"
+    BEGIN
+        POPUP "test2.1"
+        BEGIN
+            MENUITEM "test2.1.1",                   ID_TEST2_TEST3
+            MENUITEM "test2.1.2",                   ID_TEST2_TEST4
+        END
+        MENUITEM "test2.2",                     ID_TEST2_TEST5
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // String Table
 //
 

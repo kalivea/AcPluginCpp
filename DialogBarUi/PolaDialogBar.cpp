@@ -169,29 +169,12 @@ int CPolaDialogBar::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (CAdUiDialogBar::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
-	//// TODO:  在此添加您专用的创建代码
-	//CStringArray saMenu;
-	//CString csConfigPath = _T("C:\\Users\\Polaris\\Documents\\arxini\\menu.cfg");
-
-	//if (CPolaMenu::ReadMenuConfigFromFile(csConfigPath, saMenu))
-	//{
-	//	CPolaMenu polaMenu;
-	//	int nStartID = 6000; // 起始ID（需唯一）
-	//	polaMenu.Set(saMenu, nStartID);
-
-	//	// 将动态菜单附加到主窗口菜单栏
-	//	//GetMenu()->AppendMenu(MF_POPUP, (UINT)polaMenu.m_menu.m_hMenu, _T("动态菜单"));
-	//	DrawMenuBar(); // 刷新菜单显示
-	//}
-	//else
-	//	AfxMessageBox(_T("菜单配置文件加载失败！"));
-	////
 	return 0;
 }
 
 void CPolaDialogBar::OnButtonClicked()
 {
-	CPolaMenu cassMenu;
+	/*CPolaMenu cassMenu;
 	int nStartID = 3000;
 	CStringArray saMenu;
 	CPolaMenu::ReadMenuConfigFromFile(_T("C:\\Users\\Polaris\\Documents\\arxini\\menu.cfg"), saMenu);
@@ -204,5 +187,21 @@ void CPolaDialogBar::OnButtonClicked()
 		rect.left,
 		rect.bottom,
 		this
+	);*/
+	CMenu menu;
+	menu.LoadMenu(IDR_MENU1);
+
+	CMenu* pSubMenu = menu.GetSubMenu(0);
+	if (!pSubMenu) return;
+
+	CRect rect;
+	GetDlgItem(IDC_MY_BUTTON)->GetWindowRect(&rect);
+
+	pSubMenu->TrackPopupMenu(
+		TPM_LEFTALIGN | TPM_TOPALIGN,
+		rect.left,
+		rect.bottom,
+		this
 	);
+
 }

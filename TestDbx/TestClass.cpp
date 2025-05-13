@@ -16,7 +16,7 @@ void TestClass::Test()
 {
 	OPENFILENAME open_file_name;
 	TCHAR file_path[MAX_PATH] = { 0 };
-	TCHAR* default_path = _T("C:\\Users\\Polaris\\Desktop\\7-图纸模块");
+	TCHAR* default_path = _T("C:\\Users\\Polaris\\Desktop\\7-图纸模块\\1-明挖\\2-地下连续墙");
 	ZeroMemory(&open_file_name, sizeof(open_file_name));
 	open_file_name.lStructSize = sizeof(open_file_name);
 	open_file_name.hwndOwner = NULL;
@@ -50,6 +50,10 @@ void TestClass::Test()
 			else
 				block_name = path_str;
 		}
-		EditBlock::InsertBlockRef(EditDwg::InsertDwgAsBlockDef(escaped_path.c_str(), block_name.c_str(), true), AcGePoint3d(0, 0, 0), 1, 0);
+		AcGePoint3d point;
+		SelectEntitys::PickPoint(_T("选择插入点"), point);
+		EditBlock::InsertBlockRef(EditDwg::InsertDwgAsBlockDef(escaped_path.c_str(), block_name.c_str(), true), point, 1, 0);
 	}
+
+
 }

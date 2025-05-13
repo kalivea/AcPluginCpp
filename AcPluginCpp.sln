@@ -108,6 +108,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MenuBarUi", "MenuBarUi\Menu
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DialogBarUi", "DialogBarUi\DialogBarUi.vcxproj", "{07B4C476-5889-4919-9F80-97DE368F924E}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EnclosureDrawing", "EnclosureDrawing\EnclosureDrawing.vcxproj", "{CE097274-EA48-46B7-8A3C-217994CE9122}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -198,6 +200,10 @@ Global
 		{07B4C476-5889-4919-9F80-97DE368F924E}.Debug|x64.Build.0 = Debug|x64
 		{07B4C476-5889-4919-9F80-97DE368F924E}.Release|x64.ActiveCfg = Release|x64
 		{07B4C476-5889-4919-9F80-97DE368F924E}.Release|x64.Build.0 = Release|x64
+		{CE097274-EA48-46B7-8A3C-217994CE9122}.Debug|x64.ActiveCfg = Debug|x64
+		{CE097274-EA48-46B7-8A3C-217994CE9122}.Debug|x64.Build.0 = Debug|x64
+		{CE097274-EA48-46B7-8A3C-217994CE9122}.Release|x64.ActiveCfg = Release|x64
+		{CE097274-EA48-46B7-8A3C-217994CE9122}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

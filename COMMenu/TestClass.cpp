@@ -1,10 +1,16 @@
 #include "stdafx.h"
 #include "TestClass.h"
 
-#include "resource.h"
-#include "acadi_i.c"
 
 extern bool isMenuLoad;
+
+struct MenuItem {
+	const char* name;          // 菜单项名称
+	const char* macro;         // 宏命令，若为空则表示为子菜单
+	const MenuItem* subItems;  // 子菜单项数组
+	int subItemCount;          // 子菜单项数量
+};
+
 void TestClass::TestClassInit()
 {
 	acedRegCmds->addCommand(_T("tmpGroupName"), _T("TestMenu"), _T("TestMenu"), ACRX_CMD_MODAL, Test);
@@ -75,7 +81,7 @@ void TestClass::Test()
 					"明挖(&M)",
 					{
 						{"灌注桩(&G)", "gzz "},
-						{"地下连续墙(&D)", "dxlxq "},
+						{"地下连续墙(&D)", "TestClass "},
 						{"咬合桩(&Y)", "yhz "},
 						{"SMW工法桩(&S)", "smwgfz "},
 						{"TRD(&T)", "trd "},
@@ -162,4 +168,42 @@ void TestClass::Test()
 		}
 	}
 	pPopUpMenus->Release();
+}
+
+void TestClass::AddMenuItems(IAcadPopupMenu* pParentMenu, const MenuItem* items, int itemCount)
+{
+	for (int i = 0; i < itemCount; ++i)
+	{
+		const MenuItem& item = items[i];
+		VARIANT idx;
+		VariantInit(&idx);
+		V_VT(&idx) = VT_I4;
+		V_I4(&idx) = i;
+
+		// 转换菜单名称
+		WCHAR wName[256];
+		MultiByteToWideChar(CP_ACP, 0, item.name, -1, wName, 256);
+
+		if (item.subItems && item.subItemCount > 0)
+		{
+			// 创建子菜单
+			IAcadPopupMenu* pSubMenu = nullptr;
+			if (SUCCEEDED(pParentMenu->AddSubMenu(idx, wName, &pSubMenu)) && pSubMenu)
+			{
+				AddMenuItems(pSubMenu, item.subItems, item.subItemCount); // 递归调用
+				pSubMenu->Release();
+			}
+		}
+		else
+		{
+			// 添加普通菜单项
+			WCHAR wMacro[256] = { 0 };
+			if (item.macro)
+				MultiByteToWideChar(CP_ACP, 0, item.macro, -1, wMacro, 256);
+
+			IAcadPopupMenuItem* pMenuItem = nullptr;
+			if (SUCCEEDED(pParentMenu->AddMenuItem(idx, wName, wMacro, &pMenuItem)) && pMenuItem)
+				pMenuItem->Release();
+		}
+	}
 }

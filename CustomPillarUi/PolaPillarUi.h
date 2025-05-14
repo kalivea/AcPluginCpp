@@ -53,7 +53,7 @@ public:
 	afx_msg void OnBnClickedRadioRect();
 	afx_msg void OnBnClickedRadioCirc();
 	CEdit Edit_Sn_;
-	int pillar_sn = 6496;
+	TCHAR* pillar_sn = _T("6496");
 	CEdit Edit_Grade;
 	int pillar_conc_grade = 6496;
 	CEdit Edit_Pipe_D_;

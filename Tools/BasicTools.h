@@ -1,5 +1,9 @@
 #pragma once
 #include "StdAfx.h"
+#include <sstream>
+#include <string>
+#include <tchar.h>
+#include <Windows.h> 
 /*
 *
 * Update Time: 2025-01-02
@@ -83,4 +87,5 @@ public:
 
 	// string tools
 	static std::basic_string<TCHAR> EscapeBackslashes(const TCHAR* path);
+	static TCHAR* StringToChar(CString& str);
 };

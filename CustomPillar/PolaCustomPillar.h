@@ -110,7 +110,7 @@ private:
 	//						   If it is a circular pillar, d = h, represent the diameter of the circle.
 	bool viewable_;								// viewalbe: Used to control the entity line type. true mean continuous; false mean dashed.
 	Adesk::Int32 pillar_property_;				// pillar property: (int) 0 mean concrete; (int) 1 mean concrete-filled steel tube pillar.
-	Adesk::Int32 pillar_serial_number_;			// pillar serial number.
+	TCHAR* pillar_serial_number_;			// pillar serial number.
 	Adesk::Int32 pillar_type_;					// pillar type: (int) 0 mean round pillar; (int) 1 mean rectangular pillar.
 
 	//	               auxiliary data
@@ -124,7 +124,7 @@ public:
 	void setDiameter(const double& d, const double& h);
 	void setViewable(const bool view);
 	void setPillarProperty(const Adesk::Int32& prop);
-	void setSn(const Adesk::Int32& sn);
+	void setSn(const TCHAR* sn);
 	void setPillarType(const Adesk::Int32& type);
 	void setConcreteGrade(const Adesk::Int32& grade);
 
@@ -134,7 +134,7 @@ public:
 	void getDiameter(double& d, double& h) const;
 	bool getViewable() const;
 	Adesk::Int32 getPillarProperty() const;
-	Adesk::Int32 getPillarSn() const;
+	TCHAR* getPillarSn() const;
 	Adesk::Int32 getPillarType() const;
 	Adesk::Int32 getConcreteGrade() const;
 

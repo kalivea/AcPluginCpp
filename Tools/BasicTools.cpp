@@ -570,6 +570,14 @@ std::basic_string<TCHAR> BasicTools::EscapeBackslashes(const TCHAR* path)
 	return escaped;
 }
 
+TCHAR* BasicTools::StringToChar(CString& str)
+{
+	int len = str.GetLength();
+	TCHAR* tr = str.GetBuffer(len);
+	str.ReleaseBuffer();
+	return tr;
+}
+
 /// <summary>
 /// Determine whether two points intersect.
 /// </summary>

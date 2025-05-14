@@ -25,6 +25,7 @@
 #include "StdAfx.h"
 #include "PolaCustomPillar.h"
 #include <sstream> 
+#include <tchar.h>
 //-----------------------------------------------------------------------------
 Adesk::UInt32 CPolaCustomPillar::kCurrentVersionNumber = 1;
 
@@ -423,10 +424,10 @@ void CPolaCustomPillar::setPillarProperty(const Adesk::Int32 & prop)
 		throw;
 }
 
-void CPolaCustomPillar::setSn(const Adesk::Int32 & sn)
+void CPolaCustomPillar::setSn(const TCHAR * sn)
 {
 	assertWriteEnabled();
-	pillar_serial_number_ = sn;
+	pillar_serial_number_ = _tcsdup(sn);
 }
 
 void CPolaCustomPillar::setPillarType(const Adesk::Int32 & type)
@@ -477,7 +478,7 @@ Adesk::Int32 CPolaCustomPillar::getPillarProperty() const
 	return pillar_property_;
 }
 
-Adesk::Int32 CPolaCustomPillar::getPillarSn() const
+TCHAR* CPolaCustomPillar::getPillarSn() const
 {
 	assertReadEnabled();
 	return pillar_serial_number_;
@@ -569,8 +570,8 @@ bool CPolaCustomPillar::checkValue(const CPolaCustomPillar * pillar)
 	bool size_result = (d > 0 && h >= 0) ? true : false;
 	bool prop_result = (pillar->getPillarProperty() == 0 || pillar->getPillarProperty() == 1) ? true : false;
 	bool type_result = (pillar->getPillarType() == 0 || pillar->getPillarType() == 1) ? true : false;
-	bool sn_result = pillar->getPillarSn() > 0 ? true : false;
-	if (size_result && prop_result && type_result && sn_result)
+
+	if (size_result && prop_result && type_result)
 		check_result = true;
 	else
 		check_result = false;
@@ -646,12 +647,12 @@ AcDbObjectId CPolaCustomPillar::AddPillarLeader()
 	std::wstringstream info_stream;
 	if (pillar_type_ == 1)
 	{
-		info_stream << _T("Z") << pillar_serial_number_ << _T("\n") << static_cast<int>(pillar_d_) << _T("*") << static_cast<int>(pillar_h_);
+		info_stream << pillar_serial_number_ << _T("\n") << static_cast<int>(pillar_d_) << _T("*") << static_cast<int>(pillar_h_);
 		info = info_stream.str();
 	}
 	else if (pillar_type_ == 0)
 	{
-		info_stream << _T("Z") << pillar_serial_number_ << _T("\n%%c") << static_cast<int>(pillar_d_);
+		info_stream << pillar_serial_number_ << _T("\n%%c") << static_cast<int>(pillar_d_);
 		info = info_stream.str();
 	}
 	else

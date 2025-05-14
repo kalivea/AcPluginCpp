@@ -171,7 +171,10 @@ BOOL CPolaPillarUi::OnInitDialog()
 
 void CPolaPillarUi::OnEnKillfocusEditSn()
 {
-	InputValidator<int>::Validate(Edit_Sn_, pillar_sn, _T("Pillar SN"), false);
+	//InputValidator<int>::Validate(Edit_Sn_, pillar_sn, _T("Pillar SN"), false);
+	CString temp;
+	Edit_Sn_.GetWindowTextW(temp);
+	pillar_sn = BasicTools::StringToChar(temp);
 }
 
 void CPolaPillarUi::OnEnKillfocusEditConcGrade()
@@ -332,9 +335,9 @@ void CPolaPillarUi::OnPaint()
 
 void CPolaPillarUi::OnBnClickedButtonSinsert()
 {
-	if (!InputValidator<int>::Validate(Edit_Sn_, pillar_sn, _T("Pillar SN")))
-		return;
-
+	CString temp;
+	Edit_Sn_.GetWindowTextW(temp);
+	pillar_sn = BasicTools::StringToChar(temp);
 
 	if (!InputValidator<int>::Validate(Edit_Grade, pillar_conc_grade, _T("Pillar conc grade")))
 		return;
@@ -366,23 +369,24 @@ void CPolaPillarUi::OnBnClickedButtonSinsert()
 	pillar->setPillarType(shape_type);
 	pillar->setPillarProperty(shape_type);
 
-	BeginEditorCommand();
 	AcGePoint3d insert_point;
-	if (!SelectEntitys::PickPoint(_T("Pick insertion point"), insert_point))
+
+	BeginEditorCommand();
+	acutPrintf(_T("Pick insertion point"));
+	while (!acedUsrBrk())
 	{
-		acutPrintf(_T("Insertion canceled by user.\n"));
-		CompleteEditorCommand();
-		return;
+		if (!SelectEntitys::PickPoint(NULL, insert_point))
+			break;
+		EditEntity::SetLayer(CPolaCustomPillar::SingleInsert(*pillar, insert_point), _T("POLA_PILLAR_STRUCTURE"));
 	}
-	EditEntity::SetLayer(CPolaCustomPillar::SingleInsert(*pillar, insert_point), _T("POLA_PILLAR_STRUCTURE"));
 	CompleteEditorCommand();
 }
 
 void CPolaPillarUi::OnBnClickedButtonMinsert()
 {
-	if (!InputValidator<int>::Validate(Edit_Sn_, pillar_sn, _T("Pillar SN")))
-		return;
-
+	CString temp;
+	Edit_Sn_.GetWindowTextW(temp);
+	pillar_sn = BasicTools::StringToChar(temp);
 
 	if (!InputValidator<int>::Validate(Edit_Grade, pillar_conc_grade, _T("Pillar conc grade")))
 		return;
@@ -394,7 +398,6 @@ void CPolaPillarUi::OnBnClickedButtonMinsert()
 
 		if (!InputValidator<double >::Validate(Edit_Pillar_H_, pillar_h, _T("Pillar height")))
 			return;
-
 	}
 	else if (shape_type == CIRCLE)
 	{

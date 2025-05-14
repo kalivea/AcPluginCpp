@@ -4,6 +4,6 @@
 class EnclosureParameters
 {
 	EnclosureType enclosure_type_;
-	double 
+	double inti;
 };
 

@@ -107,10 +107,10 @@ private:
 	AcGePoint3d center_point_;					// center point: Used to define the insertion point of the entity in the drawing file.
 	AcGeVector3d direction_vector_;				// direction vercor: The angle between the center point and the x-axis, used to define the positive direction of the entity.
 	double pillar_d_, pillar_h_;				// Diameter of the entity: If it is a rectangular pillar, d and h represent the length and width.
-	//						   If it is a circular pillar, d = h, represent the diameter of the circle.
+	//													If it is a circular pillar, d = h, represent the diameter of the circle.
 	bool viewable_;								// viewalbe: Used to control the entity line type. true mean continuous; false mean dashed.
 	Adesk::Int32 pillar_property_;				// pillar property: (int) 0 mean concrete; (int) 1 mean concrete-filled steel tube pillar.
-	TCHAR* pillar_serial_number_;			// pillar serial number.
+	TCHAR* pillar_serial_number_;				// pillar serial number.// NOW ITS STRING.
 	Adesk::Int32 pillar_type_;					// pillar type: (int) 0 mean round pillar; (int) 1 mean rectangular pillar.
 
 	//	               auxiliary data
@@ -137,7 +137,7 @@ public:
 	TCHAR* getPillarSn() const;
 	Adesk::Int32 getPillarType() const;
 	Adesk::Int32 getConcreteGrade() const;
-
+	AcGePoint3dArray getRectVertex() const;
 	//				   auxiliary data generation function
 	void CalculateVertex();
 	void UpdateEntity();			// TODO

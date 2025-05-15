@@ -148,9 +148,13 @@ Acad::ErrorStatus CPolaCustomPillar::dwgInFields(AcDbDwgFiler * pFiler) {
 	es = pFiler->readItem(&pillar_property_);
 	if (es != Acad::eOk)
 		return es;
-	es = pFiler->readItem(&pillar_serial_number_);
+
+	TCHAR* new_string = nullptr;
+	es = pFiler->readString(&new_string);
 	if (es != Acad::eOk)
 		return es;
+	pillar_serial_number_ = new_string;
+
 	if (pillar_type_ == 1)
 	{
 		rect_pillar_vertex_.removeAll();
@@ -494,6 +498,12 @@ Adesk::Int32 CPolaCustomPillar::getConcreteGrade() const
 {
 	assertReadEnabled();
 	return concrete_grade_;
+}
+
+AcGePoint3dArray CPolaCustomPillar::getRectVertex() const
+{
+	assertReadEnabled();
+	return rect_pillar_vertex_;
 }
 
 void CPolaCustomPillar::CalculateVertex()

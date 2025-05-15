@@ -30,8 +30,6 @@
 #include "InputValidator.h"
 //-----------------------------------------------------------------------------
 
-
-
 class CPolaPillarUi : public CAdUiBaseDialog {
 	DECLARE_DYNAMIC(CPolaPillarUi)
 
@@ -52,6 +50,7 @@ protected:
 public:
 	afx_msg void OnBnClickedRadioRect();
 	afx_msg void OnBnClickedRadioCirc();
+
 	CEdit Edit_Sn_;
 	TCHAR* pillar_sn = _T("6496");
 	CEdit Edit_Grade;
@@ -70,6 +69,8 @@ public:
 	LineStyle line_style = SOLID;
 	BOOL isDataReady = false;
 
+	CButton Button_cancel;
+
 	virtual BOOL OnInitDialog();
 	afx_msg void OnEnKillfocusEditSn();
 	afx_msg void OnEnKillfocusEditConcGrade();
@@ -84,4 +85,9 @@ public:
 	afx_msg void OnBnClickedRadioSline();
 	afx_msg void OnBnClickedRadioDline();
 	afx_msg void OnBnClickedButtonAddinfo();
+	afx_msg void OnBnClickedOk();
+	afx_msg void OnBnClickedCancel();
+
+	void load(TCHAR* sn);
+	void SimulateRadioClicked(UINT radio_id);
 };

@@ -29,6 +29,8 @@
 #include "SelectEntitys.h"
 #include "BasicTools.h"
 #include "EditEntity.h"
+#include "PillarTools.h"
+#include "DwgFileInfo.h"
 //-----------------------------------------------------------------------------
 IMPLEMENT_DYNAMIC(CPolaPillarUi, CAdUiBaseDialog)
 
@@ -49,6 +51,8 @@ BEGIN_MESSAGE_MAP(CPolaPillarUi, CAdUiBaseDialog)
 	ON_BN_CLICKED(IDC_RADIO_SLINE, &CPolaPillarUi::OnBnClickedRadioSline)
 	ON_BN_CLICKED(IDC_RADIO_DLINE, &CPolaPillarUi::OnBnClickedRadioDline)
 	ON_BN_CLICKED(IDC_BUTTON_ADDINFO, &CPolaPillarUi::OnBnClickedButtonAddinfo)
+	ON_BN_CLICKED(IDOK, &CPolaPillarUi::OnBnClickedOk)
+	ON_BN_CLICKED(IDCANCEL, &CPolaPillarUi::OnBnClickedCancel)
 END_MESSAGE_MAP()
 
 //-----------------------------------------------------------------------------
@@ -108,6 +112,7 @@ void CPolaPillarUi::DoDataExchange(CDataExchange* pDX) {
 	DDX_Control(pDX, IDC_EDIT_PIPE_T, Edit_Pipe_T_);
 	DDX_Control(pDX, IDC_EDIT_D, Edit_Pillar_D_);
 	DDX_Control(pDX, IDC_EDIT_H, Edit_Pillar_H_);
+	DDX_Control(pDX, IDCANCEL, Button_cancel);
 }
 
 //-----------------------------------------------------------------------------
@@ -153,7 +158,6 @@ void CPolaPillarUi::OnBnClickedRadioCirc()
 	shape_type = CIRCLE;
 }
 
-
 BOOL CPolaPillarUi::OnInitDialog()
 {
 	CAdUiBaseDialog::OnInitDialog();
@@ -171,10 +175,32 @@ BOOL CPolaPillarUi::OnInitDialog()
 
 void CPolaPillarUi::OnEnKillfocusEditSn()
 {
-	//InputValidator<int>::Validate(Edit_Sn_, pillar_sn, _T("Pillar SN"), false);
 	CString temp;
 	Edit_Sn_.GetWindowTextW(temp);
 	pillar_sn = BasicTools::StringToChar(temp);
+
+	CString bin_path;
+	PillarTools::GetPillarBinPath(bin_path);
+
+	if (PillarTools::IsPillarInfoInFile(bin_path.GetString(), pillar_sn))
+		load(pillar_sn);
+	else
+	{
+		Edit_Grade.SetSel(0, -1);
+		Edit_Grade.Clear();
+
+		Edit_Pillar_D_.SetSel(0, -1);
+		Edit_Pillar_D_.Clear();
+
+		Edit_Pillar_H_.SetSel(0, -1);
+		Edit_Pillar_H_.Clear();
+
+		Edit_Pipe_D_.SetSel(0, -1);
+		Edit_Pipe_D_.Clear();
+
+		Edit_Pipe_T_.SetSel(0, -1);
+		Edit_Pipe_T_.Clear();
+	}
 }
 
 void CPolaPillarUi::OnEnKillfocusEditConcGrade()
@@ -495,3 +521,77 @@ void CPolaPillarUi::OnBnClickedButtonAddinfo()
 	}
 	CompleteEditorCommand();
 }
+
+void CPolaPillarUi::OnBnClickedOk()
+{
+	CString bin_path;
+	PillarTools::GetPillarBinPath(bin_path);
+	if (!PillarTools::SaveAllPillarInfoToFile(bin_path.GetString()))
+		acutPrintf(_T("error\n"));
+
+	CAdUiBaseDialog::OnOK();
+}
+
+void CPolaPillarUi::OnBnClickedCancel()
+{
+	CString bin_path;
+	PillarTools::GetPillarBinPath(bin_path);
+	if (!PillarTools::SaveAllPillarInfoToFile(bin_path.GetString()))
+		acutPrintf(_T("error\n"));
+
+	CAdUiBaseDialog::OnCancel();
+}
+
+void CPolaPillarUi::load(TCHAR* sn)
+{
+	CPolaCustomPillar* pillar = new CPolaCustomPillar;
+
+	CString bin_path;
+	PillarTools::GetPillarBinPath(bin_path);
+
+	if (PillarTools::LoadPillarInfoFromFileBySn(bin_path.GetString(), sn, pillar))
+	{
+		CString temp;
+		switch (pillar->getPillarType())
+		{
+		case 0:
+		{
+			SimulateRadioClicked(IDC_RADIO_CIRC);
+			double pipe_d, pipe_t;
+			pillar->getDiameter(pipe_d, pipe_t);
+			temp.Format(_T("%.0f"), pipe_d);
+			Edit_Pipe_D_.SetWindowTextW(temp);
+			Edit_Pipe_T_.SetWindowTextW(_T("12"));
+		}
+		case 1:
+		{
+			SimulateRadioClicked(IDC_RADIO_RECT);
+			double d, h;
+			pillar->getDiameter(d, h);
+
+			temp.Format(_T("%.0f"), d);
+			Edit_Pillar_D_.SetWindowTextW(temp);
+			temp.Format(_T("%.0f"), h);
+			Edit_Pillar_H_.SetWindowTextW(temp);
+		}
+		}
+
+		int grade = pillar->getConcreteGrade();
+		temp.Format(_T("%d"), grade);
+		Edit_Grade.SetWindowTextW(temp);
+
+		if (pillar->getViewable())
+			SimulateRadioClicked(IDC_RADIO_SLINE);
+		else
+			SimulateRadioClicked(IDC_RADIO_DLINE);
+	}
+	delete pillar;
+}
+
+void CPolaPillarUi::SimulateRadioClicked(UINT radio_id)
+{
+	GetDlgItem(radio_id)->PostMessageW(WM_LBUTTONDOWN);
+	GetDlgItem(radio_id)->PostMessageW(WM_LBUTTONUP);
+}
+
+

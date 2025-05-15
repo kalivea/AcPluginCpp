@@ -2,13 +2,22 @@
 #include "TestClass.h"
 #include "PolaPillarUi.h"
 #include "StyleTools.h"
+#include "DwgFileInfo.h"
+#include "PillarTools.h"
+
 void TestClass::TestClassInit()
 {
 	acedRegCmds->addCommand(_T("tmpGroupName"), _T("TestPillar"), _T("TestPillar"), ACRX_CMD_MODAL, Test);
 }
+
 void TestClass::TestClassUnload()
 {
+	CString bin_path;
+	PillarTools::GetPillarBinPath(bin_path);
+	if (!PillarTools::SaveAllPillarInfoToFile(bin_path.GetString()))
+		acutPrintf(_T("error\n"));
 	acedRegCmds->removeGroup(_T("tmpGroupName"));
+
 }
 void TestClass::Test()
 {

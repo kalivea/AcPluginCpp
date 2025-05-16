@@ -90,4 +90,5 @@ public:
 
 	void load(TCHAR* sn);
 	void SimulateRadioClicked(UINT radio_id);
+	afx_msg void OnEnChangeEditSn();
 };

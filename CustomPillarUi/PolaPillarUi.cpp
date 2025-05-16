@@ -53,6 +53,7 @@ BEGIN_MESSAGE_MAP(CPolaPillarUi, CAdUiBaseDialog)
 	ON_BN_CLICKED(IDC_BUTTON_ADDINFO, &CPolaPillarUi::OnBnClickedButtonAddinfo)
 	ON_BN_CLICKED(IDOK, &CPolaPillarUi::OnBnClickedOk)
 	ON_BN_CLICKED(IDCANCEL, &CPolaPillarUi::OnBnClickedCancel)
+	ON_EN_CHANGE(IDC_EDIT_SN, &CPolaPillarUi::OnEnChangeEditSn)
 END_MESSAGE_MAP()
 
 //-----------------------------------------------------------------------------
@@ -178,7 +179,6 @@ void CPolaPillarUi::OnEnKillfocusEditSn()
 	CString temp;
 	Edit_Sn_.GetWindowTextW(temp);
 	pillar_sn = BasicTools::StringToChar(temp);
-
 	CString bin_path;
 	PillarTools::GetPillarBinPath(bin_path);
 
@@ -188,18 +188,30 @@ void CPolaPillarUi::OnEnKillfocusEditSn()
 	{
 		Edit_Grade.SetSel(0, -1);
 		Edit_Grade.Clear();
+		switch (shape_type)
+		{
+		case CPolaPillarUi::CIRCLE:
+		{
+			Edit_Pillar_D_.SetSel(0, -1);
+			Edit_Pillar_D_.Clear();
 
-		Edit_Pillar_D_.SetSel(0, -1);
-		Edit_Pillar_D_.Clear();
+			Edit_Pillar_H_.SetSel(0, -1);
+			Edit_Pillar_H_.Clear();
+			break;
+		}
 
-		Edit_Pillar_H_.SetSel(0, -1);
-		Edit_Pillar_H_.Clear();
+		case CPolaPillarUi::RECTANGLE:
+		{
+			Edit_Pipe_D_.SetSel(0, -1);
+			Edit_Pipe_D_.Clear();
 
-		Edit_Pipe_D_.SetSel(0, -1);
-		Edit_Pipe_D_.Clear();
-
-		Edit_Pipe_T_.SetSel(0, -1);
-		Edit_Pipe_T_.Clear();
+			Edit_Pipe_T_.SetSel(0, -1);
+			Edit_Pipe_T_.Clear();
+			break;
+		}
+		default:
+			break;
+		}
 	}
 }
 
@@ -562,6 +574,7 @@ void CPolaPillarUi::load(TCHAR* sn)
 			temp.Format(_T("%.0f"), pipe_d);
 			Edit_Pipe_D_.SetWindowTextW(temp);
 			Edit_Pipe_T_.SetWindowTextW(_T("12"));
+			break;
 		}
 		case 1:
 		{
@@ -573,7 +586,10 @@ void CPolaPillarUi::load(TCHAR* sn)
 			Edit_Pillar_D_.SetWindowTextW(temp);
 			temp.Format(_T("%.0f"), h);
 			Edit_Pillar_H_.SetWindowTextW(temp);
+			break;
 		}
+		default:
+			break;
 		}
 
 		int grade = pillar->getConcreteGrade();
@@ -594,4 +610,42 @@ void CPolaPillarUi::SimulateRadioClicked(UINT radio_id)
 	GetDlgItem(radio_id)->PostMessageW(WM_LBUTTONUP);
 }
 
+void CPolaPillarUi::OnEnChangeEditSn()
+{
+	CString temp;
+	Edit_Sn_.GetWindowTextW(temp);
+	pillar_sn = BasicTools::StringToChar(temp);
+	CString bin_path;
+	PillarTools::GetPillarBinPath(bin_path);
 
+	if (PillarTools::IsPillarInfoInFile(bin_path.GetString(), pillar_sn))
+		load(pillar_sn);
+	else
+	{
+		Edit_Grade.SetSel(0, -1);
+		Edit_Grade.Clear();
+		switch (shape_type)
+		{
+		case CPolaPillarUi::CIRCLE:
+		{
+			Edit_Pillar_D_.SetSel(0, -1);
+			Edit_Pillar_D_.Clear();
+
+			Edit_Pillar_H_.SetSel(0, -1);
+			Edit_Pillar_H_.Clear();
+			break;
+		}
+		case CPolaPillarUi::RECTANGLE:
+		{
+			Edit_Pipe_D_.SetSel(0, -1);
+			Edit_Pipe_D_.Clear();
+
+			Edit_Pipe_T_.SetSel(0, -1);
+			Edit_Pipe_T_.Clear();
+			break;
+		}
+		default:
+			break;
+		}
+	}
+}

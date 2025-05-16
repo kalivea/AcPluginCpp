@@ -627,7 +627,6 @@ AcDbObjectIdArray CPolaCustomPillar::BatchInsert(const CPolaCustomPillar & pilla
 				{
 					throw;
 				}
-
 			}
 		}
 		else

@@ -1,9 +1,10 @@
 #pragma once
-enum class EnclosureType
+enum class POLADLL_ENCLOSURE_API EnclosureType
 {
-    DiaphragmWall,  // 地下连续墙
-    BoredPile,      // 钻孔灌注桩
-    SMW_Pile,       // SMW工法桩
-    SteelSheetPile  // 钢板桩
+    DIAPHRAGMWALL,
+    BOREDPILE,
+    SMW_PILE,
+    STEELSHEETPILE,
+    JETGROUTINGPILE
 };
 

@@ -44,6 +44,9 @@
     <ClInclude Include="EnclosureType.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="EnclosureDef.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="EnclosureDrawing.rc">

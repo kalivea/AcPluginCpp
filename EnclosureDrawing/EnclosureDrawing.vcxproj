@@ -83,6 +83,7 @@
     <ClInclude Include="EnclosureType.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="StdAfx.h" />
+    <ClInclude Include="EnclosureDef.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="EnclosureDrawing.rc" />

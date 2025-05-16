@@ -68,7 +68,9 @@
     //#define _AMODELER_SUPPORT_				//- Support for the AModeler API
     #include "dbxHeaders.h"
     #include "AcExtensionModule.h" //- Needed for AutoCAD MFC extension even if not present in the RealDWG SDK
-    
+
+#define POLA_DLL_ENCLOSURE
+#include "EnclosureDef.h"
                         #pragma pack(pop)
 
     

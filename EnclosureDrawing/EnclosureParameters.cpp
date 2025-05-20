@@ -51,7 +51,6 @@ inline void EnclosureParameters::SetAntiUpliftPileDiameter(double anti_uplift_pi
 	anti_uplift_pile_diam_ = anti_uplift_pile_diam;
 }
 
-
 inline EnclosureType EnclosureParameters::GetEnclosureType() const
 {
 	return enclosure_type_;
@@ -100,4 +99,34 @@ inline double EnclosureParameters::GetAntiUpliftPileLength() const
 inline double EnclosureParameters::GetAntiUpliftPileDiameter() const
 {
 	return anti_uplift_pile_diam_;
+}
+
+inline void EnclosureParameters::FromDTO(const EnclosureParametersDTO& dto)
+{
+	enclosure_type_ = dto.enclosure_type;
+	ground_elevation_ = dto.ground_elevation;
+	structure_depth_ = dto.structure_depth;
+	structure_width_ = dto.structure_width;
+	structure_height_ = dto.structure_height;
+	cushion_thickness_ = dto.cushion_thickness;
+	has_lattice_column_ = dto.has_lattice_column;
+	has_anti_uplift_pile_ = dto.has_anti_uplift_pile;
+	anti_uplift_pile_length_ = dto.anti_uplift_pile_length;
+	anti_uplift_pile_diam_ = dto.anti_uplift_pile_diam;
+}
+
+inline EnclosureParametersDTO EnclosureParameters::ToDTO() const
+{
+	EnclosureParametersDTO dto;
+	dto.enclosure_type = enclosure_type_;
+	dto.ground_elevation = ground_elevation_;
+	dto.structure_depth = structure_depth_;
+	dto.structure_width = structure_width_;
+	dto.structure_height = structure_height_;
+	dto.cushion_thickness = cushion_thickness_;
+	dto.has_lattice_column = has_lattice_column_;
+	dto.has_anti_uplift_pile = has_anti_uplift_pile_;
+	dto.anti_uplift_pile_length = anti_uplift_pile_length_;
+	dto.anti_uplift_pile_diam = anti_uplift_pile_diam_;
+	return dto;
 }

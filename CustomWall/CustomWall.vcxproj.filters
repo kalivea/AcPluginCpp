@@ -24,12 +24,21 @@
     <ClCompile Include="CustomWall.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="PolaCustomWall.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="StdAfx.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Resource.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="PolaCustomWall.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="WallBaseDef.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

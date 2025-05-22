@@ -69,6 +69,10 @@ public:
 	static AcGePoint3dArray GetPolyLineIntersections(const AcGePoint3dArray& line1_vertex, const AcGePoint3dArray& line2_vertex);
 	static AcGePoint3dArray GetPolylineVertex(const AcDbPolyline& poly_line);
 
+	// arc tools 
+	static AcGePoint3d GetArcMidPoint(AcGeCircArc3d& arc);
+	static AcGePoint3d GetArcMidPoint(AcDbArc& arc);
+
 	// math tools: Numerical tools
 	static double Max(const double& num1, const double& num2);
 	static double Min(const double& num1, const double& num2);

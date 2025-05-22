@@ -768,6 +768,54 @@ AcGePoint3dArray BasicTools::GetPolylineVertex(const AcDbPolyline& poly_line)
 	return vertex_array;
 }
 
+AcGePoint3d BasicTools::GetArcMidPoint(AcGeCircArc3d& arc)
+{
+	AcGePoint3d center = arc.center();
+	double radius = arc.radius();
+	double start_angle = arc.startAng();
+	double end_angle = arc.endAng();
+	AcGeVector3d normal = arc.normal();
+
+	bool isClockwise = (normal.z < 0.0);
+
+	double delta_theta;
+
+	if (std::abs(start_angle - end_angle) < AcGeContext::gTol.equalPoint())
+		delta_theta = 2 * M_PI;
+	else 
+	{
+		if (isClockwise)
+			delta_theta = std::fmod(start_angle - end_angle + 2 * M_PI, 2 * M_PI);
+		else
+			delta_theta = std::fmod(end_angle - start_angle + 2 * M_PI, 2 * M_PI);
+	}
+
+	double mid_angle;
+	if (isClockwise) 
+		mid_angle = start_angle - delta_theta / 2.0;
+	else 
+		mid_angle = start_angle + delta_theta / 2.0;
+
+	mid_angle = std::fmod(mid_angle + 2 * M_PI, 2 * M_PI); 
+
+	double x = center.x + radius * std::cos(mid_angle);
+	double y = center.y + radius * std::sin(mid_angle);
+
+	return AcGePoint3d(x, y, center.z);
+}
+
+AcGePoint3d BasicTools::GetArcMidPoint(AcDbArc& arc)
+{
+	AcGePoint3d center=arc.center();
+	double radius = arc.radius();
+	double startAng = arc.startAngle();
+	double endAng = arc.endAngle();
+	AcGeVector3d normal = arc.normal();
+	AcGeVector3d refVec = AcGeVector3d::kXAxis;
+	AcGeCircArc3d arcc(center, normal, refVec, radius, startAng, endAng);
+	return GetArcMidPoint(arcc);
+}
+
 /// <summary>
 /// Grid modules: Calculate X direction point Array based on spacing.
 /// </summary>

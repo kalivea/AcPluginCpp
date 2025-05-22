@@ -24,30 +24,37 @@ void TestClass::Test()
 		acutPrintf(_T("success\n"));
 	else
 		acutPrintf(_T("error\n"));*/
-	/*TCHAR szFileName[MAX_PATH] = { 0 };
-	TCHAR szFilePath[MAX_PATH] = { 0 };
+		/*TCHAR szFileName[MAX_PATH] = { 0 };
+		TCHAR szFilePath[MAX_PATH] = { 0 };
 
-	if (DwgFileInfo::GetDwgFileInfo(szFileName, MAX_PATH, szFilePath, MAX_PATH))
-	{
-		CString path = _T("C:\\Users\\Polaris\\Documents\\arxini");
-		CString full_path;
-		full_path.Format(_T("%s\\%s.bin"), path.GetString(), szFileName);
-		if (PillarTools::SaveAllPillarInfoToFile(full_path.GetString()))
-			acutPrintf(_T("success\n"));
+		if (DwgFileInfo::GetDwgFileInfo(szFileName, MAX_PATH, szFilePath, MAX_PATH))
+		{
+			CString path = _T("C:\\Users\\Polaris\\Documents\\arxini");
+			CString full_path;
+			full_path.Format(_T("%s\\%s.bin"), path.GetString(), szFileName);
+			if (PillarTools::SaveAllPillarInfoToFile(full_path.GetString()))
+				acutPrintf(_T("success\n"));
+			else
+				acutPrintf(_T("error\n"));
+		}
 		else
-			acutPrintf(_T("error\n"));
-	}
-	else
-		acutPrintf(_T("ERROR"));*/
-	StyleTools::LoadLineType(_T("CENTER"), _T("acad.lin"));
-	StyleTools::LoadLineType(_T("DASHED"), _T("acad.lin"));
-	StyleTools::CreateLayerStyle(_T("POLA_PILLAR_STRUCTURE"), 2, _T("CONTINUOUS"));
-	StyleTools::CreateLayerStyle(_T("POLA_PILLAR_MARK"), 3, _T("CONTINUOUS"));
+			acutPrintf(_T("ERROR"));*/
 
-	CPolaCustomPillar* pillar = new CPolaCustomPillar;
-	PillarTools::LoadPillarInfoFromFileBySn(_T("C:\\Users\\Polaris\\Documents\\arxini\\Drawing1.dwg.bin"), _T("ѽ1"), pillar);
 
-	AddToModelSpace::AddEntityToModelSpace(pillar);
+			//StyleTools::LoadLineType(_T("CENTER"), _T("acad.lin"));
+			//StyleTools::LoadLineType(_T("DASHED"), _T("acad.lin"));
+			//StyleTools::CreateLayerStyle(_T("POLA_PILLAR_STRUCTURE"), 2, _T("CONTINUOUS"));
+			//StyleTools::CreateLayerStyle(_T("POLA_PILLAR_MARK"), 3, _T("CONTINUOUS"));
+
+			//CPolaCustomPillar* pillar = new CPolaCustomPillar;
+			//PillarTools::LoadPillarInfoFromFileBySn(_T("C:\\Users\\Polaris\\Documents\\arxini\\Drawing1.dwg.bin"), _T("ѽ1"), pillar);
+
+			//AddToModelSpace::AddEntityToModelSpace(pillar);
+	AcDbObjectIdArray arc_id;
+	SelectEntitys::PickEntitys(NULL, AcDbArc::desc(), arc_id);
+	AcDbObjectPointer<AcDbArc> arc_pointer(arc_id.at(0));
+
+	DrawEntity::DrawLine(BasicTools::GetArcMidPoint(*arc_pointer), arc_pointer->center());
 }
 //
 //void TestClass::Test()

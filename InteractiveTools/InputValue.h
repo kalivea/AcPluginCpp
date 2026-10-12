@@ -1,4 +1,7 @@
 #pragma once
+#include <tchar.h>
+#include <cstddef>
+#include "InteractiveDef.h"
 class POLADLL_INTERACTIVE_API InputValue
 {
 public:

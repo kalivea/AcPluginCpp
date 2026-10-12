@@ -1,4 +1,4 @@
-// (C) Copyright 2002-2012 by Autodesk, Inc.
+﻿// (C) Copyright 2002-2012 by Autodesk, Inc.
 //
 // Permission to use, copy, modify, and distribute this software in
 // object code form for any purpose and without fee is hereby granted,
@@ -76,7 +76,7 @@
 //-----------------------------------------------------------------------------
 #include "DocData.h" //- Your document specific data class holder
 #include "AddToModelSpace.h"		//add entity to model space
-#include "DrawEntity.h"				//draw all entity 
+#include "DrawEntity.h"				//draw all entity
 
 
 #include "TestClass.h"				//test class
@@ -89,7 +89,7 @@
 //#include "UstyleEntrance.h"
 
 #include "StyleTools.h"				//set default text,dim style [and so on (TODO)]
-#include "Grid.h"					//draw architecture grid 
+#include "Grid.h"					//draw architecture grid
 #include "PolaCustomPillar.h"
 #include "SelectEntitys.h"			//select entitys
 #include "InputValue.h"
@@ -97,9 +97,7 @@
 
 #include "PillarTools.h"
 #include "BeamTools.h"
-#include "PolaLine.h"
 	//- Declare it as an extern here so that it becomes available in all modules
 extern AcApDataManager<CDocData> DocVars;
 
 #pragma pack(pop)
-

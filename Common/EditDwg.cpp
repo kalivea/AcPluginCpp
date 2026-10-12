@@ -1,141 +1,94 @@
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "EditDwg.h"
 #include "EditBlock.h"
+#include "DbObjectOwner.h"
 
-AcDbObjectId EditDwg::CopyBlockDefFromOtherDwg(const TCHAR* file_name, const TCHAR* block_def_name)
+Acad::ErrorStatus EditDwg::CopyBlockDefFromOtherDwg(const TCHAR* file, const TCHAR* name, AcDbObjectId& id)
 {
-	AcDbObjectId block_ref_id = AcDbObjectId::kNull;
-
-	AcDbDatabase* source_dwg = new AcDbDatabase(false);
-	Acad::ErrorStatus error_status = source_dwg->readDwgFile(file_name, AcDbDatabase::OpenMode::kForReadAndAllShare);
-
-	if (error_status != Acad::eOk)
-	{
-		delete source_dwg;
-		source_dwg = nullptr;
-		acutPrintf(_T("Read dwg file Error,file name: %s"), file_name);
-		return block_ref_id;
-	}
-	AcDbBlockTable* block_table = nullptr;
-
-	error_status = source_dwg->getBlockTable(block_table, AcDb::kForRead);
-	if (error_status != Acad::eOk)
-	{
-		delete source_dwg;
-		source_dwg = nullptr;
-		acutPrintf(_T("Failed to get block table, error: %d"), error_status);
-		return block_ref_id;
-	}
-
-	if (block_table->has(block_def_name))
-	{
-		AcDbObjectId target_block_def_id;
-		error_status = block_table->getAt(block_def_name, target_block_def_id);
-		if (error_status != Acad::eOk)
-		{
-			block_table->close();
-			delete source_dwg;
-			source_dwg = nullptr;
-			acutPrintf(_T("Failed to get block definition, error: %d"), error_status);
-			return block_ref_id;
-		}
-
-		AcDbDatabase* temp_database = nullptr;
-		error_status = source_dwg->wblock(temp_database, target_block_def_id);
-		if (error_status != Acad::eOk)
-		{
-			block_table->close();
-			delete source_dwg;
-			source_dwg = nullptr;
-			acutPrintf(_T("Failed to wblock, error: %d"), error_status);
-			return block_ref_id;
-		}
-
-		AcDbDatabase* current_database = acdbHostApplicationServices()->workingDatabase();
-		error_status = current_database->insert(block_ref_id, block_def_name, temp_database);
-		if (error_status != Acad::eOk)
-		{
-			delete temp_database;
-			temp_database = nullptr;
-			block_table->close();
-			delete source_dwg;
-			source_dwg = nullptr;
-			acutPrintf(_T("Failed to insert block, error: %d"), error_status);
-			return block_ref_id;
-		}
-
-		delete temp_database;
-		temp_database = nullptr;
-	}
-	else
-	{
-		acutPrintf(_T("No block id in dwg files"));
-	}
-	block_table->close();
-	delete source_dwg;
-	source_dwg = nullptr;
-	return block_ref_id;
+    id = AcDbObjectId::kNull;
+    if (file == nullptr || *file == 0 || name == nullptr || *name == 0) return Acad::eInvalidInput;
+    AcDbDatabase* database = acdbHostApplicationServices()->workingDatabase();
+    if (database == nullptr) return Acad::eNoDatabase;
+    std::unique_ptr<AcDbDatabase> source(new AcDbDatabase(false));
+    Acad::ErrorStatus status = source->readDwgFile(file, AcDbDatabase::OpenMode::kForReadAndAllShare);
+    if (status == Acad::eOk) status = source->closeInput(true);
+    if (status != Acad::eOk) return status;
+    AcDbObjectId source_id;
+    status = EditBlock::GetBlockId(name, source_id, source.get());
+    if (status != Acad::eOk) return status;
+    AcDbDatabase* temporary_ptr = nullptr;
+    status = source->wblock(temporary_ptr, source_id);
+    std::unique_ptr<AcDbDatabase> temporary(temporary_ptr);
+    if (status != Acad::eOk) return status;
+    if (!temporary) return Acad::eNoDatabase;
+    AcDbObjectId inserted;
+    status = database->insert(inserted, name, temporary.get());
+    if (status == Acad::eOk) id = inserted;
+    return status;
 }
-
-AcDbObjectId EditDwg::InsertDwgAsBlockDef(const TCHAR* file_name, const TCHAR* block_name, bool overwrite, AcDbDatabase* database)
+AcDbObjectId EditDwg::CopyBlockDefFromOtherDwg(const TCHAR* file, const TCHAR* name)
 {
-	try
-	{
-		AcDbObjectId block_def_id = EditBlock::GetBlockId(block_name, database);
+    AcDbObjectId id;
+    const Acad::ErrorStatus status = CopyBlockDefFromOtherDwg(file, name, id);
+    if (status != Acad::eOk) acutPrintf(_T("\nCopyBlockDefFromOtherDwg failed: %d"), static_cast<int>(status));
+    return id;
+}
+Acad::ErrorStatus EditDwg::InsertDwgAsBlockDef(const TCHAR* file, const TCHAR* name, bool overwrite, AcDbObjectId& id, AcDbDatabase* database)
+{
+    id = AcDbObjectId::kNull;
+    if (file == nullptr || *file == 0 || name == nullptr || *name == 0 || database == nullptr) return Acad::eInvalidInput;
+    AcDbObjectId existing;
+    Acad::ErrorStatus status = EditBlock::GetBlockId(name, existing, database);
+    if (status != Acad::eOk && status != Acad::eKeyNotFound) return status;
+    if (!existing.isNull() && !overwrite) { id = existing; return Acad::eOk; }
 
-		if (!block_def_id.isNull() && overwrite)
-		{
-			AcDbBlockTableRecord* block_table_record;
-			if (acdbOpenObject(block_table_record, block_def_id, AcDb::kForWrite) == Acad::eOk)
-			{
-				block_table_record->erase();
-				block_table_record->close();
-				block_def_id = AcDbObjectId::kNull;
-			}
-		}
-
-		if (block_def_id.isNull())
-		{
-			if (_taccess(file_name, 0) == -1)
-			{
-				acutPrintf(_T("Can't find DWG file '%s'"), file_name);
-				return AcDbObjectId::kNull;
-			}
-
-			std::unique_ptr<AcDbDatabase> block_database(new AcDbDatabase(false));
-			Acad::ErrorStatus error_status = block_database->readDwgFile(file_name, AcDbDatabase::OpenMode::kForReadAndAllShare);
-
-			if (error_status != Acad::eOk)
-			{
-				acutPrintf(_T("Read DWG file '%s' failed! Error Code:%d"),
-					file_name, static_cast<int>(error_status));
-				return AcDbObjectId::kNull;
-			}
-
-			error_status = database->insert(block_def_id, block_name, block_database.get());
-			if (error_status != Acad::eOk)
-			{
-				acutPrintf(_T("Insert block '%s' from file '%s' failed! Error Code:%d"),
-					block_name, file_name, static_cast<int>(error_status));
-				return AcDbObjectId::kNull;
-			}
-
-
-			if (!EditBlock::SetBlockInsertPointToCenter(block_def_id))
-			{
-				acutPrintf(_T("Failed to set block insert point to center for '%s'"), block_name);
-			}
-		}
-		return block_def_id;
-	}
-	catch (const std::exception& e)
-	{
-		acutPrintf(_T("Exception during InsertDwgBlockDef: %s"), e.what());
-		return AcDbObjectId::kNull;
-	}
-	catch (...)
-	{
-		acutPrintf(_T("Unknown exception during InsertDwgBlockDef"));
-		return AcDbObjectId::kNull;
-	}
+    // Finish reading the replacement before changing the destination. A bad
+    // path or invalid DWG must never erase the previous block definition.
+    std::unique_ptr<AcDbDatabase> source(new AcDbDatabase(false));
+    status = source->readDwgFile(file, AcDbDatabase::OpenMode::kForReadAndAllShare);
+    if (status == Acad::eOk) status = source->closeInput(true);
+    if (status != Acad::eOk) return status;
+    Pola::OpenedObject<AcDbBlockTableRecord> previous;
+    if (!existing.isNull())
+    {
+        AcDbBlockTableRecord* pointer = nullptr;
+        status = acdbOpenObject(pointer, existing, AcDb::kForWrite);
+        if (status != Acad::eOk) return status;
+        previous.reset(pointer);
+        status = previous->erase();
+        if (status != Acad::eOk) return Pola::Close(previous, status);
+    }
+    AcDbObjectId inserted;
+    status = database->insert(inserted, name, source.get());
+    if (status == Acad::eOk) status = EditBlock::CenterBlockInsertPoint(inserted);
+    if (status != Acad::eOk)
+    {
+        if (!inserted.isNull())
+        {
+            AcDbBlockTableRecord* inserted_ptr = nullptr;
+            const Acad::ErrorStatus opened = acdbOpenObject(inserted_ptr, inserted, AcDb::kForWrite);
+            if (opened == Acad::eOk)
+            {
+                Pola::OpenedObject<AcDbBlockTableRecord> replacement(inserted_ptr);
+                const Acad::ErrorStatus cleanup = Pola::Close(replacement, replacement->erase());
+                if (cleanup != Acad::eOk) acutPrintf(_T("\nReplacement block cleanup failed: %d"), static_cast<int>(cleanup));
+            }
+            else acutPrintf(_T("\nReplacement block cleanup failed: %d"), static_cast<int>(opened));
+        }
+        if (previous)
+        {
+            const Acad::ErrorStatus restore = previous->erase(false);
+            if (restore != Acad::eOk) acutPrintf(_T("\nPrevious block restore failed: %d"), static_cast<int>(restore));
+        }
+    }
+    status = Pola::Close(previous, status);
+    if (status == Acad::eOk) id = inserted;
+    return status;
+}
+AcDbObjectId EditDwg::InsertDwgAsBlockDef(const TCHAR* file, const TCHAR* name, bool overwrite, AcDbDatabase* database)
+{
+    AcDbObjectId id;
+    const Acad::ErrorStatus status = InsertDwgAsBlockDef(file, name, overwrite, id, database);
+    if (status != Acad::eOk) acutPrintf(_T("\nInsertDwgAsBlockDef failed: %d"), static_cast<int>(status));
+    return id;
 }

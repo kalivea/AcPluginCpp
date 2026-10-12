@@ -1,19 +1,19 @@
-// (C) Copyright 2002-2007 by Autodesk, Inc. 
+Ôªø// (C) Copyright 2002-2007 by Autodesk, Inc.
 //
 // Permission to use, copy, modify, and distribute this software in
-// object code form for any purpose and without fee is hereby granted, 
-// provided that the above copyright notice appears in all copies and 
+// object code form for any purpose and without fee is hereby granted,
+// provided that the above copyright notice appears in all copies and
 // that both that copyright notice and the limited warranty and
-// restricted rights notice below appear in all supporting 
+// restricted rights notice below appear in all supporting
 // documentation.
 //
-// AUTODESK PROVIDES THIS PROGRAM "AS IS" AND WITH ALL FAULTS. 
+// AUTODESK PROVIDES THIS PROGRAM "AS IS" AND WITH ALL FAULTS.
 // AUTODESK SPECIFICALLY DISCLAIMS ANY IMPLIED WARRANTY OF
-// MERCHANTABILITY OR FITNESS FOR A PARTICULAR USE.  AUTODESK, INC. 
+// MERCHANTABILITY OR FITNESS FOR A PARTICULAR USE.  AUTODESK, INC.
 // DOES NOT WARRANT THAT THE OPERATION OF THE PROGRAM WILL BE
 // UNINTERRUPTED OR ERROR FREE.
 //
-// Use, duplication, or disclosure by the U.S. Government is subject to 
+// Use, duplication, or disclosure by the U.S. Government is subject to
 // restrictions set forth in FAR 52.227-19 (Commercial Computer
 // Software - Restricted Rights) and DFAR 252.227-7013(c)(1)(ii)
 // (Rights in Technical Data and Computer Software), as applicable.
@@ -31,6 +31,8 @@
 #include "EditEntity.h"
 #include "PillarTools.h"
 #include "DwgFileInfo.h"
+#include <cmath>
+#include <memory>
 //-----------------------------------------------------------------------------
 IMPLEMENT_DYNAMIC(CPolaPillarUi, CAdUiBaseDialog)
 
@@ -62,7 +64,8 @@ CPolaPillarUi::CPolaPillarUi(CWnd* pParent /*=NULL*/, HINSTANCE hInstance /*=NUL
 
 void CPolaPillarUi::ScalePattern(ShapeType shape, double d1, double d2, LineStyle style)
 {
-	if (d1 <= 0 || (shape == RECTANGLE && d2 <= 0))
+	if ((shape != CIRCLE && shape != RECTANGLE) || !std::isfinite(d1) || !std::isfinite(d2)
+		|| d1 <= 0 || (shape == RECTANGLE && d2 <= 0))
 		return;
 
 	CWnd* picture = GetDlgItem(IDC_STATIC_PICTURE);
@@ -71,13 +74,16 @@ void CPolaPillarUi::ScalePattern(ShapeType shape, double d1, double d2, LineStyl
 
 	CRect rc_picture;
 	picture->GetClientRect(rc_picture);
+	if (rc_picture.Width() <= 0 || rc_picture.Height() <= 0) return;
 
 	const double scale_factor = 0.75;
 	CRect rc_target(0, 0, static_cast<int>(rc_picture.Width() * scale_factor), static_cast<int>(rc_picture.Height() * scale_factor));
+	if (rc_target.Width() <= 0 || rc_target.Height() <= 0) return;
 
 	if (shape == RECTANGLE)
 	{
 		double aspect = d1 / d2;
+		if (!std::isfinite(aspect) || aspect <= 0.0) return;
 		double target_aspect_ratio = static_cast<double>(rc_target.Width()) / rc_target.Height();
 
 		if (aspect > target_aspect_ratio)
@@ -178,7 +184,7 @@ void CPolaPillarUi::OnEnKillfocusEditSn()
 {
 	CString temp;
 	Edit_Sn_.GetWindowTextW(temp);
-	pillar_sn = BasicTools::StringToChar(temp);
+	pillar_sn = temp;
 	CString bin_path;
 	PillarTools::GetPillarBinPath(bin_path);
 
@@ -289,11 +295,12 @@ void CPolaPillarUi::OnPaint()
 	CRect rc_picture;
 	picture->GetWindowRect(&rc_picture);
 	ScreenToClient(&rc_picture);
+	if (rc_picture.Width() <= 0 || rc_picture.Height() <= 0) return;
 
 	CDC mem_dc;
-	mem_dc.CreateCompatibleDC(&dc);
+	if (!mem_dc.CreateCompatibleDC(&dc)) return;
 	CBitmap bitmap;
-	bitmap.CreateCompatibleBitmap(&dc, rc_picture.Width(), rc_picture.Height());
+	if (!bitmap.CreateCompatibleBitmap(&dc, rc_picture.Width(), rc_picture.Height())) return;
 	CBitmap* old_bitmap = mem_dc.SelectObject(&bitmap);
 
 	mem_dc.FillSolidRect(0, 0, rc_picture.Width(), rc_picture.Height(), ::GetSysColor(COLOR_3DFACE));
@@ -324,7 +331,7 @@ void CPolaPillarUi::OnPaint()
 		if (isDataReady)
 		{
 			CString dimension;
-			dimension.Format(_T("b°¡h = %d °¡ %d"), static_cast<int>(pillar_d), static_cast<int>(pillar_h));
+			dimension.Format(_T("b√óh = %.0f √ó %.0f"), pillar_d, pillar_h);
 			mem_dc.SetBkMode(TRANSPARENT);
 			mem_dc.SetTextColor(RGB(0, 0, 0));
 
@@ -347,7 +354,7 @@ void CPolaPillarUi::OnPaint()
 		if (isDataReady)
 		{
 			CString dimension;
-			dimension.Format(_T("D = %d"), static_cast<int>(pipe_d));
+			dimension.Format(_T("D = %.0f"), pipe_d);
 			mem_dc.SetBkMode(TRANSPARENT);
 			mem_dc.SetTextColor(RGB(0, 0, 0));
 
@@ -375,7 +382,7 @@ void CPolaPillarUi::OnBnClickedButtonSinsert()
 {
 	CString temp;
 	Edit_Sn_.GetWindowTextW(temp);
-	pillar_sn = BasicTools::StringToChar(temp);
+	pillar_sn = temp;
 
 	if (!InputValidator<int>::Validate(Edit_Grade, pillar_conc_grade, _T("Pillar conc grade")))
 		return;
@@ -400,12 +407,14 @@ void CPolaPillarUi::OnBnClickedButtonSinsert()
 	}
 	AcDbObjectPointer<CPolaCustomPillar> pillar;
 	pillar.create();
-	pillar->setSn(pillar_sn);
-	pillar->setConcreteGrade(pillar_conc_grade);
-	pillar->setDiameter(pillar_d, pillar_h);
-	pillar->setViewable(line_style);
-	pillar->setPillarType(shape_type);
-	pillar->setPillarProperty(shape_type);
+	if (pillar.openStatus() != Acad::eOk) { acutPrintf(_T("\n%s"), acadErrorStatusText(pillar.openStatus())); return; }
+	Acad::ErrorStatus status = pillar->setDiameter(pillar_d, pillar_h);
+    if (status == Acad::eOk) status = pillar->setSn(pillar_sn);
+    if (status == Acad::eOk) status = pillar->setConcreteGrade(pillar_conc_grade);
+    if (status == Acad::eOk) status = pillar->setPillarType(shape_type);
+    if (status == Acad::eOk) status = pillar->setViewable(line_style);
+    if (status == Acad::eOk) status = pillar->setPillarProperty(shape_type);
+    if (status != Acad::eOk) { acutPrintf(_T("\n%s"), acadErrorStatusText(status)); return; }
 
 	AcGePoint3d insert_point;
 
@@ -415,7 +424,10 @@ void CPolaPillarUi::OnBnClickedButtonSinsert()
 	{
 		if (!SelectEntitys::PickPoint(NULL, insert_point))
 			break;
-		EditEntity::SetLayer(CPolaCustomPillar::SingleInsert(*pillar, insert_point), _T("POLA_PILLAR_STRUCTURE"));
+		AcDbObjectId id;
+        status = CPolaCustomPillar::SingleInsert(*pillar, insert_point, id);
+        if (status == Acad::eOk) status = EditEntity::SetLayer(id, _T("POLA_PILLAR_STRUCTURE"));
+        if (status != Acad::eOk) { acutPrintf(_T("\n%s"), acadErrorStatusText(status)); break; }
 	}
 	CompleteEditorCommand();
 }
@@ -424,7 +436,7 @@ void CPolaPillarUi::OnBnClickedButtonMinsert()
 {
 	CString temp;
 	Edit_Sn_.GetWindowTextW(temp);
-	pillar_sn = BasicTools::StringToChar(temp);
+	pillar_sn = temp;
 
 	if (!InputValidator<int>::Validate(Edit_Grade, pillar_conc_grade, _T("Pillar conc grade")))
 		return;
@@ -450,12 +462,14 @@ void CPolaPillarUi::OnBnClickedButtonMinsert()
 
 	AcDbObjectPointer<CPolaCustomPillar> pillar;
 	pillar.create();
-	pillar->setSn(pillar_sn);
-	pillar->setConcreteGrade(pillar_conc_grade);
-	pillar->setDiameter(pillar_d, pillar_h);
-	pillar->setViewable(line_style);
-	pillar->setPillarType(shape_type);
-	pillar->setPillarProperty(shape_type);
+	if (pillar.openStatus() != Acad::eOk) { acutPrintf(_T("\n%s"), acadErrorStatusText(pillar.openStatus())); return; }
+	Acad::ErrorStatus status = pillar->setDiameter(pillar_d, pillar_h);
+    if (status == Acad::eOk) status = pillar->setSn(pillar_sn);
+    if (status == Acad::eOk) status = pillar->setConcreteGrade(pillar_conc_grade);
+    if (status == Acad::eOk) status = pillar->setPillarType(shape_type);
+    if (status == Acad::eOk) status = pillar->setViewable(line_style);
+    if (status == Acad::eOk) status = pillar->setPillarProperty(shape_type);
+    if (status != Acad::eOk) { acutPrintf(_T("\n%s"), acadErrorStatusText(status)); return; }
 
 	AcGePoint3dArray insert_point;
 	AcDbObjectIdArray grid_id;
@@ -478,10 +492,13 @@ void CPolaPillarUi::OnBnClickedButtonMinsert()
 	for (auto id : grid_id)
 	{
 		AcDbObjectPointer<AcDbLine> line_entity;
-		if (line_entity.open(id, AcDb::kForRead) == Acad::eOk)
-		{
-			grid_line_segment.emplace_back(line_entity->startPoint(), line_entity->endPoint());
+		status = line_entity.open(id, AcDb::kForRead);
+		if (status != Acad::eOk) {
+			acutPrintf(_T("\n%s"), acadErrorStatusText(status));
+			CompleteEditorCommand();
+			return;
 		}
+		grid_line_segment.emplace_back(line_entity->startPoint(), line_entity->endPoint());
 	}
 
 	auto IsPointExist = [](const AcGePoint3d& pt, const AcGePoint3dArray& points, double tolerance)
@@ -506,7 +523,10 @@ void CPolaPillarUi::OnBnClickedButtonMinsert()
 			}
 		}
 	}
-	EditEntity::SetLayer(CPolaCustomPillar::BatchInsert(*pillar, insert_point), _T("POLA_PILLAR_STRUCTURE"));
+	AcDbObjectIdArray ids;
+    status = CPolaCustomPillar::BatchInsert(*pillar, insert_point, ids);
+    if (status == Acad::eOk) status = EditEntity::SetLayer(ids, _T("POLA_PILLAR_STRUCTURE"));
+    if (status != Acad::eOk) acutPrintf(_T("\n%s"), acadErrorStatusText(status));
 	CompleteEditorCommand();
 }
 
@@ -528,8 +548,11 @@ void CPolaPillarUi::OnBnClickedButtonAddinfo()
 	for (auto& pillar_id : pillar_id_array)
 	{
 		AcDbObjectPointer<CPolaCustomPillar> pillar;
-		pillar.open(pillar_id, OpenMode::kForWrite);
-		EditEntity::SetLayer(pillar->AddPillarLeader(), _T("POLA_PILLAR_MARK"));
+		Acad::ErrorStatus status = pillar.open(pillar_id, AcDb::kForRead);
+        AcDbObjectId id;
+        if (status == Acad::eOk) status = pillar->AddPillarLeader(id);
+        if (status == Acad::eOk) status = EditEntity::SetLayer(id, _T("POLA_PILLAR_MARK"));
+        if (status != Acad::eOk) { acutPrintf(_T("\n%s"), acadErrorStatusText(status)); break; }
 	}
 	CompleteEditorCommand();
 }
@@ -554,14 +577,14 @@ void CPolaPillarUi::OnBnClickedCancel()
 	CAdUiBaseDialog::OnCancel();
 }
 
-void CPolaPillarUi::load(TCHAR* sn)
+void CPolaPillarUi::load(const TCHAR* sn)
 {
-	CPolaCustomPillar* pillar = new CPolaCustomPillar;
+	std::unique_ptr<CPolaCustomPillar> pillar(new CPolaCustomPillar);
 
 	CString bin_path;
 	PillarTools::GetPillarBinPath(bin_path);
 
-	if (PillarTools::LoadPillarInfoFromFileBySn(bin_path.GetString(), sn, pillar))
+	if (PillarTools::LoadPillarInfoFromFileBySn(bin_path.GetString(), sn, pillar.get()))
 	{
 		CString temp;
 		switch (pillar->getPillarType())
@@ -569,8 +592,11 @@ void CPolaPillarUi::load(TCHAR* sn)
 		case 0:
 		{
 			SimulateRadioClicked(IDC_RADIO_CIRC);
-			double pipe_d, pipe_t;
-			pillar->getDiameter(pipe_d, pipe_t);
+			double saved_height = 0.0;
+			pillar->getDiameter(pipe_d, saved_height);
+			pillar_d = pipe_d;
+			pillar_h = 0.0;
+			pipe_t = 12.0; // Thickness is absent from the existing binary format.
 			temp.Format(_T("%.0f"), pipe_d);
 			Edit_Pipe_D_.SetWindowTextW(temp);
 			Edit_Pipe_T_.SetWindowTextW(_T("12"));
@@ -581,6 +607,8 @@ void CPolaPillarUi::load(TCHAR* sn)
 			SimulateRadioClicked(IDC_RADIO_RECT);
 			double d, h;
 			pillar->getDiameter(d, h);
+			pillar_d = d;
+			pillar_h = h;
 
 			temp.Format(_T("%.0f"), d);
 			Edit_Pillar_D_.SetWindowTextW(temp);
@@ -593,6 +621,7 @@ void CPolaPillarUi::load(TCHAR* sn)
 		}
 
 		int grade = pillar->getConcreteGrade();
+		pillar_conc_grade = grade;
 		temp.Format(_T("%d"), grade);
 		Edit_Grade.SetWindowTextW(temp);
 
@@ -601,20 +630,37 @@ void CPolaPillarUi::load(TCHAR* sn)
 		else
 			SimulateRadioClicked(IDC_RADIO_DLINE);
 	}
-	delete pillar;
 }
 
 void CPolaPillarUi::SimulateRadioClicked(UINT radio_id)
 {
-	GetDlgItem(radio_id)->PostMessageW(WM_LBUTTONDOWN);
-	GetDlgItem(radio_id)->PostMessageW(WM_LBUTTONUP);
+	// Apply the handler before loading fields; queued clicks used to clear them later.
+	switch (radio_id) {
+	case IDC_RADIO_CIRC:
+		CheckRadioButton(IDC_RADIO_RECT, IDC_RADIO_CIRC, radio_id);
+		OnBnClickedRadioCirc();
+		break;
+	case IDC_RADIO_RECT:
+		CheckRadioButton(IDC_RADIO_RECT, IDC_RADIO_CIRC, radio_id);
+		OnBnClickedRadioRect();
+		break;
+	case IDC_RADIO_SLINE:
+		CheckRadioButton(IDC_RADIO_SLINE, IDC_RADIO_DLINE, radio_id);
+		OnBnClickedRadioSline();
+		break;
+	case IDC_RADIO_DLINE:
+		CheckRadioButton(IDC_RADIO_SLINE, IDC_RADIO_DLINE, radio_id);
+		OnBnClickedRadioDline();
+		break;
+	default: break;
+	}
 }
 
 void CPolaPillarUi::OnEnChangeEditSn()
 {
 	CString temp;
 	Edit_Sn_.GetWindowTextW(temp);
-	pillar_sn = BasicTools::StringToChar(temp);
+	pillar_sn = temp;
 	CString bin_path;
 	PillarTools::GetPillarBinPath(bin_path);
 

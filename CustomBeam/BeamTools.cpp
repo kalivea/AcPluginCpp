@@ -1,14 +1,16 @@
 #include "stdafx.h"
 #include "BeamTools.h"
+#include "BeamDwgFields.h"
+#include "../Common/DbObjectOwner.h"
 
 bool BeamTools::IsPointInsideBeam(const CPolaCustomBeam* beam, const AcGePoint3d& point, const AcGeTol& tol)
 {
-	if (!beam)
+	if (!beam || !Pola::BeamFinite(point))
 		return false;
 
 	AcGePoint3dArray beam_vertexes = beam->getBeamVertexes();
 	double beam_width = beam->getBeamWidth();
-	AcGeVector3dArray segment_directions = beam->getBeamSegmentDirection();
+	if (!std::isfinite(beam_width) || beam_width <= 0.0) return false;
 	int vertex_count = beam->getVertexesNum();
 
 	if (vertex_count < 2 || beam_vertexes.length() < 2)
@@ -40,25 +42,14 @@ bool BeamTools::IsPointInsideBeam(const CPolaCustomBeam* beam, const AcGePoint3d
 		if (start_point.isEqualTo(end_point, tol))
 			continue;
 
-		AcGeVector3d segment_dir;
-
-		if (i < segment_directions.length())
-		{
-			if (segment_directions[i].isZeroLength(tol))
-			{
-				segment_dir = BasicTools::GetVectorBetweenTwoPoint(start_point, end_point).normalize();
-			}
-			else
-			{
-				segment_dir = segment_directions[i].normalize();
-			}
-		}
-		else
-		{
-			segment_dir = BasicTools::GetVectorBetweenTwoPoint(start_point, end_point).normalize();
-		}
+        // v1 keeps an unused direction at index zero; derive the actual
+        // direction from endpoints so old rotated drawings are also safe.
+        AcGeVector3d segment_dir = end_point - start_point;
+        if (segment_dir.isZeroLength(tol)) continue;
+        segment_dir.normalize();
 
 		AcGeVector3d width_direction(-segment_dir.y, segment_dir.x, 0.0);
+		if (width_direction.isZeroLength(tol)) continue;
 		width_direction.normalize();
 		AcGeVector3d segment_vector = BasicTools::GetVectorBetweenTwoPoint(start_point, end_point);
 		double segment_length = segment_vector.length();
@@ -95,54 +86,65 @@ bool BeamTools::IsPointInsideBeam(const CPolaCustomBeam* beam, const AcGePoint3d
 	return false;
 }
 
-bool BeamTools::GetAllBeamSegmentMidPoint(const CPolaCustomBeam* beam, AcGePoint3dArray& beam_seg_mid)
-{
-	beam_seg_mid.removeAll();
-	AcGePoint3dArray mid_point;
-	AcGePoint3dArray beam_vertex = beam->getBeamVertexes();
-	int beam_vertex_num = beam->getVertexesNum();
-	for (int i = 0;i < beam_vertex_num - 1;i++)
-	{
-		beam_seg_mid.append(BasicTools::GetMidPoint(beam_vertex.at(i), beam_vertex.at(i + 1)));
-	}
-	return !beam_seg_mid.isEmpty();
+Acad::ErrorStatus BeamTools::GetAllBeamSegmentMidPointChecked(const CPolaCustomBeam* beam, AcGePoint3dArray& points) {
+    points.removeAll();
+    if (!beam || beam->getVertexesNum() < 2) return Acad::eInvalidInput;
+    const AcGePoint3dArray vertices = beam->getBeamVertexes();
+    for (int i = 1; i < vertices.length(); ++i)
+        points.append(BasicTools::GetMidPoint(vertices[i - 1], vertices[i]));
+    return Acad::eOk;
 }
-
-bool BeamTools::GetAllPillarCenterInBeam(const CPolaCustomBeam* beam, AcGePoint3dArray& pillar_center)
-{
-	pillar_center.removeAll();
-	AcDbObjectIdArray in_beam_pillar;
-	GetAllPillarInBeam(beam, in_beam_pillar);
-	for (auto& id : in_beam_pillar)
-	{
-		AcDbObjectPointer<CPolaCustomPillar> pillar;
-		pillar.open(id);
-		pillar_center.append(pillar->getCenterPoint());
-	}
-	return !pillar_center.isEmpty();
+Acad::ErrorStatus BeamTools::GetAllPillarInBeamChecked(const CPolaCustomBeam* beam, AcDbObjectIdArray& ids) {
+    ids.removeAll();
+    if (!beam || beam->getVertexesNum() < 2) return Acad::eInvalidInput;
+    AcDbObjectIdArray all, result;
+    Acad::ErrorStatus es = SelectEntitys::GetAllEntitysByTypeChecked(CPolaCustomPillar::desc(), all);
+    if (es != Acad::eOk) return es;
+    for (AcDbObjectId id : all) {
+        CPolaCustomPillar* pointer = nullptr;
+        if ((es = acdbOpenObject(pointer, id, AcDb::kForRead)) != Acad::eOk) return es;
+        Pola::OpenedObject<CPolaCustomPillar> pillar(pointer);
+        if (IsPointInsideBeam(beam, pillar->getCenterPoint())) result.append(id);
+        if ((es = Pola::Close(pillar)) != Acad::eOk) return es;
+    }
+    ids = std::move(result);
+    return Acad::eOk;
 }
-
-bool BeamTools::GetAllPillarInBeam(const CPolaCustomBeam* beam, AcDbObjectIdArray& pillar_ids)
-{
-	pillar_ids.removeAll();
-	if (beam == nullptr)
-		return false;
-
-	pillar_ids.setLogicalLength(0);
-	AcDbObjectIdArray all_pillar;
-	PillarTools::GetAllPillar(all_pillar);
-
-	for (auto& id : all_pillar)
-	{
-		AcDbObjectPointer<CPolaCustomPillar> pillar;
-		pillar.open(id);
-		AcGePoint3d center_point = pillar->getCenterPoint();
-		if (BeamTools::IsPointInsideBeam(beam, center_point))
-		{
-			pillar_ids.append(id);
-		}
-	}
-	return !pillar_ids.isEmpty();
+Acad::ErrorStatus BeamTools::GetAllPillarCenterInBeamChecked(const CPolaCustomBeam* beam, AcGePoint3dArray& points) {
+    points.removeAll();
+    AcDbObjectIdArray ids;
+    Acad::ErrorStatus es = GetAllPillarInBeamChecked(beam, ids);
+    if (es != Acad::eOk) return es;
+    AcGePoint3dArray result;
+    for (AcDbObjectId id : ids) {
+        CPolaCustomPillar* pointer = nullptr;
+        if ((es = acdbOpenObject(pointer, id, AcDb::kForRead)) != Acad::eOk) return es;
+        Pola::OpenedObject<CPolaCustomPillar> pillar(pointer);
+        result.append(pillar->getCenterPoint());
+        if ((es = Pola::Close(pillar)) != Acad::eOk) return es;
+    }
+    points = std::move(result);
+    return Acad::eOk;
+}
+namespace {
+void ReportBeamToolsError(Acad::ErrorStatus es) {
+    if (es != Acad::eOk) acutPrintf(_T("\nBeam query failed: %d\n"), static_cast<int>(es));
+}
+}
+bool BeamTools::GetAllBeamSegmentMidPoint(const CPolaCustomBeam* beam, AcGePoint3dArray& points) {
+    const Acad::ErrorStatus es = GetAllBeamSegmentMidPointChecked(beam, points);
+    ReportBeamToolsError(es);
+    return es == Acad::eOk && !points.isEmpty();
+}
+bool BeamTools::GetAllPillarCenterInBeam(const CPolaCustomBeam* beam, AcGePoint3dArray& points) {
+    const Acad::ErrorStatus es = GetAllPillarCenterInBeamChecked(beam, points);
+    ReportBeamToolsError(es);
+    return es == Acad::eOk && !points.isEmpty();
+}
+bool BeamTools::GetAllPillarInBeam(const CPolaCustomBeam* beam, AcDbObjectIdArray& ids) {
+    const Acad::ErrorStatus es = GetAllPillarInBeamChecked(beam, ids);
+    ReportBeamToolsError(es);
+    return es == Acad::eOk && !ids.isEmpty();
 }
 
 bool BeamTools::IsPointOnLine(const AcGePoint3d& point, const AcGePoint3d& line_start, const AcGePoint3d& line_end, const AcGeTol& tol)

@@ -1,6 +1,9 @@
 #pragma once
-#include "StdAfx.h"
+#include "dbxHeaders.h"
+#include "ToolsDef.h"
+#include <afxstr.h>
 #include <sstream>
+#include <vector>
 #include <string>
 #include <tchar.h>
 /*
@@ -33,6 +36,8 @@ public:
 	static AcGePoint3d OffsetMidPoint(const AcGePoint3d& start_point, const AcGePoint3d& end_point, const double& distance);
 	static bool OffsetPolyLine(const AcDbPolyline& center_line, const double& distance, AcGePoint3dArray& offset_vertex_array);
 	static bool OffsetPolyLine(const AcGePoint3dArray& center_array, const double& distance, AcGePoint3dArray& offset_vertex_array);
+	static Acad::ErrorStatus OffsetPolyLineChecked(const AcDbPolyline& center_line, const double& distance, AcGePoint3dArray& offset_vertex_array);
+	static Acad::ErrorStatus OffsetPolyLineChecked(const AcGePoint3dArray& center_array, const double& distance, AcGePoint3dArray& offset_vertex_array);
 	static bool OffsetLineSegment(const AcGePoint3d& start_point, const AcGePoint3d& end_point, const double& distance, AcGePoint3d out_point[2]);
 	static bool OffsetLineSegment(const AcGeLineSeg3d& line_segment, const double& distance, AcGePoint3d out_point[2]);
 	static bool IsLeftPoint(const AcGePoint3d& point1, const  AcGePoint3d& point2);
@@ -54,6 +59,8 @@ public:
 	static AcGePoint3d GetIntersect(const AcGePoint3d& line1_point1, const AcGePoint3d& line1_point2, const AcGePoint3d& line2_point1, const AcGePoint3d& line2_point2);
 	static AcGeLineSeg3d EntityToLineSegment(const AcDbEntity* entity);
 	static AcGeLine3d EntityToLine(const AcDbEntity* entity);
+	static Acad::ErrorStatus EntityToLineSegment(const AcDbEntity* entity, AcGeLineSeg3d& segment);
+	static Acad::ErrorStatus EntityToLine(const AcDbEntity* entity, AcGeLine3d& line);
 	static AcGePoint3d ProjectPointToLineSegment(const AcGePoint3d& point, const AcGeLineSeg3d& line_segment, const AcGeVector3d& project_dirction = AcGeVector3d::kIdentity, const AcGeTol& tol = AcGeContext::gTol);
 	static AcGePoint3d ProjectPointToLineSegment(const AcGePoint3d& point, const AcGePoint3d& start_point, const AcGePoint3d& end_point, const AcGeVector3d& project_dirction = AcGeVector3d::kIdentity, const AcGeTol& tol = AcGeContext::gTol);
 
@@ -69,7 +76,7 @@ public:
 	static AcGePoint3dArray GetPolyLineIntersections(const AcGePoint3dArray& line1_vertex, const AcGePoint3dArray& line2_vertex);
 	static AcGePoint3dArray GetPolylineVertex(const AcDbPolyline& poly_line);
 
-	// arc tools 
+	// arc tools
 	static AcGePoint3d GetArcMidPoint(AcGeCircArc3d& arc);
 	static AcGePoint3d GetArcMidPoint(AcDbArc& arc);
 
@@ -82,6 +89,7 @@ public:
 	static AcGePoint3dArray DistanceToPointArrayY(const AcGePoint3d& first_point, const double distance[], const int& cnt);
 
 	static AcDbObjectIdArray GetAllEntityIdsInDatabase(const TCHAR* layer_name = NULL, AcDbDatabase* database = acdbHostApplicationServices()->workingDatabase());
+	static Acad::ErrorStatus GetAllEntityIdsInDatabase(AcDbObjectIdArray& ids, const TCHAR* layer_name = nullptr, AcDbDatabase* database = acdbHostApplicationServices()->workingDatabase());
 
 	// IRM tools
 	static std::vector<int> CalculateReinforcement(int beam_width, int bar_diameter, int bars_num, int cover_thickness, int stirrup_diameter);

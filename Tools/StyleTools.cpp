@@ -1,325 +1,220 @@
 #include "StdAfx.h"
 #include "StyleTools.h"
+#include "../Common/DbObjectOwner.h"
+#include <cmath>
 
-AcDbObjectId StyleTools::InitTextStyle()
+namespace
 {
-	if (IsTextStyleExist(_T("default_txt")))
-	{
-		return GetTextStyleId(_T("default_txt"));
-	}
-	else
-	{
-		AcDbTextStyleTable* text_style_table = nullptr;
-		acdbHostApplicationServices()->workingDatabase()->getTextStyleTable(text_style_table, OpenMode::kForWrite);
-		AcDbTextStyleTableRecord* text_style_table_record = new AcDbTextStyleTableRecord();
-		text_style_table_record->setName(_T("default_txt"));
-		text_style_table_record->setFileName(_T("gbenor.shx"));
-		text_style_table_record->setBigFontFileName(_T("gbcbig.shx"));
-		text_style_table_record->setXScale(0.75);
-		text_style_table->add(text_style_table_record);
-
-		AcDbObjectId default_text_style_id = AcDbObjectId::kNull;
-		default_text_style_id = text_style_table_record->objectId();
-
-		text_style_table_record->close();
-		text_style_table->close();
-
-		return default_text_style_id;
-	}
+void ReportStyleError(Acad::ErrorStatus status) {
+    if (status != Acad::eOk) acutPrintf(_T("\nStyle operation failed: %d\n"), static_cast<int>(status));
 }
 
-AcDbObjectId StyleTools::InitDimStyle()
+template<class Table, class Getter>
+Acad::ErrorStatus FindStyle(const TCHAR* name, AcDbObjectId& id, Getter getter)
 {
-	if (IsDimensionStyleExist(_T("pt_100_350")))
-	{
-		return GetDimensionStyleId(_T("pt_100_350"));
-	}
-	else
-	{
-		AcDbObjectId default_dim_style_id = AcDbObjectId::kNull;
-		AcDbDimStyleTable* dim_style_table;
-		acdbHostApplicationServices()->workingDatabase()->getDimStyleTable(dim_style_table, AcDb::kForWrite);
-		AcDbDimStyleTableRecord* dim_style_table_record;
-		dim_style_table_record = new AcDbDimStyleTableRecord();
-
-		dim_style_table_record->setName(_T("pt_100_350"));
-		dim_style_table_record->setDimtxsty(StyleTools::GetTextStyleId(_T("dim_text")));
-		dim_style_table_record->setDimtxt(350);
-		dim_style_table_record->setDimblk(_T("_ARCHTICK"));
-		dim_style_table_record->setDimdle(0);
-		dim_style_table_record->setDimdli(0);
-		dim_style_table_record->setDimexe(100);
-		dim_style_table_record->setDimexo(150);
-		dim_style_table_record->setDimfxlenOn(false);
-		dim_style_table_record->setDimasz(150);
-		dim_style_table_record->setDimtad(2);
-		dim_style_table_record->setDimlfac(1);
-		dim_style_table_record->setDimdec(0);
-		dim_style_table_record->setDimtih(0);
-
-		dim_style_table->add(dim_style_table_record);
-		default_dim_style_id = dim_style_table_record->objectId();
-
-		dim_style_table_record->close();
-		dim_style_table->close();
-		return default_dim_style_id;
-	}
+    id = AcDbObjectId::kNull;
+    if (!name || !*name) return Acad::eInvalidInput;
+    AcDbDatabase* database = acdbHostApplicationServices()->workingDatabase();
+    if (!database) return Acad::eNoDatabase;
+    Table* raw = nullptr;
+    Acad::ErrorStatus status = getter(database, raw);
+    if (status != Acad::eOk) return status;
+    Pola::OpenedObject<Table> table(raw);
+    AcDbObjectId result;
+    status = table->getAt(name, result);
+    status = Pola::Close(table, status);
+    if (status == Acad::eOk) id = result;
+    return status;
+}
 }
 
-AcDbObjectId StyleTools::InitMLeaderStyle()
+Acad::ErrorStatus StyleTools::GetTextStyleId(const TCHAR* name, AcDbObjectId& id)
 {
-	if (IsMLeaderStyleExist(_T("NONE_ARROW")))
-	{
-		return GetMLeaderStyleId(_T("NONE_ARROW"));
-	}
-	else
-	{
-		AcDbMLeaderStyle* mleader_style = new AcDbMLeaderStyle();
-		AcDbObjectId mleader_style_id = AcDbObjectId::kNull;
-		mleader_style->setName(_T("NONE_ARROW"));
-		mleader_style->setArrowSymbolId(_T("_NONE"));
-		mleader_style->postMLeaderStyleToDb(acdbHostApplicationServices()->workingDatabase(), _T("NONE_ARROW"), mleader_style_id);
-		mleader_style->close();
-		return mleader_style_id;
-	}
+    return FindStyle<AcDbTextStyleTable>(name, id, [](AcDbDatabase* db, AcDbTextStyleTable*& t) { return db->getTextStyleTable(t, AcDb::kForRead); });
+}
+Acad::ErrorStatus StyleTools::GetDimensionStyleId(const TCHAR* name, AcDbObjectId& id)
+{
+    return FindStyle<AcDbDimStyleTable>(name, id, [](AcDbDatabase* db, AcDbDimStyleTable*& t) { return db->getDimStyleTable(t, AcDb::kForRead); });
+}
+Acad::ErrorStatus StyleTools::GetLayerId(const TCHAR* name, AcDbObjectId& id)
+{
+    return FindStyle<AcDbLayerTable>(name, id, [](AcDbDatabase* db, AcDbLayerTable*& t) { return db->getLayerTable(t, AcDb::kForRead); });
+}
+Acad::ErrorStatus StyleTools::GetLineStyleId(const TCHAR* name, AcDbObjectId& id)
+{
+    return FindStyle<AcDbLinetypeTable>(name, id, [](AcDbDatabase* db, AcDbLinetypeTable*& t) { return db->getLinetypeTable(t, AcDb::kForRead); });
+}
+Acad::ErrorStatus StyleTools::GetMLeaderStyleId(const TCHAR* name, AcDbObjectId& id)
+{
+    return FindStyle<AcDbDictionary>(name, id, [](AcDbDatabase* db, AcDbDictionary*& t) { return db->getMLeaderStyleDictionary(t, AcDb::kForRead); });
 }
 
-AcDbObjectId StyleTools::CreateTextStyle(const TCHAR* text_style_name, const TCHAR* big_font_file_name, const TCHAR* text_file_name, const double& x_scale)
+#define POLA_STYLE_WRAPPER(Name, Exists) \
+AcDbObjectId StyleTools::Name(const TCHAR* name) { AcDbObjectId id; ReportStyleError(Name(name, id)); return id; } \
+bool StyleTools::Exists(const TCHAR* name) { AcDbObjectId id; return Name(name, id) == Acad::eOk; }
+POLA_STYLE_WRAPPER(GetTextStyleId, IsTextStyleExist)
+POLA_STYLE_WRAPPER(GetDimensionStyleId, IsDimensionStyleExist)
+POLA_STYLE_WRAPPER(GetLayerId, IsLayerExist)
+POLA_STYLE_WRAPPER(GetLineStyleId, IsLineTypeExist)
+POLA_STYLE_WRAPPER(GetMLeaderStyleId, IsMLeaderStyleExist)
+#undef POLA_STYLE_WRAPPER
+
+Acad::ErrorStatus StyleTools::InitTextStyle(AcDbObjectId& id) {
+    return CreateTextStyle(_T("default_txt"), _T("gbcbig.shx"), _T("gbenor.shx"), 0.75, id);
+}
+AcDbObjectId StyleTools::InitTextStyle() {
+    AcDbObjectId id; ReportStyleError(InitTextStyle(id)); return id;
+}
+Acad::ErrorStatus StyleTools::CreateTextStyle(const TCHAR* name, const TCHAR* big_font, const TCHAR* font, const double& scale, AcDbObjectId& id)
 {
-	if (IsTextStyleExist(text_style_name))
-	{
-		return GetTextStyleId(text_style_name);
-	}
-	AcDbObjectId new_text_style_id = AcDbObjectId::kNull;
-	AcDbTextStyleTable* text_style_table = nullptr;
-	acdbHostApplicationServices()->workingDatabase()->getTextStyleTable(text_style_table, OpenMode::kForWrite);
-	AcDbTextStyleTableRecord* text_style_table_record = new AcDbTextStyleTableRecord();
-	text_style_table_record->setName(text_style_name);
-	text_style_table_record->setBigFontFileName(big_font_file_name);
-	text_style_table_record->setFileName(text_file_name);
-	text_style_table_record->setXScale(x_scale);
-	text_style_table->add(text_style_table_record);
-
-	new_text_style_id = text_style_table_record->objectId();
-
-	text_style_table_record->close();
-	text_style_table->close();
-
-	return new_text_style_id;
+    id = AcDbObjectId::kNull;
+    if (!name || !*name || !big_font || !font || !std::isfinite(scale) || scale <= 0) return Acad::eInvalidInput;
+    Acad::ErrorStatus status = GetTextStyleId(name, id);
+    if (status == Acad::eOk) return status;
+    if (status != Acad::eKeyNotFound) return status;
+    AcDbDatabase* db = acdbHostApplicationServices()->workingDatabase();
+    AcDbTextStyleTable* raw = nullptr;
+    status = db->getTextStyleTable(raw, AcDb::kForWrite);
+    if (status != Acad::eOk) return status;
+    Pola::OpenedObject<AcDbTextStyleTable> table(raw);
+    Pola::DbObjectOwner<AcDbTextStyleTableRecord> record(new AcDbTextStyleTableRecord());
+    status = record->setName(name);
+    if (status == Acad::eOk) status = record->setBigFontFileName(big_font);
+    if (status == Acad::eOk) status = record->setFileName(font);
+    if (status == Acad::eOk) status = record->setXScale(scale);
+    AcDbObjectId result;
+    if (status == Acad::eOk) status = table->add(result, record.get());
+    if (status == Acad::eOk) status = record.release()->close();
+    status = Pola::Close(table, status);
+    if (status == Acad::eOk) id = result;
+    return status;
+}
+AcDbObjectId StyleTools::CreateTextStyle(const TCHAR* name, const TCHAR* big_font, const TCHAR* font, const double& scale)
+{
+    AcDbObjectId id;
+    ReportStyleError(CreateTextStyle(name, big_font, font, scale, id));
+    return id;
 }
 
-AcDbObjectId StyleTools::GetTextStyleId(const TCHAR* text_style_name)
-{
-	AcDbObjectId text_style_id = AcDbObjectId::kNull;
-	AcDbTextStyleTable* text_style_table = nullptr;
-	if (IsTextStyleExist(text_style_name))
-	{
-		acdbHostApplicationServices()->workingDatabase()->getTextStyleTable(text_style_table, OpenMode::kForRead);
-		text_style_table->getAt(text_style_name, text_style_id);
-		text_style_table->close();
-		return text_style_id;
-	}
-	else
-	{
-		text_style_table->close();
-		return text_style_id;
-	}
+Acad::ErrorStatus StyleTools::InitDimStyle(AcDbObjectId& id) {
+    id = AcDbObjectId::kNull;
+    Acad::ErrorStatus status = GetDimensionStyleId(_T("pt_100_350"), id);
+    if (status != Acad::eKeyNotFound) return status;
+    AcDbDatabase* db = acdbHostApplicationServices()->workingDatabase();
+    if (!db) return Acad::eNoDatabase;
+    AcDbObjectId text_style;
+    status = GetTextStyleId(_T("dim_text"), text_style);
+    if (status != Acad::eOk) return status;
+    AcDbDimStyleTable* raw = nullptr;
+    status = db->getDimStyleTable(raw, AcDb::kForWrite);
+    if (status != Acad::eOk) return status;
+    Pola::OpenedObject<AcDbDimStyleTable> table(raw);
+    Pola::DbObjectOwner<AcDbDimStyleTableRecord> record(new AcDbDimStyleTableRecord());
+    status = record->setName(_T("pt_100_350"));
+    if (status == Acad::eOk) status = record->setDimtxsty(text_style);
+    if (status == Acad::eOk) status = record->setDimtxt(350);
+    if (status == Acad::eOk) status = record->setDimdle(0);
+    if (status == Acad::eOk) status = record->setDimdli(0);
+    if (status == Acad::eOk) status = record->setDimexe(100);
+    if (status == Acad::eOk) status = record->setDimexo(150);
+    if (status == Acad::eOk) status = record->setDimfxlenOn(false);
+    if (status == Acad::eOk) status = record->setDimasz(150);
+    if (status == Acad::eOk) status = record->setDimtad(2);
+    if (status == Acad::eOk) status = record->setDimlfac(1);
+    if (status == Acad::eOk) status = record->setDimdec(0);
+    if (status == Acad::eOk) status = record->setDimtih(0);
+    if (status == Acad::eOk) status = record->setDimblk(_T("_ARCHTICK"));
+    AcDbObjectId result;
+    if (status == Acad::eOk) status = table->add(result, record.get());
+    if (status == Acad::eOk) status = record.release()->close();
+    status = Pola::Close(table, status);
+    if (status == Acad::eOk) id = result;
+    return status;
 }
-
-AcDbObjectId StyleTools::CreateDimensionStyle(const TCHAR* dimension_style_name)
-{
-	return AcDbObjectId();
+AcDbObjectId StyleTools::InitDimStyle() {
+    AcDbObjectId id; ReportStyleError(InitDimStyle(id)); return id;
 }
-
-AcDbObjectId StyleTools::GetDimensionStyleId(const TCHAR* dimension_style_name)
-{
-	AcDbObjectId dimension_style_id = AcDbObjectId::kNull;
-	AcDbDimStyleTable* dimension_style_table = nullptr;
-	if (IsDimensionStyleExist(dimension_style_name))
-	{
-		acdbHostApplicationServices()->workingDatabase()->getDimStyleTable(dimension_style_table, OpenMode::kForRead);
-		dimension_style_table->getAt(dimension_style_name, dimension_style_id);
-		dimension_style_table->close();
-		return dimension_style_id;
-	}
-	else
-	{
-		dimension_style_table->close();
-		return dimension_style_id;
-	}
+Acad::ErrorStatus StyleTools::CreateDimensionStyle(const TCHAR* name, AcDbObjectId& id) {
+    id = AcDbObjectId::kNull;
+    Acad::ErrorStatus status = GetDimensionStyleId(name, id);
+    if (status != Acad::eKeyNotFound) return status;
+    AcDbDatabase* db = acdbHostApplicationServices()->workingDatabase();
+    if (!db) return Acad::eNoDatabase;
+    AcDbDimStyleTable* raw = nullptr;
+    status = db->getDimStyleTable(raw, AcDb::kForWrite);
+    if (status != Acad::eOk) return status;
+    Pola::OpenedObject<AcDbDimStyleTable> table(raw);
+    Pola::DbObjectOwner<AcDbDimStyleTableRecord> record(new AcDbDimStyleTableRecord());
+    status = record->setName(name);
+    AcDbObjectId result;
+    if (status == Acad::eOk) status = table->add(result, record.get());
+    if (status == Acad::eOk) status = record.release()->close();
+    status = Pola::Close(table, status);
+    if (status == Acad::eOk) id = result;
+    return status;
 }
-
-AcDbObjectId StyleTools::CreateLayerStyle(const TCHAR* layer_name, const int& color_index, const TCHAR* line_type)
-{
-	if (IsLayerExist(layer_name))
-	{
-		return GetLayerId(layer_name);
-	}
-	AcCmColor color;
-	color.setColorIndex(color_index);
-	AcDbObjectId layer_id = AcDbObjectId::kNull;
-	AcDbLayerTable* layer_table = nullptr;
-	acdbHostApplicationServices()->workingDatabase()->getLayerTable(layer_table, OpenMode::kForWrite);
-	AcDbLayerTableRecord* layer_table_record = new AcDbLayerTableRecord();
-	layer_table_record->setName(layer_name);								
-	layer_table_record->setLinetypeObjectId(StyleTools::GetLineStyleId(line_type));	
-	layer_table_record->setColor(color);									
-	layer_table->add(layer_table_record);
-	layer_id = layer_table_record->objectId();
-
-	layer_table_record->close();
-	layer_table->close();
-	return layer_id;
+AcDbObjectId StyleTools::CreateDimensionStyle(const TCHAR* name) {
+    AcDbObjectId id; ReportStyleError(CreateDimensionStyle(name, id)); return id;
 }
-
-AcDbObjectId StyleTools::GetLayerId(const TCHAR* layer_name)
-{
-	AcDbObjectId layer_id = AcDbObjectId::kNull;
-	AcDbLayerTable* layer_table = nullptr;
-	if (IsLayerExist(layer_name))
-	{
-		acdbHostApplicationServices()->workingDatabase()->getLayerTable(layer_table, OpenMode::kForRead);
-		layer_table->getAt(layer_name, layer_id);
-		layer_table->close();
-		return layer_id;
-	}
-	else
-	{
-		layer_table->close();
-		return layer_id;
-	}
+Acad::ErrorStatus StyleTools::InitMLeaderStyle(AcDbObjectId& id) {
+    id = AcDbObjectId::kNull;
+    Acad::ErrorStatus status = GetMLeaderStyleId(_T("NONE_ARROW"), id);
+    if (status != Acad::eKeyNotFound) return status;
+    AcDbDatabase* db = acdbHostApplicationServices()->workingDatabase();
+    if (!db) return Acad::eNoDatabase;
+    Pola::DbObjectOwner<AcDbMLeaderStyle> style(new AcDbMLeaderStyle());
+    status = style->setName(_T("NONE_ARROW"));
+    if (status == Acad::eOk) status = style->setArrowSymbolId(_T("_NONE"));
+    AcDbObjectId result;
+    if (status == Acad::eOk) status = style->postMLeaderStyleToDb(db, _T("NONE_ARROW"), result);
+    if (status == Acad::eOk) status = style.release()->close();
+    if (status == Acad::eOk) id = result;
+    return status;
 }
-
-AcDbObjectId StyleTools::LoadLineType(const TCHAR* line_type, const TCHAR* line_type_file)
-{
-	if (IsLineTypeExist(line_type))
-	{
-		return GetLineStyleId(line_type);
-	}
-	acdbHostApplicationServices()->workingDatabase()->loadLineTypeFile(line_type, line_type_file);
-	AcDbLinetypeTable* line_type_table = nullptr;
-	acdbHostApplicationServices()->workingDatabase()->getLinetypeTable(line_type_table, OpenMode::kForRead);
-	AcDbObjectId line_type_id = AcDbObjectId::kNull;
-	line_type_table->getAt(line_type, line_type_id);
-
-	line_type_table->close();
-	return line_type_id;
+AcDbObjectId StyleTools::InitMLeaderStyle() {
+    AcDbObjectId id; ReportStyleError(InitMLeaderStyle(id)); return id;
 }
-
-AcDbObjectId StyleTools::GetLineStyleId(const TCHAR* line_type)
+Acad::ErrorStatus StyleTools::CreateLayerStyle(const TCHAR* name, const int& color_index, const TCHAR* line_type, AcDbObjectId& id)
 {
-	AcDbLinetypeTable* line_type_table = nullptr;
-	AcDbObjectId line_type_id = AcDbObjectId::kNull;
-	if (IsLineTypeExist(line_type))
-	{
-		acdbHostApplicationServices()->workingDatabase()->getLinetypeTable(line_type_table, OpenMode::kForRead);
-		line_type_table->getAt(line_type, line_type_id);
-		line_type_table->close();
-		return line_type_id;
-	}
-	else
-	{
-		line_type_table->close();
-		return line_type_id;
-	}
+    id = AcDbObjectId::kNull;
+    if (!name || !*name || !line_type || color_index < 0 || color_index > 256) return Acad::eInvalidInput;
+    Acad::ErrorStatus status = GetLayerId(name, id);
+    if (status == Acad::eOk) return status;
+    if (status != Acad::eKeyNotFound) return status;
+    AcDbObjectId line_id;
+    status = GetLineStyleId(line_type, line_id);
+    if (status != Acad::eOk) return status;
+    AcDbLayerTable* raw = nullptr;
+    status = acdbHostApplicationServices()->workingDatabase()->getLayerTable(raw, AcDb::kForWrite);
+    if (status != Acad::eOk) return status;
+    Pola::OpenedObject<AcDbLayerTable> table(raw);
+    Pola::DbObjectOwner<AcDbLayerTableRecord> record(new AcDbLayerTableRecord());
+    AcCmColor color; color.setColorIndex(static_cast<Adesk::UInt16>(color_index));
+    status = record->setName(name);
+    if (status == Acad::eOk) status = record->setLinetypeObjectId(line_id);
+    if (status == Acad::eOk) record->setColor(color);
+    AcDbObjectId result;
+    if (status == Acad::eOk) status = table->add(result, record.get());
+    if (status == Acad::eOk) status = record.release()->close();
+    status = Pola::Close(table, status);
+    if (status == Acad::eOk) id = result;
+    return status;
 }
-
-AcDbObjectId StyleTools::GetMLeaderStyleId(const TCHAR* mleader_style_name)
+AcDbObjectId StyleTools::CreateLayerStyle(const TCHAR* name, const int& color, const TCHAR* type)
 {
-	AcDbObjectId mleader_style_id = AcDbObjectId::kNull;
-	if (IsMLeaderStyleExist(mleader_style_name))
-	{
-		AcDbDatabase* current_database = acdbHostApplicationServices()->workingDatabase();
-		AcDbDictionary* mleader_style_dict = nullptr;
-		current_database->getMLeaderStyleDictionary(mleader_style_dict, OpenMode::kForRead);
-		mleader_style_dict->getAt(mleader_style_name, mleader_style_id);
-		mleader_style_dict->close();
-		return mleader_style_id;
-	}
-	else
-	{
-		return mleader_style_id;
-	}
+    AcDbObjectId id; ReportStyleError(CreateLayerStyle(name, color, type, id)); return id;
 }
-
-bool StyleTools::IsLayerExist(const TCHAR* layer_name)
-{
-	AcDbLayerTable* layer_table = nullptr;
-	acdbHostApplicationServices()->workingDatabase()->getLayerTable(layer_table, OpenMode::kForRead);
-	if (layer_table->has(layer_name))
-	{
-		layer_table->close();
-		return true;
-	}
-	else
-	{
-		layer_table->close();
-		return false;
-	}
+Acad::ErrorStatus StyleTools::LoadLineType(const TCHAR* name, const TCHAR* file, AcDbObjectId& id) {
+    id = AcDbObjectId::kNull;
+    if (!file || !*file) return Acad::eInvalidInput;
+    Acad::ErrorStatus status = GetLineStyleId(name, id);
+    if (status != Acad::eKeyNotFound) return status;
+    AcDbDatabase* db = acdbHostApplicationServices()->workingDatabase();
+    if (!db) return Acad::eNoDatabase;
+    status = db->loadLineTypeFile(name, file);
+    if (status != Acad::eOk) return status;
+    return GetLineStyleId(name, id);
 }
-
-bool StyleTools::IsDimensionStyleExist(const TCHAR* dimension_style)
-{
-	AcDbDimStyleTable* dimension_table = nullptr;
-	acdbHostApplicationServices()->workingDatabase()->getDimStyleTable(dimension_table, OpenMode::kForRead);
-	if (dimension_table->has(dimension_style))
-	{
-		dimension_table->close();
-		return true;
-	}
-	else
-	{
-		dimension_table->close();
-		return false;
-	}
-}
-
-bool StyleTools::IsTextStyleExist(const TCHAR* text_style_name)
-{
-	AcDbTextStyleTable* text_style_table = nullptr;
-
-	acdbHostApplicationServices()->workingDatabase()->getTextStyleTable(text_style_table, OpenMode::kForRead);
-	if (text_style_table->has(text_style_name))
-	{
-		text_style_table->close();
-		return true;
-	}
-	else
-	{
-		text_style_table->close();
-		return false;
-	}
-}
-
-bool StyleTools::IsLineTypeExist(const TCHAR* line_type)
-{
-	AcDbLinetypeTable* line_type_table = nullptr;
-	acdbHostApplicationServices()->workingDatabase()->getLinetypeTable(line_type_table, OpenMode::kForRead);
-	if (line_type_table->has(line_type))
-	{
-		line_type_table->close();
-		return true;
-	}
-	else
-	{
-		line_type_table->close();
-		return false;
-	}
-}
-
-bool StyleTools::IsMLeaderStyleExist(const TCHAR* mleader_style_name)
-{
-	AcDbDatabase* current_database = acdbHostApplicationServices()->workingDatabase();
-	AcDbDictionary* mleader_style_dict = nullptr;
-	current_database->getMLeaderStyleDictionary(mleader_style_dict, OpenMode::kForRead);
-	if (mleader_style_dict->has(mleader_style_name))
-	{
-		mleader_style_dict->close();
-		return true;
-	}
-	else
-	{
-		mleader_style_dict->close();
-		return false;
-	}
+AcDbObjectId StyleTools::LoadLineType(const TCHAR* name, const TCHAR* file) {
+    AcDbObjectId id; ReportStyleError(LoadLineType(name, file, id)); return id;
 }

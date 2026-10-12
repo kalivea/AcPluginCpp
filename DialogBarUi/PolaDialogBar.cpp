@@ -1,19 +1,19 @@
-// (C) Copyright 2002-2007 by Autodesk, Inc. 
+ï»¿// (C) Copyright 2002-2007 by Autodesk, Inc.
 //
 // Permission to use, copy, modify, and distribute this software in
-// object code form for any purpose and without fee is hereby granted, 
-// provided that the above copyright notice appears in all copies and 
+// object code form for any purpose and without fee is hereby granted,
+// provided that the above copyright notice appears in all copies and
 // that both that copyright notice and the limited warranty and
-// restricted rights notice below appear in all supporting 
+// restricted rights notice below appear in all supporting
 // documentation.
 //
-// AUTODESK PROVIDES THIS PROGRAM "AS IS" AND WITH ALL FAULTS. 
+// AUTODESK PROVIDES THIS PROGRAM "AS IS" AND WITH ALL FAULTS.
 // AUTODESK SPECIFICALLY DISCLAIMS ANY IMPLIED WARRANTY OF
-// MERCHANTABILITY OR FITNESS FOR A PARTICULAR USE.  AUTODESK, INC. 
+// MERCHANTABILITY OR FITNESS FOR A PARTICULAR USE.  AUTODESK, INC.
 // DOES NOT WARRANT THAT THE OPERATION OF THE PROGRAM WILL BE
 // UNINTERRUPTED OR ERROR FREE.
 //
-// Use, duplication, or disclosure by the U.S. Government is subject to 
+// Use, duplication, or disclosure by the U.S. Government is subject to
 // restrictions set forth in FAR 52.227-19 (Commercial Computer
 // Software - Restricted Rights) and DFAR 252.227-7013(c)(1)(ii)
 // (Rights in Technical Data and Computer Software), as applicable.
@@ -29,13 +29,14 @@
 //-----------------------------------------------------------------------------
 void SendCommand(const TCHAR* szCommand)
 {
+	if (szCommand == nullptr || acedGetAcadFrame() == nullptr) return;
 	COPYDATASTRUCT msg;
 	msg.dwData = static_cast<DWORD> (1);
 	msg.cbData = static_cast<DWORD> ((_tcslen(szCommand) + 1) * sizeof(TCHAR));
 	msg.lpData = const_cast<TCHAR*> (szCommand);
 
 	acedGetAcadFrame()->SendMessage(WM_COPYDATA, reinterpret_cast<WPARAM>(adsw_acadMainWnd()), reinterpret_cast<LPARAM>(&msg));
-	acedGetAcadDockCmdLine()->SetFocus();
+	if (acedGetAcadDockCmdLine() != nullptr) acedGetAcadDockCmdLine()->SetFocus();
 }
 //-----------------------------------------------------------------------------
 IMPLEMENT_DYNAMIC(CPolaDialogBar, CAdUiDialogBar)
@@ -52,6 +53,7 @@ END_MESSAGE_MAP()
 
 //-----------------------------------------------------------------------------
 CPolaDialogBar::CPolaDialogBar(CWnd* pParent /*=NULL*/, HINSTANCE hInstance /*=NULL*/) : CAdUiDialogBar(/*CPolaDialogBar::IDD, pParent, hInstance*/) {
+	m_bAutoDelete = FALSE; // TestClass owns the C++ object until module unload.
 	m_bIsShow = TRUE;
 	m_nAlignment = 0;
 	m_bOnce = TRUE;
@@ -65,6 +67,7 @@ CPolaDialogBar::~CPolaDialogBar()
 
 BOOL CPolaDialogBar::Create(CFrameWnd* pParentWnd, CString csName)
 {
+	if (pParentWnd == nullptr || !::IsWindow(pParentWnd->GetSafeHwnd())) return FALSE;
 	CAcModuleResourceOverride Vtemp;
 
 	if (!CAdUiDialogBar::Create(pParentWnd, IDD_POLADIALOGBAR, WS_CHILD | WS_VISIBLE | CBRS_ALIGN_BOTTOM, AFX_IDW_CONTROLBAR_LAST))
@@ -118,35 +121,35 @@ LRESULT CPolaDialogBar::OnAcadKeepFocus(WPARAM, LPARAM) {
 
 void CPolaDialogBar::OnUpdateCmdUI(CFrameWnd* pTarget, BOOL bDisableIfNoHandler)
 {
-	// TODO: ÔÚ´ËÌí¼Ó×¨ÓÃ´úÂëºÍ/»òµ÷ÓÃ»ùÀà
+	// TODO: åœ¨æ­¤æ·»åŠ ä¸“ç”¨ä»£ç å’Œ/æˆ–è°ƒç”¨åŸºç±»
 	CAdUiDialogBar::OnUpdateCmdUI(pTarget, FALSE);
 }
 
 void CPolaDialogBar::OnSetFrameFocus()
 {
-	GetDockingFrame()->SetFocus();
+	if (GetDockingFrame() != nullptr) GetDockingFrame()->SetFocus();
 }
 
 void CPolaDialogBar::OnClose()
 {
-	// TODO: ÔÚ´ËÌí¼ÓÏûÏ¢´¦Àí³ÌÐò´úÂëºÍ/»òµ÷ÓÃÄ¬ÈÏÖµ
+	// TODO: åœ¨æ­¤æ·»åŠ æ¶ˆæ¯å¤„ç†ç¨‹åºä»£ç å’Œ/æˆ–è°ƒç”¨é»˜è®¤å€¼
 	m_bIsShow = FALSE;
 	Save();
-	CAdUiDialogBar::OnClose();
+	if (GetDockingFrame() != nullptr) GetDockingFrame()->ShowControlBar(this, FALSE, FALSE);
 }
 
 void CPolaDialogBar::OnPaint()
 {
 	CPaintDC dc(this); // device context for painting
-	// TODO: ÔÚ´Ë´¦Ìí¼ÓÏûÏ¢´¦Àí³ÌÐò´úÂë
-	// ²»Îª»æÍ¼ÏûÏ¢µ÷ÓÃ CAdUiDialogBar::OnPaint()
+	// TODO: åœ¨æ­¤å¤„æ·»åŠ æ¶ˆæ¯å¤„ç†ç¨‹åºä»£ç 
+	// ä¸ä¸ºç»˜å›¾æ¶ˆæ¯è°ƒç”¨ CAdUiDialogBar::OnPaint()
 }
 
 void CPolaDialogBar::OnSize(UINT nType, int cx, int cy)
 {
 	CAdUiDialogBar::OnSize(nType, cx, cy);
 
-	// TODO: ÔÚ´Ë´¦Ìí¼ÓÏûÏ¢´¦Àí³ÌÐò´úÂë
+	// TODO: åœ¨æ­¤å¤„æ·»åŠ æ¶ˆæ¯å¤„ç†ç¨‹åºä»£ç 
 }
 
 void CPolaDialogBar::OnBarStyleChange(DWORD dwOldStyle, DWORD dwNewStyle)
@@ -181,7 +184,9 @@ void CPolaDialogBar::OnButtonClicked()
 	cassMenu.Set(saMenu, nStartID);
 
 	CRect rect;
-	GetDlgItem(IDC_MY_BUTTON)->GetWindowRect(&rect);
+	CWnd* button = GetDlgItem(IDC_MY_BUTTON);
+	if (button == nullptr) return;
+	button->GetWindowRect(&rect);
 	cassMenu.m_menu.TrackPopupMenu(
 		TPM_LEFTALIGN | TPM_TOPALIGN,
 		rect.left,

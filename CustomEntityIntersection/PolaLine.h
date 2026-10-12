@@ -1,19 +1,19 @@
-// (C) Copyright 2002-2007 by Autodesk, Inc. 
+// (C) Copyright 2002-2007 by Autodesk, Inc.
 //
 // Permission to use, copy, modify, and distribute this software in
-// object code form for any purpose and without fee is hereby granted, 
-// provided that the above copyright notice appears in all copies and 
+// object code form for any purpose and without fee is hereby granted,
+// provided that the above copyright notice appears in all copies and
 // that both that copyright notice and the limited warranty and
-// restricted rights notice below appear in all supporting 
+// restricted rights notice below appear in all supporting
 // documentation.
 //
-// AUTODESK PROVIDES THIS PROGRAM "AS IS" AND WITH ALL FAULTS. 
+// AUTODESK PROVIDES THIS PROGRAM "AS IS" AND WITH ALL FAULTS.
 // AUTODESK SPECIFICALLY DISCLAIMS ANY IMPLIED WARRANTY OF
-// MERCHANTABILITY OR FITNESS FOR A PARTICULAR USE.  AUTODESK, INC. 
+// MERCHANTABILITY OR FITNESS FOR A PARTICULAR USE.  AUTODESK, INC.
 // DOES NOT WARRANT THAT THE OPERATION OF THE PROGRAM WILL BE
 // UNINTERRUPTED OR ERROR FREE.
 //
-// Use, duplication, or disclosure by the U.S. Government is subject to 
+// Use, duplication, or disclosure by the U.S. Government is subject to
 // restrictions set forth in FAR 52.227-19 (Commercial Computer
 // Software - Restricted Rights) and DFAR 252.227-7013(c)(1)(ii)
 // (Rights in Technical Data and Computer Software), as applicable.
@@ -46,6 +46,8 @@
 
 //-----------------------------------------------------------------------------
 #include "dbmain.h"
+#include <cmath>
+#include <vector>
 
 //-----------------------------------------------------------------------------
 class DLLIMPEXP CPolaLine : public AcDbEntity {
@@ -114,13 +116,19 @@ private:
 
 	// save to dwg files.
 	AcGePoint3dArray center_vertex_;				// store  vertexes of beam.
-	Adesk::Int32 center_num_;
-	double line_width_;
+	Adesk::Int32 center_num_ = 0;
+	double line_width_ = 0.0;
 
 	std::vector<DrawSegment> line_seg;
 public:
 	void SetCenterVertex(const AcGePoint3dArray& center_vertex);
-	void SetLineWidth(double line_width) { line_width_ = line_width; }
+	Acad::ErrorStatus SetCenterVertexChecked(const AcGePoint3dArray& center_vertex);
+	Acad::ErrorStatus SetLineWidth(double line_width) {
+		assertWriteEnabled();
+		if (!std::isfinite(line_width) || line_width < 0.0) return Acad::eInvalidInput;
+		line_width_ = line_width; return Acad::eOk;
+	}
+	Acad::ErrorStatus GenerateOffsetLineChecked(AcGePoint3dArray& top_line, AcGePoint3dArray& bottom_line);
 	void GenerateOffsetLine(AcGePoint3dArray& top_line, AcGePoint3dArray& bottom_line);
 	void GenerateOriginalDrawSegment();
 	bool ModifyDrawSegmentAt(int index, CPolaLine::LineType type);

@@ -26,6 +26,7 @@
 #include "resource.h"
 #include "PolaIRMUi.h"
 #include "PolaIRM.h"
+#include "BasicTools.h"
 //-----------------------------------------------------------------------------
 IMPLEMENT_DYNAMIC(CPolaIRMUi, CAdUiBaseDialog)
 

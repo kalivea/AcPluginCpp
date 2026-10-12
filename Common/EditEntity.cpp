@@ -1,330 +1,260 @@
 #include "StdAfx.h"
 #include "EditEntity.h"
+#include "DbObjectOwner.h"
+#include <cmath>
 
-void EditEntity::SetColor(const AcDbObjectId& entity_id, const unsigned char& color_index)
+namespace
 {
-	AcDbEntity* entity = nullptr;
-	ErrorStatus err_status = acdbOpenObject(entity, entity_id, OpenMode::kForWrite);
-	if (err_status != Acad::eOk)
-	{
-		throw;						//TODO: improve handling logic.
-	}
-	entity->setColorIndex(color_index);
-	entity->close();
+bool finitePoint(const AcGePoint3d& p) { return std::isfinite(p.x) && std::isfinite(p.y) && std::isfinite(p.z); }
+template<class Operation> Acad::ErrorStatus edit(const AcDbObjectId& id, Operation operation)
+{
+    if (id.isNull()) return Acad::eInvalidInput;
+    AcDbEntity* pointer = nullptr;
+    Acad::ErrorStatus status = acdbOpenObject(pointer, id, AcDb::kForWrite);
+    if (status != Acad::eOk) return status;
+    Pola::OpenedObject<AcDbEntity> entity(pointer);
+    return Pola::Close(entity, operation(entity.get()));
+}
+template<class Operation> Acad::ErrorStatus each(const AcDbObjectIdArray& ids, Operation operation)
+{
+    for (int i = 0; i < ids.length(); ++i)
+    {
+        const Acad::ErrorStatus status = operation(ids.at(i), i);
+        if (status != Acad::eOk) return status;
+    }
+    return Acad::eOk;
+}
+Acad::ErrorStatus appendOwned(Pola::DbObjectOwner<AcDbEntity>& entity, AcDbObjectId& id)
+{
+    Acad::ErrorStatus status = AddToModelSpace::AddEntityToModelSpace(entity.get(), id, false);
+    if (!entity->objectId().isNull())
+    {
+        const Acad::ErrorStatus cleanup = entity.release()->close();
+        if (status == Acad::eOk) status = cleanup;
+    }
+    if (status != Acad::eOk) id = AcDbObjectId::kNull;
+    return status;
+}
+void report(const TCHAR* operation, Acad::ErrorStatus status)
+{
+    if (status != Acad::eOk) acutPrintf(_T("\n%s failed: %d"), operation, static_cast<int>(status));
+}
 }
 
-void EditEntity::SetColor(const AcDbObjectIdArray& entity_ids, const unsigned char& color_index)
+Acad::ErrorStatus EditEntity::SetColor(const AcDbObjectId& id, const unsigned char& index)
 {
-	for (int i = 0; i < entity_ids.length(); i++)
-	{
-		SetColor(entity_ids.at(i), color_index);
-	}
+    return edit(id, [index](AcDbEntity* entity) { return entity->setColorIndex(index); });
 }
-
-void EditEntity::SetColor(const AcDbObjectIdArray& entity_id, const unsigned char color_index[])
+Acad::ErrorStatus EditEntity::SetColor(const AcDbObjectIdArray& ids, const unsigned char& index)
 {
-	for (int i = 0; i < entity_id.length(); i++)
-	{
-		SetColor(entity_id.at(i), color_index[i]);
-	}
+    return each(ids, [index](const AcDbObjectId& id, int) { return SetColor(id, index); });
 }
-
-void EditEntity::SetLayer(const AcDbObjectId& entity_id, const TCHAR* layer_name)
+Acad::ErrorStatus EditEntity::SetColor(const AcDbObjectIdArray& ids, const unsigned char indices[])
 {
-	AcDbEntity* entity = nullptr;
-	ErrorStatus err_status = acdbOpenObject(entity, entity_id, OpenMode::kForWrite);
-	if (err_status != Acad::eOk)
-	{
-		throw;						//TODO: improve handling logic.
-	}
-	if (StyleTools::IsLayerExist(layer_name))
-	{
-		entity->setLayer(layer_name);
-		entity->close();
-	}
-	else
-	{
-		AcDbDatabase* database = nullptr;
-		database = acdbHostApplicationServices()->workingDatabase();
-		AcDbLayerTable* layer_table = nullptr;
-		acdbOpenObject(layer_table, database->layerTableId(), OpenMode::kForWrite);
-
-		AcDbLayerTableRecord* layer_table_record = nullptr;
-		layer_table_record = new AcDbLayerTableRecord();
-		layer_table_record->setName(layer_name);							//only add layer name,need more param.
-		layer_table->add(layer_table_record);
-		layer_table_record->close();
-		layer_table->close();
-		entity->close();
-
-		SetLayer(entity_id, layer_name);
-	}
+    if (indices == nullptr) return Acad::eInvalidInput;
+    return each(ids, [indices](const AcDbObjectId& id, int i) { return SetColor(id, indices[i]); });
 }
-
-void EditEntity::SetLayer(const AcDbObjectIdArray& entity_ids, const TCHAR* layer_name)
+Acad::ErrorStatus EditEntity::SetLayer(const AcDbObjectId& id, const TCHAR* name)
 {
-	for (int i = 0; i < entity_ids.length(); i++)
-	{
-		SetLayer(entity_ids.at(i), layer_name);
-	}
+    if (name == nullptr || *name == 0) return Acad::eInvalidInput;
+    return edit(id, [name](AcDbEntity* entity)
+    {
+        AcDbDatabase* database = entity->database();
+        if (database == nullptr) return Acad::eNoDatabase;
+        AcDbLayerTable* table_ptr = nullptr;
+        Acad::ErrorStatus status = database->getLayerTable(table_ptr, AcDb::kForWrite);
+        if (status != Acad::eOk) return status;
+        Pola::OpenedObject<AcDbLayerTable> table(table_ptr);
+        if (!table->has(name))
+        {
+            Pola::DbObjectOwner<AcDbLayerTableRecord> record(new AcDbLayerTableRecord());
+            status = record->setName(name);
+            if (status == Acad::eOk) status = table->add(record.get());
+            if (status == Acad::eOk) status = record.release()->close();
+        }
+        status = Pola::Close(table, status);
+        if (status != Acad::eOk) return status;
+        return entity->setLayer(name);
+    });
 }
-
-void EditEntity::SetLayer(const AcDbObjectIdArray& entity_ids, const TCHAR* layer_name[])
+Acad::ErrorStatus EditEntity::SetLayer(const AcDbObjectIdArray& ids, const TCHAR* name)
 {
-	for (int i = 0; i < entity_ids.length(); i++)
-	{
-		SetLayer(entity_ids.at(i), layer_name[i]);
-	}
+    return each(ids, [name](const AcDbObjectId& id, int) { return SetLayer(id, name); });
 }
-
-void EditEntity::SetLinetype(const AcDbObjectId& entity_id, const TCHAR* linetype_name, const double& line_type_scale)
+Acad::ErrorStatus EditEntity::SetLayer(const AcDbObjectIdArray& ids, const TCHAR* names[])
 {
-	if (StyleTools::IsLineTypeExist(linetype_name))
-	{
-		AcDbEntity* entity = nullptr;
-		ErrorStatus err_status = acdbOpenObject(entity, entity_id, OpenMode::kForWrite);
-		if (err_status != Acad::eOk)
-		{
-			throw;						//TODO: improve handling logic.
-		}
-		entity->setLinetype(linetype_name);
-		entity->setLinetypeScale(line_type_scale);
-		entity->close();
-	}
-	else
-	{
-		StyleTools::LoadLineType(linetype_name, _T("acad.lin"));
-		SetLinetype(entity_id, linetype_name, line_type_scale);
-	}
+    if (names == nullptr) return Acad::eInvalidInput;
+    return each(ids, [names](const AcDbObjectId& id, int i) { return SetLayer(id, names[i]); });
 }
-
-void EditEntity::SetLinetype(const AcDbObjectIdArray& entity_ids, const TCHAR* linetype_name, const double& line_type_scale)
+Acad::ErrorStatus EditEntity::SetLinetype(const AcDbObjectId& id, const TCHAR* name, const double& scale)
 {
-	for (int i = 0; i < entity_ids.length(); i++)
-	{
-		SetLinetype(entity_ids.at(i), linetype_name, line_type_scale);
-	}
+    if (name == nullptr || *name == 0 || !std::isfinite(scale) || scale <= 0) return Acad::eInvalidInput;
+    return edit(id, [name, scale](AcDbEntity* entity)
+    {
+        AcDbDatabase* database = entity->database();
+        if (database == nullptr) return Acad::eNoDatabase;
+        AcDbLinetypeTable* table_ptr = nullptr;
+        Acad::ErrorStatus status = database->getLinetypeTable(table_ptr, AcDb::kForRead);
+        if (status != Acad::eOk) return status;
+        Pola::OpenedObject<AcDbLinetypeTable> table(table_ptr);
+        const bool exists = table->has(name);
+        status = Pola::Close(table);
+        if (status == Acad::eOk && !exists) status = database->loadLineTypeFile(name, _T("acad.lin"));
+        if (status == Acad::eOk) status = entity->setLinetype(name);
+        if (status == Acad::eOk) status = entity->setLinetypeScale(scale);
+        return status;
+    });
 }
-
-void EditEntity::SetTextHorzMode(const AcDbObjectId& text_id, AcDb::TextHorzMode text_horz_mode)
+Acad::ErrorStatus EditEntity::SetLinetype(const AcDbObjectIdArray& ids, const TCHAR* name, const double& scale)
 {
-	AcDbObjectPointer<AcDbText> text;
-	text.open(text_id, OpenMode::kForWrite);
-	if (text.openStatus() == Acad::eOk)
-	{
-		text->setHorizontalMode(text_horz_mode);
-		text->setAlignmentPoint(text->position());
-		text->adjustAlignment();
-	}
+    return each(ids, [name, scale](const AcDbObjectId& id, int) { return SetLinetype(id, name, scale); });
 }
-
-void EditEntity::SetTextHorzMode(const AcDbObjectIdArray& text_ids, AcDb::TextHorzMode text_horz_mode)
+Acad::ErrorStatus EditEntity::SetTextHorzMode(const AcDbObjectId& id, AcDb::TextHorzMode mode)
 {
-	for (auto& text_id : text_ids)
-	{
-		SetTextHorzMode(text_id, text_horz_mode);
-	}
+    return edit(id, [mode](AcDbEntity* entity)
+    {
+        AcDbText* text = AcDbText::cast(entity); // borrowed alias, close entity only
+        if (text == nullptr) return Acad::eWrongObjectType;
+        Acad::ErrorStatus status = text->setHorizontalMode(mode);
+        if (status == Acad::eOk) status = text->setAlignmentPoint(text->position());
+        if (status == Acad::eOk) status = text->adjustAlignment(text->database());
+        return status;
+    });
 }
-
-void EditEntity::MoveEntity(const AcDbObjectId& entity_id, const AcGePoint3d& base_point, const AcGePoint3d& target_point)
+Acad::ErrorStatus EditEntity::SetTextHorzMode(const AcDbObjectIdArray& ids, AcDb::TextHorzMode mode)
 {
-	AcDbEntity* entity = nullptr;
-	ErrorStatus err_status = acdbOpenObject(entity, entity_id, OpenMode::kForWrite);
-	if (err_status != Acad::eOk)
-	{
-		throw;						//TODO: improve handling logic.
-	}
-	AcGeVector3d vector = BasicTools::GetVectorBetweenTwoPoint(base_point, target_point);
-	AcGeMatrix3d move_transform_matrix;
-	move_transform_matrix.setToTranslation(vector);
-	entity->transformBy(move_transform_matrix);
-	entity->close();
+    return each(ids, [mode](const AcDbObjectId& id, int) { return SetTextHorzMode(id, mode); });
 }
-
-void EditEntity::MoveEntity(const AcDbObjectIdArray& entity_ids, const AcGePoint3d& base_point, const AcGePoint3d& target_point)
+Acad::ErrorStatus EditEntity::MoveEntity(const AcDbObjectId& id, const AcGePoint3d& base, const AcGePoint3d& target)
 {
-	for (int i = 0; i < entity_ids.length(); i++)
-	{
-		MoveEntity(entity_ids.at(i), base_point, target_point);
-	}
+    if (!finitePoint(base) || !finitePoint(target)) return Acad::eInvalidInput;
+    AcGeMatrix3d transform;
+    transform.setToTranslation(target - base);
+    return edit(id, [&transform](AcDbEntity* entity) { return entity->transformBy(transform); });
 }
-
-void EditEntity::MoveEntity(const AcDbObjectIdArray& entity_ids, const AcGePoint3dArray& base_point, const AcGePoint3dArray& target_point)
+Acad::ErrorStatus EditEntity::MoveEntity(const AcDbObjectIdArray& ids, const AcGePoint3d& base, const AcGePoint3d& target)
 {
-	if (entity_ids.length() != base_point.length() || entity_ids.length() != target_point.length())
-	{
-		throw;						//TODO: improve handling logic.
-	}
-	for (int i = 0; i < entity_ids.length(); i++)
-	{
-		MoveEntity(entity_ids.at(i), base_point.at(i), target_point.at(i));
-	}
+    return each(ids, [&base, &target](const AcDbObjectId& id, int) { return MoveEntity(id, base, target); });
 }
-
-AcDbObjectId EditEntity::CopyEntity(const AcDbObjectId& base_entity_id, const AcGePoint3d& base_point, const AcGePoint3d& target_point)
+Acad::ErrorStatus EditEntity::MoveEntity(const AcDbObjectIdArray& ids, const AcGePoint3dArray& bases, const AcGePoint3dArray& targets)
 {
-	AcDbEntity* base_entity = nullptr;
-	AcDbEntity* copy_entity = nullptr;
-	ErrorStatus err_status = acdbOpenObject(base_entity, base_entity_id, OpenMode::kForWrite);
-	if (err_status != Acad::eOk)
-	{
-		throw;						//TODO: improve handling logic.
-	}
-	AcGeVector3d vector = BasicTools::GetVectorBetweenTwoPoint(base_point, target_point);
-	AcGeMatrix3d copy_transform_matrix;
-	copy_transform_matrix.setToTranslation(vector);
-	base_entity->getTransformedCopy(vector, copy_entity);
-	base_entity->close();
-	return AddToModelSpace::AddEntityToModelSpace(copy_entity);
+    if (ids.length() != bases.length() || ids.length() != targets.length()) return Acad::eInvalidInput;
+    return each(ids, [&bases, &targets](const AcDbObjectId& id, int i) { return MoveEntity(id, bases.at(i), targets.at(i)); });
 }
-
-AcDbObjectIdArray EditEntity::CopyEntity(const AcDbObjectIdArray& base_entity_ids, const AcGePoint3d& base_point, const AcGePoint3d& target_point)
+Acad::ErrorStatus EditEntity::CopyEntity(const AcDbObjectId& id, const AcGePoint3d& base, const AcGePoint3d& target, AcDbObjectId& copy_id)
 {
-	AcDbObjectIdArray copy_entity_ids;
-	for (int i = 0; i < base_entity_ids.length(); i++)
-	{
-		copy_entity_ids.append(CopyEntity(base_entity_ids.at(i), base_point, target_point));
-	}
-	return copy_entity_ids;
+    copy_id = AcDbObjectId::kNull;
+    if (id.isNull() || !finitePoint(base) || !finitePoint(target)) return Acad::eInvalidInput;
+    AcDbEntity* base_ptr = nullptr;
+    Acad::ErrorStatus status = acdbOpenObject(base_ptr, id, AcDb::kForRead);
+    if (status != Acad::eOk) return status;
+    Pola::OpenedObject<AcDbEntity> original(base_ptr);
+    AcGeMatrix3d transform;
+    transform.setToTranslation(target - base);
+    AcDbEntity* copy_ptr = nullptr;
+    status = original->getTransformedCopy(transform, copy_ptr);
+    Pola::DbObjectOwner<AcDbEntity> copy(copy_ptr);
+    status = Pola::Close(original, status);
+    if (status != Acad::eOk) return status;
+    if (!copy) return Acad::eNullEntityPointer;
+    return appendOwned(copy, copy_id);
 }
-
-AcDbObjectIdArray EditEntity::CopyEntity(const AcDbObjectIdArray& base_entity_ids, const AcGePoint3dArray& base_point, const AcGePoint3dArray& target_point)
+AcDbObjectId EditEntity::CopyEntity(const AcDbObjectId& id, const AcGePoint3d& base, const AcGePoint3d& target)
 {
-	AcDbObjectIdArray copy_entity_ids;
-	if (base_entity_ids.length() != base_point.length() || base_entity_ids.length() != target_point.length())
-	{
-		throw;						//TODO: improve handling logic.
-	}
-	for (int i = 0; i < base_entity_ids.length(); i++)
-	{
-		copy_entity_ids.append(CopyEntity(base_entity_ids.at(i), base_point.at(i), target_point.at(i)));
-	}
-	return copy_entity_ids;
+    AcDbObjectId output;
+    report(_T("CopyEntity"), CopyEntity(id, base, target, output));
+    return output;
 }
-
-void EditEntity::RotateEntity(const AcDbObjectId& entity_id, const AcGePoint3d& base_point, const double& angle, const int& angle_type)
+AcDbObjectIdArray EditEntity::CopyEntity(const AcDbObjectIdArray& ids, const AcGePoint3d& base, const AcGePoint3d& target)
 {
-	AcDbEntity* entity = nullptr;
-	ErrorStatus err_status = acdbOpenObject(entity, entity_id, OpenMode::kForWrite);
-	if (err_status != Acad::eOk)
-	{
-		throw;						//TODO: improve handling logic.
-	}
-	double temp_angle;
-	if (angle_type == 0)
-		temp_angle = BasicTools::ConvertAngle(angle, 1);
-	else if (angle_type == 1)
-		temp_angle = angle;
-	else
-		throw"Wrong angle type. Only \"DEG\",\"RAD\" can be use!~";
-	AcGeMatrix3d rotate_transform_matrix;
-	rotate_transform_matrix.setToRotation(temp_angle, AcGeVector3d::kZAxis, base_point);
-	entity->transformBy(rotate_transform_matrix);
-	entity->close();
+    AcDbObjectIdArray output;
+    for (int i = 0; i < ids.length(); ++i) output.append(CopyEntity(ids.at(i), base, target));
+    return output;
 }
-
-void EditEntity::RotateEntity(const AcDbObjectIdArray& entity_ids, const AcGePoint3d& base_point, const double& angle, const int& angle_type)
+AcDbObjectIdArray EditEntity::CopyEntity(const AcDbObjectIdArray& ids, const AcGePoint3dArray& bases, const AcGePoint3dArray& targets)
 {
-	for (int i = 0; i < entity_ids.length(); i++)
-	{
-		RotateEntity(entity_ids.at(i), base_point, angle, angle_type);
-	}
+    AcDbObjectIdArray output;
+    if (ids.length() != bases.length() || ids.length() != targets.length())
+    {
+        report(_T("CopyEntity"), Acad::eInvalidInput);
+        return output;
+    }
+    for (int i = 0; i < ids.length(); ++i) output.append(CopyEntity(ids.at(i), bases.at(i), targets.at(i)));
+    return output;
 }
-
-void EditEntity::RotateEntity(const AcDbObjectIdArray& entity_ids, const AcGePoint3dArray& base_point, const double angle[], const int& angle_type)
+Acad::ErrorStatus EditEntity::RotateEntity(const AcDbObjectId& id, const AcGePoint3d& base, const double& angle, const int& type)
 {
-	for (int i = 0; i < entity_ids.length(); i++)
-	{
-		RotateEntity(entity_ids.at(i), base_point.at(i), angle[i], angle_type);
-	}
+    if (!finitePoint(base) || !std::isfinite(angle) || (type != 0 && type != 1)) return Acad::eInvalidInput;
+    AcGeMatrix3d transform;
+    transform.setToRotation(type == 0 ? BasicTools::ConvertAngle(angle, 1) : angle, AcGeVector3d::kZAxis, base);
+    return edit(id, [&transform](AcDbEntity* entity) { return entity->transformBy(transform); });
 }
-
-void EditEntity::DeleteEntity(const AcDbObjectId& entity_id)
+Acad::ErrorStatus EditEntity::RotateEntity(const AcDbObjectIdArray& ids, const AcGePoint3d& base, const double& angle, const int& type)
 {
-	AcDbEntity* entity = nullptr;
-	ErrorStatus err_status = acdbOpenObject(entity, entity_id, OpenMode::kForWrite);
-	if (err_status != Acad::eOk)
-	{
-		throw;						//TODO: improve handling logic.
-	}
-	entity->erase();
-	entity->close();
+    return each(ids, [&base, angle, type](const AcDbObjectId& id, int) { return RotateEntity(id, base, angle, type); });
 }
-
-void EditEntity::DeleteEntity(const AcDbObjectIdArray& entity_ids)
+Acad::ErrorStatus EditEntity::RotateEntity(const AcDbObjectIdArray& ids, const AcGePoint3dArray& bases, const double angles[], const int& type)
 {
-	for (int i = 0; i < entity_ids.length(); i++)
-	{
-		DeleteEntity(entity_ids.at(i));
-	}
+    if (angles == nullptr || ids.length() != bases.length()) return Acad::eInvalidInput;
+    return each(ids, [&bases, angles, type](const AcDbObjectId& id, int i) { return RotateEntity(id, bases.at(i), angles[i], type); });
 }
-
-void EditEntity::ScaleEntity(const AcDbObjectId& entity_id, const AcGePoint3d& base_point, const double& scale)
+Acad::ErrorStatus EditEntity::DeleteEntity(const AcDbObjectId& id)
 {
-	if (scale <= 0)
-	{
-		throw;						//TODO: improve handling logic.
-	}
-
-	AcDbEntity* entity = nullptr;
-	ErrorStatus err_status = acdbOpenObject(entity, entity_id, OpenMode::kForWrite);
-	if (err_status != Acad::eOk)
-	{
-		throw;						//TODO: improve handling logic.
-	}
-	AcGeMatrix3d scale_transform_matrix;
-	scale_transform_matrix.setToScaling(scale, base_point);
-	entity->transformBy(scale_transform_matrix);
-	entity->close();
+    return edit(id, [](AcDbEntity* entity) { return entity->erase(); });
 }
-
-void EditEntity::ScaleEntity(const AcDbObjectIdArray& entity_ids, const AcGePoint3d& base_point, const double& scale)
+Acad::ErrorStatus EditEntity::DeleteEntity(const AcDbObjectIdArray& ids)
 {
-	for (int i = 0; i < entity_ids.length(); i++)
-	{
-		ScaleEntity(entity_ids.at(i), base_point, scale);
-	}
+    return each(ids, [](const AcDbObjectId& id, int) { return DeleteEntity(id); });
 }
-
-void EditEntity::ScaleEntity(const AcDbObjectIdArray& entity_ids, const AcGePoint3dArray& base_point, const double& scale)
+Acad::ErrorStatus EditEntity::ScaleEntity(const AcDbObjectId& id, const AcGePoint3d& base, const double& scale)
 {
-	if (entity_ids.length() != base_point.length())
-	{
-		throw;						//TODO: improve handling logic.
-	}
-	for (int i = 0; i < entity_ids.length(); i++)
-	{
-		ScaleEntity(entity_ids.at(i), base_point.at(i), scale);
-	}
+    if (!finitePoint(base) || !std::isfinite(scale) || scale <= 0) return Acad::eInvalidInput;
+    AcGeMatrix3d transform;
+    transform.setToScaling(scale, base);
+    return edit(id, [&transform](AcDbEntity* entity) { return entity->transformBy(transform); });
 }
-
-AcDbObjectId EditEntity::MirrorEntity(const AcDbObjectId& entity_id, const AcGePoint3d& mirror_point1, const AcGePoint3d& mirror_point2, const bool need_delete_original_entity)
+Acad::ErrorStatus EditEntity::ScaleEntity(const AcDbObjectIdArray& ids, const AcGePoint3d& base, const double& scale)
 {
-	AcDbEntity* mirror_entity = nullptr;
-	AcDbEntity* base_entity = nullptr;
-	ErrorStatus err_status = acdbOpenObject(base_entity, entity_id, OpenMode::kForWrite);
-	if (err_status != Acad::eOk)
-	{
-		throw;						//TODO: improve handling logic.
-	}
-	AcGeLine3d mirror_axis(mirror_point1, mirror_point2);
-	AcGeMatrix3d mirror_transform_matrix;
-	mirror_transform_matrix.setToMirroring(mirror_axis);
-	base_entity->getTransformedCopy(mirror_transform_matrix, mirror_entity);
-	if (need_delete_original_entity)
-	{
-		base_entity->erase();
-	}
-	base_entity->close();
-	return AddToModelSpace::AddEntityToModelSpace(mirror_entity);
+    return each(ids, [&base, scale](const AcDbObjectId& id, int) { return ScaleEntity(id, base, scale); });
 }
-
-AcDbObjectIdArray EditEntity::MirrorEntity(const AcDbObjectIdArray& entity_ids, const AcGePoint3d& mirror_point1, const AcGePoint3d& mirror_point2, const bool need_delete_original_entity)
+Acad::ErrorStatus EditEntity::ScaleEntity(const AcDbObjectIdArray& ids, const AcGePoint3dArray& bases, const double& scale)
 {
-	AcDbObjectIdArray mirror_entity_ids;
-	for (int i = 0; i < entity_ids.length(); i++)
-	{
-		mirror_entity_ids.append(MirrorEntity(entity_ids.at(i), mirror_point1, mirror_point2, need_delete_original_entity));
-	}
-	return mirror_entity_ids;
+    if (ids.length() != bases.length()) return Acad::eInvalidInput;
+    return each(ids, [&bases, scale](const AcDbObjectId& id, int i) { return ScaleEntity(id, bases.at(i), scale); });
+}
+Acad::ErrorStatus EditEntity::MirrorEntity(const AcDbObjectId& id, const AcGePoint3d& p1, const AcGePoint3d& p2, bool erase_original, AcDbObjectId& mirror_id)
+{
+    mirror_id = AcDbObjectId::kNull;
+    if (id.isNull() || !finitePoint(p1) || !finitePoint(p2) || p1.isEqualTo(p2)) return Acad::eInvalidInput;
+    AcDbEntity* base_ptr = nullptr;
+    Acad::ErrorStatus status = acdbOpenObject(base_ptr, id, erase_original ? AcDb::kForWrite : AcDb::kForRead);
+    if (status != Acad::eOk) return status;
+    Pola::OpenedObject<AcDbEntity> original(base_ptr);
+    AcGeMatrix3d transform;
+    transform.setToMirroring(AcGeLine3d(p1, p2));
+    AcDbEntity* mirror_ptr = nullptr;
+    status = original->getTransformedCopy(transform, mirror_ptr);
+    Pola::DbObjectOwner<AcDbEntity> mirror(mirror_ptr);
+    if (status != Acad::eOk) return Pola::Close(original, status);
+    if (!mirror) return Pola::Close(original, Acad::eNullEntityPointer);
+    AcDbObjectId inserted_id;
+    status = appendOwned(mirror, inserted_id);
+    // Do not destroy the original if copying or insertion failed.
+    if (status == Acad::eOk && erase_original) status = original->erase();
+    status = Pola::Close(original, status);
+    if (status == Acad::eOk) mirror_id = inserted_id;
+    else if (!inserted_id.isNull()) DeleteEntity(inserted_id); // rollback, keep earliest error
+    return status;
+}
+AcDbObjectId EditEntity::MirrorEntity(const AcDbObjectId& id, const AcGePoint3d& p1, const AcGePoint3d& p2, const bool erase_original)
+{
+    AcDbObjectId output;
+    report(_T("MirrorEntity"), MirrorEntity(id, p1, p2, erase_original, output));
+    return output;
+}
+AcDbObjectIdArray EditEntity::MirrorEntity(const AcDbObjectIdArray& ids, const AcGePoint3d& p1, const AcGePoint3d& p2, const bool erase_original)
+{
+    AcDbObjectIdArray output;
+    for (int i = 0; i < ids.length(); ++i) output.append(MirrorEntity(ids.at(i), p1, p2, erase_original));
+    return output;
 }

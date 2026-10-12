@@ -1,71 +1,38 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "DwgFileInfo.h"
 
-bool DwgFileInfo::GetDwgFileInfoWithExtension(TCHAR* szFileName, int nFileNameSize, TCHAR* szFilePath, int nFilePathSize)
+bool DwgFileInfo::GetDwgFileInfoWithExtension(TCHAR* name, int name_size, TCHAR* path, int path_size)
 {
-	if (!szFileName || !szFilePath || nFileNameSize <= 0 || nFilePathSize <= 0)
-		return false;
-
-	resbuf rbFileName = { 0 }, rbFilePath = { 0 };
-	bool bSuccess = false;
-
-	if (acedGetVar(_T("DWGNAME"), &rbFileName) != RTNORM)
-		goto cleanup;
-
-	if (rbFileName.restype != RTSTR)
-		goto cleanup;
-
-	if (acedGetVar(_T("DWGPREFIX"), &rbFilePath) != RTNORM)
-		goto cleanup;
-
-	if (rbFilePath.restype != RTSTR)
-		goto cleanup;
-
-	size_t nNameRequired = _tcslen(rbFileName.resval.rstring) + 1;
-	size_t nPathRequired = _tcslen(rbFilePath.resval.rstring) + 1;
-	if (nNameRequired > static_cast<size_t>(nFileNameSize) ||
-		nPathRequired > static_cast<size_t>(nFilePathSize))
-		goto cleanup;
-
-	_tcscpy_s(szFileName, nFileNameSize, rbFileName.resval.rstring);
-	_tcscpy_s(szFilePath, nFilePathSize, rbFilePath.resval.rstring);
-	bSuccess = true;
-
-cleanup:
-
-	if (rbFileName.restype == RTSTR)
-		acutDelString(rbFileName.resval.rstring);
-
-	if (rbFilePath.restype == RTSTR)
-		acutDelString(rbFilePath.resval.rstring);
-
-	return bSuccess;
+    if (!name || !path || name_size <= 0 || path_size <= 0) return false;
+    *name = *path = _T('\0');
+    resbuf file_name = {}, file_path = {};
+    bool success = acedGetVar(_T("DWGNAME"), &file_name) == RTNORM && file_name.restype == RTSTR && file_name.resval.rstring;
+    if (success) success = acedGetVar(_T("DWGPREFIX"), &file_path) == RTNORM && file_path.restype == RTSTR && file_path.resval.rstring;
+    if (success) success = _tcslen(file_name.resval.rstring) < static_cast<size_t>(name_size) && _tcslen(file_path.resval.rstring) < static_cast<size_t>(path_size);
+    if (success)
+    {
+        success = _tcscpy_s(name, name_size, file_name.resval.rstring) == 0 && _tcscpy_s(path, path_size, file_path.resval.rstring) == 0;
+    }
+    if (file_name.restype == RTSTR) acutDelString(file_name.resval.rstring);
+    if (file_path.restype == RTSTR) acutDelString(file_path.resval.rstring);
+    if (!success) *name = *path = _T('\0');
+    return success;
 }
 
-bool DwgFileInfo::GetDwgFileNameWithoutExtension(TCHAR* szFileName, int nFileNameSize) {
-	if (!szFileName || nFileNameSize <= 0) return false;
-
-	resbuf rbFileName = { 0 };
-	bool bSuccess = false;
-
-	if (acedGetVar(_T("DWGNAME"), &rbFileName) != RTNORM) return false;
-	if (rbFileName.restype != RTSTR) return false;
-
-	TCHAR* pDot = _tcsrchr(rbFileName.resval.rstring, _T('.'));
-	TCHAR* pSlash = _tcsrchr(rbFileName.resval.rstring, _T('\\'));
-
-	if (pDot && (pSlash ? (pDot > pSlash) : true))
-		*pDot = _T('\0');
-
-	size_t nRequiredSize = _tcslen(rbFileName.resval.rstring) + 1;
-
-	if (nRequiredSize <= static_cast<size_t>(nFileNameSize))
-	{
-		_tcscpy_s(szFileName, nFileNameSize, rbFileName.resval.rstring);
-		bSuccess = true;
-	}
-
-	acutDelString(rbFileName.resval.rstring);
-	return bSuccess;
+bool DwgFileInfo::GetDwgFileNameWithoutExtension(TCHAR* name, int name_size)
+{
+    if (!name || name_size <= 0) return false;
+    *name = _T('\0');
+    resbuf file_name = {};
+    bool success = acedGetVar(_T("DWGNAME"), &file_name) == RTNORM && file_name.restype == RTSTR && file_name.resval.rstring;
+    if (success)
+    {
+        TCHAR* dot = _tcsrchr(file_name.resval.rstring, _T('.'));
+        TCHAR* slash = _tcsrchr(file_name.resval.rstring, _T('\\'));
+        if (dot && (!slash || dot > slash)) *dot = _T('\0');
+        success = _tcslen(file_name.resval.rstring) < static_cast<size_t>(name_size);
+        if (success) success = _tcscpy_s(name, name_size, file_name.resval.rstring) == 0;
+    }
+    if (file_name.restype == RTSTR) acutDelString(file_name.resval.rstring);
+    return success;
 }
-

@@ -1,19 +1,19 @@
-// (C) Copyright 2002-2007 by Autodesk, Inc. 
+// (C) Copyright 2002-2007 by Autodesk, Inc.
 //
 // Permission to use, copy, modify, and distribute this software in
-// object code form for any purpose and without fee is hereby granted, 
-// provided that the above copyright notice appears in all copies and 
+// object code form for any purpose and without fee is hereby granted,
+// provided that the above copyright notice appears in all copies and
 // that both that copyright notice and the limited warranty and
-// restricted rights notice below appear in all supporting 
+// restricted rights notice below appear in all supporting
 // documentation.
 //
-// AUTODESK PROVIDES THIS PROGRAM "AS IS" AND WITH ALL FAULTS. 
+// AUTODESK PROVIDES THIS PROGRAM "AS IS" AND WITH ALL FAULTS.
 // AUTODESK SPECIFICALLY DISCLAIMS ANY IMPLIED WARRANTY OF
-// MERCHANTABILITY OR FITNESS FOR A PARTICULAR USE.  AUTODESK, INC. 
+// MERCHANTABILITY OR FITNESS FOR A PARTICULAR USE.  AUTODESK, INC.
 // DOES NOT WARRANT THAT THE OPERATION OF THE PROGRAM WILL BE
 // UNINTERRUPTED OR ERROR FREE.
 //
-// Use, duplication, or disclosure by the U.S. Government is subject to 
+// Use, duplication, or disclosure by the U.S. Government is subject to
 // restrictions set forth in FAR 52.227-19 (Commercial Computer
 // Software - Restricted Rights) and DFAR 252.227-7013(c)(1)(ii)
 // (Rights in Technical Data and Computer Software), as applicable.
@@ -51,9 +51,9 @@ CPolaPalette::~CPolaPalette () {
 
 //-----------------------------------------------------------------------------
 //- Load the input data from xml.
-BOOL CPolaPalette::Load (IUnknown *pUnk) {	
-	//- Call base class first 
-	CAdUiPalette::Load (pUnk) ;
+BOOL CPolaPalette::Load (IUnknown *pUnk) {
+	//- Call base class first
+	if (pUnk == nullptr || !CAdUiPalette::Load(pUnk)) return FALSE;
 	//- Initialise for XML
 	CComQIPtr<MSXML::IXMLDOMNode> pNode(pUnk) ;
 	MSXML::IXMLDOMNodePtr pChild, pChild1 ;
@@ -66,8 +66,8 @@ BOOL CPolaPalette::Load (IUnknown *pUnk) {
 //-----------------------------------------------------------------------------
 //- Save the input data to xml.
 BOOL CPolaPalette::Save (IUnknown *pUnk) {
-	//- Call base class first 
-	CAdUiPalette::Save (pUnk) ;
+	//- Call base class first
+	if (pUnk == nullptr || !CAdUiPalette::Save(pUnk)) return FALSE;
 	//- initialise for XML
 	CComQIPtr<MSXML::IXMLDOMNode> pNode(pUnk) ;
 	MSXML::IXMLDOMNodePtr pChild, pChild1 ;
@@ -84,7 +84,7 @@ int CPolaPalette::OnCreate (LPCREATESTRUCT lpCreateStruct) {
 		return (-1) ;
 	//- Create it and set the parent as the dockctrl bar
 	CAcModuleResourceOverride res;
-	mChildDlg.Create (IDD_POLAPALETTECHILD, this) ;
+	if (!mChildDlg.Create(IDD_POLAPALETTECHILD, this)) return -1;
 
 	CRect rect ;
 	GetWindowRect (&rect) ;
@@ -104,7 +104,8 @@ void CPolaPalette::OnSetActive () {
 //- Called by AutoCAD to steal focus from the palette
 bool CPolaPalette::CanFrameworkTakeFocus () {
 	//- Not simply calling IsFloating() (a BOOL) avoids warning C4800
-	return (GetPaletteSet ()->IsFloating () == TRUE ? true : false) ;
+	CAdUiPaletteSet* set = GetPaletteSet();
+	return set == nullptr || set->IsFloating() == TRUE;
 }
 
 //-----------------------------------------------------------------------------
@@ -117,4 +118,3 @@ void CPolaPalette::OnSize (UINT nType, int cx, int cy) {
 		mChildDlg.MoveWindow(0, 0, cx, cy, TRUE);
 	}
 }
-

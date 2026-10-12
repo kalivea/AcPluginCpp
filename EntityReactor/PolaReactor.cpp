@@ -1,19 +1,19 @@
-// (C) Copyright 2002-2007 by Autodesk, Inc. 
+// (C) Copyright 2002-2007 by Autodesk, Inc.
 //
 // Permission to use, copy, modify, and distribute this software in
-// object code form for any purpose and without fee is hereby granted, 
-// provided that the above copyright notice appears in all copies and 
+// object code form for any purpose and without fee is hereby granted,
+// provided that the above copyright notice appears in all copies and
 // that both that copyright notice and the limited warranty and
-// restricted rights notice below appear in all supporting 
+// restricted rights notice below appear in all supporting
 // documentation.
 //
-// AUTODESK PROVIDES THIS PROGRAM "AS IS" AND WITH ALL FAULTS. 
+// AUTODESK PROVIDES THIS PROGRAM "AS IS" AND WITH ALL FAULTS.
 // AUTODESK SPECIFICALLY DISCLAIMS ANY IMPLIED WARRANTY OF
-// MERCHANTABILITY OR FITNESS FOR A PARTICULAR USE.  AUTODESK, INC. 
+// MERCHANTABILITY OR FITNESS FOR A PARTICULAR USE.  AUTODESK, INC.
 // DOES NOT WARRANT THAT THE OPERATION OF THE PROGRAM WILL BE
 // UNINTERRUPTED OR ERROR FREE.
 //
-// Use, duplication, or disclosure by the U.S. Government is subject to 
+// Use, duplication, or disclosure by the U.S. Government is subject to
 // restrictions set forth in FAR 52.227-19 (Commercial Computer
 // Software - Restricted Rights) and DFAR 252.227-7013(c)(1)(ii)
 // (Rights in Technical Data and Computer Software), as applicable.
@@ -56,6 +56,7 @@ CPolaReactor::~CPolaReactor()
 //- Dwg Filing protocol
 Acad::ErrorStatus CPolaReactor::dwgOutFields(AcDbDwgFiler * pFiler) const {
 	assertReadEnabled();
+	if (!pFiler || callback_id < 0) return Acad::eInvalidInput;
 	//----- Save parent class information first.
 	Acad::ErrorStatus es = AcDbObject::dwgOutFields(pFiler);
 	if (es != Acad::eOk)
@@ -68,7 +69,7 @@ Acad::ErrorStatus CPolaReactor::dwgOutFields(AcDbDwgFiler * pFiler) const {
 	es = pFiler->writeItem(callback_id);
 	if (es != Acad::eOk)
 		return (es);
-	es = pFiler->writeItem((AcDbSoftPointerId&)bound_objectId);
+	es = pFiler->writeItem(AcDbSoftPointerId(bound_objectId));
 	if (es != Acad::eOk)
 		return (es);
 	return (pFiler->filerStatus());
@@ -76,6 +77,7 @@ Acad::ErrorStatus CPolaReactor::dwgOutFields(AcDbDwgFiler * pFiler) const {
 
 Acad::ErrorStatus CPolaReactor::dwgInFields(AcDbDwgFiler * pFiler) {
 	assertWriteEnabled();
+	if (!pFiler) return Acad::eInvalidInput;
 	//----- Read parent class information first.
 	Acad::ErrorStatus es = AcDbObject::dwgInFields(pFiler);
 	if (es != Acad::eOk)
@@ -84,7 +86,7 @@ Acad::ErrorStatus CPolaReactor::dwgInFields(AcDbDwgFiler * pFiler) {
 	Adesk::UInt32 version = 0;
 	if ((es = pFiler->readUInt32(&version)) != Acad::eOk)
 		return (es);
-	if (version > CPolaReactor::kCurrentVersionNumber)
+	if (version != CPolaReactor::kCurrentVersionNumber)
 		return (Acad::eMakeMeProxy);
 	//- Uncomment the 2 following lines if your current object implementation cannot
 	//- support previous version of that object.
@@ -92,28 +94,38 @@ Acad::ErrorStatus CPolaReactor::dwgInFields(AcDbDwgFiler * pFiler) {
 	//	return (Acad::eMakeMeProxy) ;
 	//----- Read params
 	//.....
-	es = pFiler->readItem(&callback_id);
+	int next_callback_id = 0;
+	AcDbSoftPointerId next_bound_id;
+	es = pFiler->readItem(&next_callback_id);
 	if (es != Acad::eOk)
 		return (es);
-	es = pFiler->readItem((AcDbSoftPointerId*)&bound_objectId);
+	es = pFiler->readItem(&next_bound_id);
 	if (es != Acad::eOk)
 		return (es);
-	return (pFiler->filerStatus());
+	if ((es = pFiler->filerStatus()) != Acad::eOk) return es;
+	if (next_callback_id < 0) return Acad::eInvalidInput;
+	callback_id = next_callback_id;
+	bound_objectId = next_bound_id;
+	return Acad::eOk;
 }
 
 void CPolaReactor::modified(const AcDbObject * pDbObj)
 {
+	if (!pDbObj || triggering_) return;
+	struct TriggerGuard { bool& flag; TriggerGuard(bool& value) : flag(value) { flag = true; } ~TriggerGuard() { flag = false; } } guard(triggering_);
 	trigger(pDbObj, bound_objectId);
 	AcDbObject::modified(pDbObj);
 }
 
 void CPolaReactor::trigger(const AcDbObject * source_id, AcDbObjectId target_id) const
 {
-	CallbackManager::getInstance().executeCallback(callback_id, source_id, target_id);
+	if (source_id && !target_id.isNull() && source_id->objectId() != target_id)
+		CallbackManager::getInstance().executeCallback(callback_id, source_id, target_id);
 }
 
-inline void CPolaReactor::BoundObjectId(AcDbObjectId & id)
+void CPolaReactor::BoundObjectId(AcDbObjectId & id)
 {
+	assertWriteEnabled();
 	bound_objectId = id;
 }
 
@@ -121,4 +133,3 @@ AcDbObjectId CPolaReactor::boundObjectId() const
 {
 	return bound_objectId;
 }
-

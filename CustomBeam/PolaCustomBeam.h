@@ -1,19 +1,19 @@
-// (C) Copyright 2002-2007 by Autodesk, Inc. 
+// (C) Copyright 2002-2007 by Autodesk, Inc.
 //
 // Permission to use, copy, modify, and distribute this software in
-// object code form for any purpose and without fee is hereby granted, 
-// provided that the above copyright notice appears in all copies and 
+// object code form for any purpose and without fee is hereby granted,
+// provided that the above copyright notice appears in all copies and
 // that both that copyright notice and the limited warranty and
-// restricted rights notice below appear in all supporting 
+// restricted rights notice below appear in all supporting
 // documentation.
 //
-// AUTODESK PROVIDES THIS PROGRAM "AS IS" AND WITH ALL FAULTS. 
+// AUTODESK PROVIDES THIS PROGRAM "AS IS" AND WITH ALL FAULTS.
 // AUTODESK SPECIFICALLY DISCLAIMS ANY IMPLIED WARRANTY OF
-// MERCHANTABILITY OR FITNESS FOR A PARTICULAR USE.  AUTODESK, INC. 
+// MERCHANTABILITY OR FITNESS FOR A PARTICULAR USE.  AUTODESK, INC.
 // DOES NOT WARRANT THAT THE OPERATION OF THE PROGRAM WILL BE
 // UNINTERRUPTED OR ERROR FREE.
 //
-// Use, duplication, or disclosure by the U.S. Government is subject to 
+// Use, duplication, or disclosure by the U.S. Government is subject to
 // restrictions set forth in FAR 52.227-19 (Commercial Computer
 // Software - Restricted Rights) and DFAR 252.227-7013(c)(1)(ii)
 // (Rights in Technical Data and Computer Software), as applicable.
@@ -46,8 +46,9 @@
 
 //-----------------------------------------------------------------------------
 #include "dbmain.h"
-#include <sstream> 
+#include <sstream>
 #include <gevc3dar.h>
+#include <vector>
 //-----------------------------------------------------------------------------
 class BEAM_DLLIMPEXP CPolaCustomBeam : public AcDbEntity {
 
@@ -110,12 +111,12 @@ private:
 
 	Adesk::Int32 vertexes_num_ = 0;					// store number of vertexes.
 
-	double beam_b_;								    // store width of beam.	
-	double beam_h_;								    // store height of beam.
+	double beam_b_ = 0.0;                         // store width of beam.
+	double beam_h_ = 0.0;								    // store height of beam.
 
 	std::vector<Adesk::Int32> beam_viewable_;		// store viewable of beam.
 
-	Adesk::Int32 beam_property_;					// store property of beam. The sn of beam.
+	Adesk::Int32 beam_property_ = 0;					// store property of beam. The sn of beam.
 	AcGeVector3dArray beam_segment_direction_;		// store beam segment direction.
 
 public:
@@ -136,21 +137,31 @@ public:
 	AcGePoint3d getFirstSegmentMidPoint() const;
 	//           set functions
 public:
-	void setBeamVertexes(const AcGePoint3dArray& beam_vertexes);
-	void setBeamWidth(const double& beam_b);
-	void setBeamHeight(const double& beam_h);
-	void setBeamViewable(const std::vector<Adesk::Int32>& beam_viewable);
-	void setBeamProperty(const Adesk::Int32& beam_property);
+	Acad::ErrorStatus setBeamVertexes(const AcGePoint3dArray& beam_vertexes);
+	Acad::ErrorStatus setBeamWidth(const double& beam_b);
+	Acad::ErrorStatus setBeamHeight(const double& beam_h);
+	Acad::ErrorStatus setBeamViewable(const std::vector<Adesk::Int32>& beam_viewable);
+	Acad::ErrorStatus setBeamProperty(const Adesk::Int32& beam_property);
 	//			add a single centerline vertex, calculate the offset line veretx.
 private:
-	void addVertexAt(const int index, const AcGePoint3d& vertex);
-	void addViewableAt(const int index, const Adesk::Int32 viewable);
-	void resetViewableAt(const int index, const Adesk::Int32 viewable);
-	void UpdateOffsetLine(const double& distance);
+	Acad::ErrorStatus addVertexAt(const int index, const AcGePoint3d& vertex);
+	Acad::ErrorStatus addViewableAt(const int index, const Adesk::Int32 viewable);
+	Acad::ErrorStatus resetViewableAt(const int index, const Adesk::Int32 viewable);
+	Acad::ErrorStatus UpdateOffsetLine(const double& distance);
 	void GenerateBeamSegmentDirection();
-	static AcDbObjectId DrawBeamWithOffset(CPolaCustomBeam* beam, const double offset_distance);
-	// 
+	static Acad::ErrorStatus DrawBeamWithOffset(CPolaCustomBeam* beam, double offset_distance, AcDbObjectId& id);
+	bool HasDrawableGeometry() const;
+	Acad::ErrorStatus GetSnapLine(Adesk::GsMarker marker, AcGePoint3d& start, AcGePoint3d& end) const;
+	//
 public:
+	// Borrow beam; on successful append the caller retains its one open handle.
+	static Acad::ErrorStatus PickCenterPointDrawBeam(CPolaCustomBeam* beam, AcDbObjectId& id);
+	static Acad::ErrorStatus PickTopPointDrawBeam(CPolaCustomBeam* beam, AcDbObjectId& id);
+	static Acad::ErrorStatus PickBottomPointDrawBeam(CPolaCustomBeam* beam, AcDbObjectId& id);
+	static Acad::ErrorStatus SelectPillarDrawBeam(CPolaCustomBeam* beam, AcDbObjectId& id);
+	static Acad::ErrorStatus ModifyViewableChecked(CPolaCustomBeam* beam, int index, Adesk::Int32 viewable);
+	static Acad::ErrorStatus ModifyViewableChecked(CPolaCustomBeam* beam, int index);
+	static Acad::ErrorStatus ModifyViewableChecked(AcDbObjectId id, int index, Adesk::Int32 viewable);
 	static AcDbObjectId PickCenterPointDrawBeam(CPolaCustomBeam* beam);
 	static AcDbObjectId PickTopPointDrawBeam(CPolaCustomBeam* beam);
 	static AcDbObjectId PickBottomPointDrawBeam(CPolaCustomBeam* beam);
@@ -160,16 +171,19 @@ public:
 	static bool ModifyViewable(CPolaCustomBeam* beam, int index, Adesk::Int32 viewable);
 	static bool ModifyViewable(AcDbObjectId beam_id, int index, Adesk::Int32 viewable);
 	static bool ModifyViewable(CPolaCustomBeam* beam, int index);
-	// 
+	//
 public:
 	virtual Acad::ErrorStatus subTransformBy(const AcGeMatrix3d& xfrom);
 	virtual Acad::ErrorStatus subGetGeomExtents(AcDbExtents& extents) const;
 	//
 public:
+	Acad::ErrorStatus GetIntersectingPillar(AcDbObjectIdArray& ids) const;
 	AcDbObjectIdArray GetIntersectingPillar() const;
 	Adesk::Int32 GetSegmentIndexByYProjection(const AcGePoint3d& point, const AcGeTol& tol = AcGeContext::gTol) const;
 	Adesk::Int32 GetSegmentIndex(const AcGePoint3d& point, const AcGeTol& tol = AcGeContext::gTol) const;
+	Acad::ErrorStatus addJoint(double slab_thickness, double offset_length, AcDbObjectIdArray& ids);
 	AcDbObjectIdArray addJoint(const double slab_thickness, const double offset_length = 100);
+	Acad::ErrorStatus addBeamSnInfo(AcDbObjectId& id);
 	AcDbObjectId addBeamSnInfo();
 	Acad::ErrorStatus InsertVertex(const AcGePoint3d& insert_point);
 };

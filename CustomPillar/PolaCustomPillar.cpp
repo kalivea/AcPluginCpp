@@ -1,19 +1,19 @@
-// (C) Copyright 2002-2007 by Autodesk, Inc. 
+// (C) Copyright 2002-2007 by Autodesk, Inc.
 //
 // Permission to use, copy, modify, and distribute this software in
-// object code form for any purpose and without fee is hereby granted, 
-// provided that the above copyright notice appears in all copies and 
+// object code form for any purpose and without fee is hereby granted,
+// provided that the above copyright notice appears in all copies and
 // that both that copyright notice and the limited warranty and
-// restricted rights notice below appear in all supporting 
+// restricted rights notice below appear in all supporting
 // documentation.
 //
-// AUTODESK PROVIDES THIS PROGRAM "AS IS" AND WITH ALL FAULTS. 
+// AUTODESK PROVIDES THIS PROGRAM "AS IS" AND WITH ALL FAULTS.
 // AUTODESK SPECIFICALLY DISCLAIMS ANY IMPLIED WARRANTY OF
-// MERCHANTABILITY OR FITNESS FOR A PARTICULAR USE.  AUTODESK, INC. 
+// MERCHANTABILITY OR FITNESS FOR A PARTICULAR USE.  AUTODESK, INC.
 // DOES NOT WARRANT THAT THE OPERATION OF THE PROGRAM WILL BE
 // UNINTERRUPTED OR ERROR FREE.
 //
-// Use, duplication, or disclosure by the U.S. Government is subject to 
+// Use, duplication, or disclosure by the U.S. Government is subject to
 // restrictions set forth in FAR 52.227-19 (Commercial Computer
 // Software - Restricted Rights) and DFAR 252.227-7013(c)(1)(ii)
 // (Rights in Technical Data and Computer Software), as applicable.
@@ -24,8 +24,52 @@
 //-----------------------------------------------------------------------------
 #include "StdAfx.h"
 #include "PolaCustomPillar.h"
-#include <sstream> 
+#include <sstream>
 #include <tchar.h>
+#include <cmath>
+#include <memory>
+#include <limits>
+#include "DrawEntity.h"
+#include "../Common/DbObjectOwner.h"
+#include "PillarDwgFields.h"
+
+namespace {
+bool finitePoint(const AcGePoint3d& value) {
+	return std::isfinite(value.x) && std::isfinite(value.y) && std::isfinite(value.z);
+}
+bool finiteDirection(const AcGeVector3d& value) {
+	return std::isfinite(value.x) && std::isfinite(value.y) && std::isfinite(value.z)
+		&& std::hypot(value.x, value.y) > 0.0 && std::isfinite(value.length()) && value.length() > 0.0;
+}
+Acad::ErrorStatus buildPillarContour(const AcGePoint3dArray& vertices, AcDbPolyline& polyline) {
+	if (vertices.length() != 4) return Acad::eInvalidInput;
+	for (int i = 0; i < vertices.length(); ++i) {
+		if (!finitePoint(vertices[i])) return Acad::eInvalidInput;
+		const Acad::ErrorStatus status = polyline.addVertexAt(i, AcGePoint2d(vertices[i].x, vertices[i].y));
+		if (status != Acad::eOk) return status;
+	}
+	polyline.setClosed(true);
+	polyline.setElevation(vertices[0].z);
+	return Acad::eOk;
+}
+const size_t kMaxSerialLength = 65536;
+class PillarReadAdapter {
+	AcDbDwgFiler* filer_;
+public:
+	explicit PillarReadAdapter(AcDbDwgFiler* filer) : filer_(filer) {}
+	Acad::ErrorStatus readUInt32(Adesk::UInt32* version) { return filer_->readUInt32(version); }
+	template<class T> Acad::ErrorStatus readItem(T* value) { return filer_->readItem(value); }
+	Acad::ErrorStatus filerStatus() const { return filer_->filerStatus(); }
+	Acad::ErrorStatus readString(std::wstring& value) {
+		AcString serial;
+		const Acad::ErrorStatus status = filer_->readString(serial);
+		if (status != Acad::eOk) return status;
+		if (static_cast<size_t>(serial.length()) > kMaxSerialLength) return Acad::eInvalidInput;
+		value = serial.kwszPtr();
+		return Acad::eOk;
+	}
+};
+}
 //-----------------------------------------------------------------------------
 Adesk::UInt32 CPolaCustomPillar::kCurrentVersionNumber = 1;
 
@@ -41,7 +85,9 @@ ACRX_DXF_DEFINE_MEMBERS(
 )
 
 //-----------------------------------------------------------------------------
-CPolaCustomPillar::CPolaCustomPillar() : AcDbEntity() {
+CPolaCustomPillar::CPolaCustomPillar() : AcDbEntity(), center_point_(AcGePoint3d::kOrigin),
+	direction_vector_(AcGeVector3d::kXAxis), pillar_d_(1.0), pillar_h_(1.0),
+	viewable_(true), pillar_property_(0), pillar_type_(0), concrete_grade_(0) {
 }
 
 CPolaCustomPillar::CPolaCustomPillar(const CPolaCustomPillar & pillar_template)
@@ -58,124 +104,54 @@ CPolaCustomPillar::~CPolaCustomPillar() {
 //-----------------------------------------------------------------------------
 //----- AcDbObject protocols
 //- Dwg Filing protocol
-Acad::ErrorStatus CPolaCustomPillar::dwgOutFields(AcDbDwgFiler * pFiler) const {
+Acad::ErrorStatus CPolaCustomPillar::dwgOutFields(AcDbDwgFiler* pFiler) const {
 	assertReadEnabled();
-	//----- Save parent class information first.
-	Acad::ErrorStatus es = AcDbEntity::dwgOutFields(pFiler);
-	if (es != Acad::eOk)
-		return (es);
-	//----- Object version number needs to be saved first
-	if ((es = pFiler->writeUInt32(CPolaCustomPillar::kCurrentVersionNumber)) != Acad::eOk)
-		return (es);
-	//----- Output params
-	//.....
-
-	es = pFiler->writeItem(pillar_type_);
-	if (es != Acad::eOk)
-		return es;
-	es = pFiler->writeItem(center_point_);
-	if (es != Acad::eOk)
-		return es;
-	es = pFiler->writeItem(direction_vector_);
-	if (es != Acad::eOk)
-		return es;
-	es = pFiler->writeItem(pillar_d_);
-	if (es != Acad::eOk)
-		return es;
-	es = pFiler->writeItem(pillar_h_);
-	if (es != Acad::eOk)
-		return es;
-	es = pFiler->writeItem(viewable_);
-	if (es != Acad::eOk)
-		return es;
-	es = pFiler->writeItem(pillar_property_);
-	if (es != Acad::eOk)
-		return es;
-	es = pFiler->writeItem(pillar_serial_number_);
-	if (es != Acad::eOk)
-		return es;
-	if (pillar_type_ == 1)
-	{
-		for (int i = 0; i < 4; i++)
-		{
-			es = pFiler->writeItem(rect_pillar_vertex_.at(i));
-			if (es != Acad::eOk)
-				return es;
-		}
-	}
-	es = pFiler->writeItem(concrete_grade_);
-	if (es != Acad::eOk)
-		return es;
-	return (pFiler->filerStatus());
+	if (!pFiler) return Acad::eInvalidInput;
+	Pola::PillarDwgFields fields;
+	fields.type = pillar_type_;
+	fields.center = center_point_;
+	fields.direction = direction_vector_;
+	fields.diameter = pillar_d_;
+	fields.height = pillar_h_;
+	fields.visible = viewable_;
+	fields.property = pillar_property_;
+	fields.serial = pillar_serial_number_;
+	fields.vertices = rect_pillar_vertex_;
+	fields.grade = concrete_grade_;
+	Acad::ErrorStatus status = Pola::ValidatePillarFields(fields);
+	if (status != Acad::eOk) return status;
+	status = AcDbEntity::dwgOutFields(pFiler);
+	return status == Acad::eOk ? Pola::WritePillarFields(pFiler, fields) : status;
 }
 
-Acad::ErrorStatus CPolaCustomPillar::dwgInFields(AcDbDwgFiler * pFiler) {
+Acad::ErrorStatus CPolaCustomPillar::dwgInFields(AcDbDwgFiler* pFiler) {
 	assertWriteEnabled();
-	//----- Read parent class information first.
-	Acad::ErrorStatus es = AcDbEntity::dwgInFields(pFiler);
-	if (es != Acad::eOk)
-		return (es);
-	//----- Object version number needs to be read first
-	Adesk::UInt32 version = 0;
-	if ((es = pFiler->readUInt32(&version)) != Acad::eOk)
-		return (es);
-	if (version > CPolaCustomPillar::kCurrentVersionNumber)
-		return (Acad::eMakeMeProxy);
-	//- Uncomment the 2 following lines if your current object implementation cannot
-	//- support previous version of that object.
-	//if ( version < CPolaCustomPillar::kCurrentVersionNumber )
-	//	return (Acad::eMakeMeProxy) ;
-	//----- Read params
-	//.....
-	es = pFiler->readItem(&pillar_type_);
-	if (es != Acad::eOk)
-		return es;
-	es = pFiler->readItem(&center_point_);
-	if (es != Acad::eOk)
-		return es;
-	es = pFiler->readItem(&direction_vector_);
-	if (es != Acad::eOk)
-		return es;
-	es = pFiler->readItem(&pillar_d_);
-	if (es != Acad::eOk)
-		return es;
-	es = pFiler->readItem(&pillar_h_);
-	if (es != Acad::eOk)
-		return es;
-	es = pFiler->readItem(&viewable_);
-	if (es != Acad::eOk)
-		return es;
-	es = pFiler->readItem(&pillar_property_);
-	if (es != Acad::eOk)
-		return es;
-
-	TCHAR* new_string = nullptr;
-	es = pFiler->readString(&new_string);
-	if (es != Acad::eOk)
-		return es;
-	pillar_serial_number_ = new_string;
-
-	if (pillar_type_ == 1)
-	{
-		rect_pillar_vertex_.removeAll();
-		CalculateVertex();
-		for (int i = 0; i < 4; i++)
-		{
-			es = pFiler->readItem(&rect_pillar_vertex_.at(i));
-			if (es != Acad::eOk)
-				return es;
-		}
-	}
-	es = pFiler->readItem(&concrete_grade_);
-	if (es != Acad::eOk)
-		return es;
-	return (pFiler->filerStatus());
+	if (!pFiler) return Acad::eInvalidInput;
+	Acad::ErrorStatus status = AcDbEntity::dwgInFields(pFiler);
+	if (status != Acad::eOk) return status;
+	PillarReadAdapter reader(pFiler);
+	Pola::PillarDwgFields fields;
+	status = Pola::ReadPillarFields(&reader, fields);
+	if (status != Acad::eOk) return status;
+	center_point_ = fields.center;
+	direction_vector_ = fields.direction;
+	pillar_d_ = fields.diameter;
+	pillar_h_ = fields.height;
+	viewable_ = fields.visible;
+	pillar_property_ = fields.property;
+	pillar_serial_number_.swap(fields.serial);
+	pillar_type_ = fields.type;
+	concrete_grade_ = fields.grade;
+	rect_pillar_vertex_ = fields.vertices;
+	return Acad::eOk;
 }
 
 //-----------------------------------------------------------------------------
 //----- AcDbEntity protocols
 Adesk::Boolean CPolaCustomPillar::subWorldDraw(AcGiWorldDraw * mode) {
 	assertReadEnabled();
+	if (!mode || !checkValue(this) || (pillar_type_ == 1 && rect_pillar_vertex_.length() != 4))
+		return Adesk::kFalse;
 	if (pillar_type_ == 0)
 	{
 		if (viewable_)
@@ -197,16 +173,11 @@ Adesk::Boolean CPolaCustomPillar::subWorldDraw(AcGiWorldDraw * mode) {
 		{
 			if (viewable_)
 			{
-				AcDbPolyline* pl = new AcDbPolyline();
-				for (int i = 0; i < rect_pillar_vertex_.length(); i++)
-				{
-					pl->addVertexAt(i, BasicTools::Point3dToPoint2d(rect_pillar_vertex_.at(i)));
-				}
-				pl->setDatabaseDefaults();
-				pl->setClosed(true);
+				AcDbPolyline pl;
+				if (buildPillarContour(rect_pillar_vertex_, pl) != Acad::eOk) return Adesk::kFalse;
+				pl.setDatabaseDefaults();
 				mode->subEntityTraits().setColor(256);
-				pl->worldDraw(mode);
-				delete pl;
+				pl.worldDraw(mode);
 
 				mode->subEntityTraits().setLineType(StyleTools::GetLineStyleId(_T("DASHED")));
 				mode->subEntityTraits().setLineTypeScale(300);
@@ -219,16 +190,11 @@ Adesk::Boolean CPolaCustomPillar::subWorldDraw(AcGiWorldDraw * mode) {
 				mode->subEntityTraits().setLineType(StyleTools::GetLineStyleId(_T("DASHED")));
 				mode->subEntityTraits().setLineTypeScale(300);
 
-				AcDbPolyline* pl = new AcDbPolyline();
-				for (int i = 0; i < rect_pillar_vertex_.length(); i++)
-				{
-					pl->addVertexAt(i, BasicTools::Point3dToPoint2d(rect_pillar_vertex_.at(i)));
-				}
-				pl->setDatabaseDefaults();
-				pl->setClosed(true);
+				AcDbPolyline pl;
+				if (buildPillarContour(rect_pillar_vertex_, pl) != Acad::eOk) return Adesk::kFalse;
+				pl.setDatabaseDefaults();
 				mode->subEntityTraits().setColor(256);
-				pl->worldDraw(mode);
-				delete pl;
+				pl.worldDraw(mode);
 				mode->subEntityTraits().setColor(3);
 				AcDbLine(rect_pillar_vertex_.at(0), rect_pillar_vertex_.at(2)).worldDraw(mode);
 				AcDbLine(rect_pillar_vertex_.at(1), rect_pillar_vertex_.at(3)).worldDraw(mode);
@@ -236,12 +202,12 @@ Adesk::Boolean CPolaCustomPillar::subWorldDraw(AcGiWorldDraw * mode) {
 		}
 		else
 		{
-			throw;
+			return Adesk::kFalse;
 		}
 	}
 	else
 	{
-		throw;
+		return Adesk::kFalse;
 	}
 	return (AcDbEntity::subWorldDraw(mode));
 }
@@ -263,30 +229,23 @@ Acad::ErrorStatus CPolaCustomPillar::subGetOsnapPoints(
 	AcDbIntArray & geomIds) const
 {
 	assertReadEnabled();
-	Acad::ErrorStatus error_status;
+	if (!checkValue(this) || (pillar_type_ == 1 && rect_pillar_vertex_.length() != 4)) return Acad::eInvalidInput;
+	Acad::ErrorStatus error_status = Acad::eInvalidInput;
 	if (pillar_type_ == 0)
 	{
-		AcDbCircle* contour_circle = new AcDbCircle();
-		contour_circle->setCenter(center_point_);
-		contour_circle->setRadius(pillar_d_ * 0.5);
-
-		error_status = contour_circle->getOsnapPoints(osnapMode, gsSelectionMark, pickPoint, lastPoint, viewXform, snapPoints, geomIds);
-		delete contour_circle;
+		AcDbCircle contour_circle(center_point_, AcGeVector3d::kZAxis, pillar_d_ * 0.5);
+		error_status = contour_circle.getOsnapPoints(osnapMode, gsSelectionMark, pickPoint, lastPoint, viewXform, snapPoints, geomIds);
 	}
 	else if (pillar_type_ == 1)
 	{
-		AcDbPolyline* contour_polyline = new AcDbPolyline();
-		for (int i = 0; i < rect_pillar_vertex_.length(); i++)
-		{
-			contour_polyline->addVertexAt(i, BasicTools::Point3dToPoint2d(rect_pillar_vertex_.at(i)));
-		}
-		contour_polyline->setClosed(true);
-		error_status = contour_polyline->getOsnapPoints(osnapMode, gsSelectionMark, pickPoint, lastPoint, viewXform, snapPoints, geomIds);
-		delete contour_polyline;
+		AcDbPolyline contour_polyline;
+		error_status = buildPillarContour(rect_pillar_vertex_, contour_polyline);
+		if (error_status != Acad::eOk) return error_status;
+		error_status = contour_polyline.getOsnapPoints(osnapMode, gsSelectionMark, pickPoint, lastPoint, viewXform, snapPoints, geomIds);
 	}
 	else
 	{
-		throw;
+		return Acad::eInvalidInput;
 	}
 	return error_status;
 }
@@ -302,29 +261,23 @@ Acad::ErrorStatus CPolaCustomPillar::subGetOsnapPoints(
 	const AcGeMatrix3d & insertionMat) const
 {
 	assertReadEnabled();
-	Acad::ErrorStatus error_status;
+	if (!checkValue(this) || (pillar_type_ == 1 && rect_pillar_vertex_.length() != 4)) return Acad::eInvalidInput;
+	Acad::ErrorStatus error_status = Acad::eInvalidInput;
 	if (pillar_type_ == 0)
 	{
-		AcDbCircle* contour_circle = new AcDbCircle();
-		contour_circle->setCenter(center_point_);
-		contour_circle->setRadius(pillar_d_ * 0.5);
-		error_status = contour_circle->getOsnapPoints(osnapMode, gsSelectionMark, pickPoint, lastPoint, viewXform, snapPoints, geomIds, insertionMat);
-		delete contour_circle;
+		AcDbCircle contour_circle(center_point_, AcGeVector3d::kZAxis, pillar_d_ * 0.5);
+		error_status = contour_circle.getOsnapPoints(osnapMode, gsSelectionMark, pickPoint, lastPoint, viewXform, snapPoints, geomIds, insertionMat);
 	}
 	else if (pillar_type_ == 1)
 	{
-		AcDbPolyline* contour_polyline = new AcDbPolyline();
-		for (int i = 0; i < rect_pillar_vertex_.length(); i++)
-		{
-			contour_polyline->addVertexAt(i, BasicTools::Point3dToPoint2d(rect_pillar_vertex_.at(i)));
-		}
-		contour_polyline->setClosed(true);
-		error_status = contour_polyline->getOsnapPoints(osnapMode, gsSelectionMark, pickPoint, lastPoint, viewXform, snapPoints, geomIds, insertionMat);
-		delete contour_polyline;
+		AcDbPolyline contour_polyline;
+		error_status = buildPillarContour(rect_pillar_vertex_, contour_polyline);
+		if (error_status != Acad::eOk) return error_status;
+		error_status = contour_polyline.getOsnapPoints(osnapMode, gsSelectionMark, pickPoint, lastPoint, viewXform, snapPoints, geomIds, insertionMat);
 	}
 	else
 	{
-		throw;
+		return Acad::eInvalidInput;
 	}
 	return error_status;
 }
@@ -334,7 +287,8 @@ Acad::ErrorStatus CPolaCustomPillar::subGetGripPoints(
 	AcGePoint3dArray & gripPoints, AcDbIntArray & osnapModes, AcDbIntArray & geomIds
 ) const {
 	assertReadEnabled();
-	//----- This method is never called unless you return eNotImplemented 
+	if (!checkValue(this) || (pillar_type_ == 1 && rect_pillar_vertex_.length() != 4)) return Acad::eInvalidInput;
+	//----- This method is never called unless you return eNotImplemented
 	//----- from the new getGripPoints() method below (which is the default implementation)
 	if (pillar_type_ == 0)
 	{
@@ -350,14 +304,14 @@ Acad::ErrorStatus CPolaCustomPillar::subGetGripPoints(
 	}
 	else
 	{
-		throw;
+		return Acad::eInvalidInput;
 	}
 	return Acad::eOk;
 }
 
 Acad::ErrorStatus CPolaCustomPillar::subMoveGripPointsAt(const AcDbIntArray & indices, const AcGeVector3d & offset) {
 	assertWriteEnabled();
-	//----- This method is never called unless you return eNotImplemented 
+	//----- This method is never called unless you return eNotImplemented
 	//----- from the new moveGripPointsAt() method below (which is the default implementation)
 
 	// do nothing when move grip points          -----------Pola
@@ -392,32 +346,49 @@ Acad::ErrorStatus CPolaCustomPillar::subMoveGripPointsAt(
 // ---------------------------------------------------------------------------------------------------
 // custom pillar define function						----Pola
 
-void CPolaCustomPillar::setCenterPoint(const AcGePoint3d & center)
+Acad::ErrorStatus CPolaCustomPillar::setCenterPoint(const AcGePoint3d & center)
 {
 	assertWriteEnabled();
+	if (!finitePoint(center)) return Acad::eInvalidInput;
+	const AcGePoint3d previous = center_point_;
 	center_point_ = center;
+	const Acad::ErrorStatus status = CalculateVertex();
+	if (status != Acad::eOk) center_point_ = previous;
+	return status;
 }
 
-void CPolaCustomPillar::setDirectionVector(const AcGeVector3d & dir_vec)
+Acad::ErrorStatus CPolaCustomPillar::setDirectionVector(const AcGeVector3d & dir_vec)
 {
 	assertWriteEnabled();
+	if (!finiteDirection(dir_vec)) return Acad::eInvalidInput;
+	const AcGeVector3d previous = direction_vector_;
 	direction_vector_ = dir_vec;
+	const Acad::ErrorStatus status = CalculateVertex();
+	if (status != Acad::eOk) direction_vector_ = previous;
+	return status;
 }
 
-void CPolaCustomPillar::setDiameter(const double& d, const double& h)
+Acad::ErrorStatus CPolaCustomPillar::setDiameter(const double& d, const double& h)
 {
 	assertWriteEnabled();
+	if (!std::isfinite(d) || !std::isfinite(h) || d <= 0.0 || h < 0.0
+		|| (pillar_type_ == 1 && h <= 0.0)) return Acad::eInvalidInput;
+	const double previous_d = pillar_d_, previous_h = pillar_h_;
 	pillar_d_ = d;
 	pillar_h_ = h;
+	const Acad::ErrorStatus status = CalculateVertex();
+	if (status != Acad::eOk) { pillar_d_ = previous_d; pillar_h_ = previous_h; }
+	return status;
 }
 
-void CPolaCustomPillar::setViewable(const bool view)
+Acad::ErrorStatus CPolaCustomPillar::setViewable(const bool view)
 {
 	assertWriteEnabled();
 	viewable_ = view;
+	return Acad::eOk;
 }
 
-void CPolaCustomPillar::setPillarProperty(const Adesk::Int32 & prop)
+Acad::ErrorStatus CPolaCustomPillar::setPillarProperty(const Adesk::Int32 & prop)
 {
 	assertWriteEnabled();
 	if (prop == 0)
@@ -425,30 +396,40 @@ void CPolaCustomPillar::setPillarProperty(const Adesk::Int32 & prop)
 	else if (prop == 1)
 		pillar_property_ = prop;
 	else
-		throw;
+		return Acad::eInvalidInput;
+	return Acad::eOk;
 }
 
-void CPolaCustomPillar::setSn(const TCHAR * sn)
+Acad::ErrorStatus CPolaCustomPillar::setSn(const TCHAR * sn)
 {
 	assertWriteEnabled();
-	pillar_serial_number_ = _tcsdup(sn);
+	if (!sn || _tcslen(sn) > kMaxSerialLength) return Acad::eInvalidInput;
+	pillar_serial_number_ = sn;
+	return Acad::eOk;
 }
 
-void CPolaCustomPillar::setPillarType(const Adesk::Int32 & type)
+Acad::ErrorStatus CPolaCustomPillar::setPillarType(const Adesk::Int32 & type)
 {
 	assertWriteEnabled();
+	if ((type != 0 && type != 1) || (type == 1 && pillar_h_ <= 0.0)) return Acad::eInvalidInput;
+	const Adesk::Int32 previous = pillar_type_;
 	if (type == 0)
 		pillar_type_ = type;
 	else if (type == 1)
 		pillar_type_ = type;
 	else
-		throw;
+		return Acad::eInvalidInput;
+	const Acad::ErrorStatus status = CalculateVertex();
+	if (status != Acad::eOk) pillar_type_ = previous;
+	return status;
 }
 
-void CPolaCustomPillar::setConcreteGrade(const Adesk::Int32 & grade)
+Acad::ErrorStatus CPolaCustomPillar::setConcreteGrade(const Adesk::Int32 & grade)
 {
 	assertWriteEnabled();
+	if (grade < 0) return Acad::eInvalidInput;
 	concrete_grade_ = grade;
+	return Acad::eOk;
 }
 
 AcGePoint3d CPolaCustomPillar::getCenterPoint() const
@@ -482,10 +463,10 @@ Adesk::Int32 CPolaCustomPillar::getPillarProperty() const
 	return pillar_property_;
 }
 
-TCHAR* CPolaCustomPillar::getPillarSn() const
+const TCHAR* CPolaCustomPillar::getPillarSn() const
 {
 	assertReadEnabled();
-	return pillar_serial_number_;
+	return pillar_serial_number_.c_str();
 }
 
 Adesk::Int32 CPolaCustomPillar::getPillarType() const
@@ -506,9 +487,11 @@ AcGePoint3dArray CPolaCustomPillar::getRectVertex() const
 	return rect_pillar_vertex_;
 }
 
-void CPolaCustomPillar::CalculateVertex()
+Acad::ErrorStatus CPolaCustomPillar::CalculateVertex()
 {
 	assertWriteEnabled();
+	if (!checkValue(this)) return Acad::eInvalidInput;
+	AcGePoint3dArray next_vertices;
 	AcGePoint3d temp_vertex[4];
 	if (pillar_type_ == 1)
 	{
@@ -520,7 +503,8 @@ void CPolaCustomPillar::CalculateVertex()
 			temp_vertex[3] = AcGePoint3d(center_point_.x + 0.5 * pillar_d_, center_point_.y + 0.5 * pillar_h_, 0);
 			for (int i = 0; i < 4; i++)
 			{
-				rect_pillar_vertex_.append(temp_vertex[i]);
+				if (!finitePoint(temp_vertex[i])) return Acad::eInvalidInput;
+				next_vertices.append(temp_vertex[i]);
 			}
 		}
 		else
@@ -538,10 +522,13 @@ void CPolaCustomPillar::CalculateVertex()
 				transformBy(rotate_transform_matrix);
 			for (int i = 0; i < 4; i++)
 			{
-				rect_pillar_vertex_.append(temp_vertex[i]);
+				if (!finitePoint(temp_vertex[i])) return Acad::eInvalidInput;
+				next_vertices.append(temp_vertex[i]);
 			}
 		}
 	}
+	rect_pillar_vertex_ = next_vertices;
+	return Acad::eOk;
 }
 
 void CPolaCustomPillar::UpdateEntity()
@@ -551,150 +538,179 @@ void CPolaCustomPillar::UpdateEntity()
 
 Acad::ErrorStatus CPolaCustomPillar::subTransformBy(const AcGeMatrix3d & transform_matrix)
 {
-	assertReadEnabled();
-	if (getPillarType() == 0)
-	{
-		center_point_.transformBy(transform_matrix);
+	assertWriteEnabled();
+	if (!checkValue(this)) return Acad::eInvalidInput;
+	for (int row = 0; row < 4; ++row)
+		for (int col = 0; col < 4; ++col)
+			if (!std::isfinite(transform_matrix.entry[row][col])) return Acad::eInvalidInput;
+	// The stored primitives are planar. Reject shear/tilt and circle distortion.
+	if (!transform_matrix.isScaledOrtho() || transform_matrix.isSingular()
+		|| (pillar_type_ == 0 && !transform_matrix.isUniScaledOrtho())) return Acad::eInvalidInput;
+	const AcGeVector3d normal = transform_matrix * AcGeVector3d::kZAxis;
+	if (!normal.isParallelTo(AcGeVector3d::kZAxis)) return Acad::eInvalidInput;
+	const AcGePoint3d next_center = transform_matrix * center_point_;
+	const AcGeVector3d next_direction = transform_matrix * direction_vector_;
+	const double scale_d = (transform_matrix * direction_vector_.normal()).length();
+	const AcGeVector3d width_direction(-direction_vector_.y, direction_vector_.x, 0.0);
+	const double scale_h = (transform_matrix * width_direction.normal()).length();
+	const double next_d = pillar_d_ * scale_d;
+	const double next_h = pillar_h_ * scale_h;
+	if (!finitePoint(next_center) || !finiteDirection(next_direction)
+		|| !std::isfinite(next_d) || next_d <= 0.0 || !std::isfinite(next_h)
+		|| next_h < 0.0 || (pillar_type_ == 1 && next_h <= 0.0)) return Acad::eInvalidInput;
+	AcGePoint3dArray next_vertices = rect_pillar_vertex_;
+	for (int i = 0; i < next_vertices.length(); ++i) {
+		next_vertices[i].transformBy(transform_matrix);
+		if (!finitePoint(next_vertices[i])) return Acad::eInvalidInput;
 	}
-	else if (getPillarType() == 1)
-	{
-		for (int i = 0; i < rect_pillar_vertex_.length(); i++)
-		{
-			rect_pillar_vertex_.at(i).transformBy(transform_matrix);
-		}
-		center_point_.transformBy(transform_matrix);
-		direction_vector_ = direction_vector_.transformBy(transform_matrix);
-	}
-	else
-	{
-		throw;
-	}
+	center_point_ = next_center;
+	direction_vector_ = next_direction;
+	pillar_d_ = next_d;
+	pillar_h_ = next_h;
+	rect_pillar_vertex_ = next_vertices;
 	return Acad::eOk;
 }
 
 bool CPolaCustomPillar::checkValue(const CPolaCustomPillar * pillar)
 {
-	bool check_result;
+	if (!pillar) return false;
 	double d, h;
 	pillar->getDiameter(d, h);
-	bool size_result = (d > 0 && h >= 0) ? true : false;
+	bool size_result = std::isfinite(d) && std::isfinite(h) && d > 0 && h >= 0
+		&& (pillar->getPillarType() != 1 || h > 0);
 	bool prop_result = (pillar->getPillarProperty() == 0 || pillar->getPillarProperty() == 1) ? true : false;
 	bool type_result = (pillar->getPillarType() == 0 || pillar->getPillarType() == 1) ? true : false;
 
-	if (size_result && prop_result && type_result)
-		check_result = true;
-	else
-		check_result = false;
-
-	return check_result;
+	return size_result && prop_result && type_result && finitePoint(pillar->getCenterPoint())
+		&& finiteDirection(pillar->getDirectionVector()) && pillar->getConcreteGrade() >= 0
+		&& pillar->pillar_serial_number_.length() <= kMaxSerialLength;
 }
 
 AcDbObjectIdArray CPolaCustomPillar::BatchInsert(const CPolaCustomPillar & pillar_template, const AcGePoint3dArray & insert_point_array)
 {
 	AcDbObjectIdArray pillar_id_array;
-	if (pillar_template.getPillarType() == 0)
-	{
-		if (pillar_template.checkValue(&pillar_template))
-		{
-			for (int i = 0; i < insert_point_array.length(); i++)
-			{
-				CPolaCustomPillar* pillar = new CPolaCustomPillar(pillar_template);
-				pillar->rect_pillar_vertex_.removeAll();
-				pillar->setCenterPoint(insert_point_array.at(i));
-				pillar_id_array.append(AddToModelSpace::AddEntityToModelSpace(pillar));
-			}
-		}
-		else
-		{
-			throw;
-		}
-	}
-	else if (pillar_template.getPillarType() == 1)
-	{
-		if (!insert_point_array.isEmpty())
-		{
-			for (int i = 0; i < insert_point_array.length(); i++)
-			{
-				CPolaCustomPillar* pillar = new CPolaCustomPillar(pillar_template);
-				pillar->rect_pillar_vertex_.removeAll();
-				if (checkValue(pillar))
-				{
-					pillar->setCenterPoint(insert_point_array.at(i));
-					pillar->CalculateVertex();
-					pillar_id_array.append(AddToModelSpace::AddEntityToModelSpace(pillar));
-				}
-				else
-				{
-					throw;
-				}
-			}
-		}
-		else
-		{
-			throw;
-		}
-	}
-	else
-	{
-		throw;
-	}
+	const Acad::ErrorStatus status = BatchInsert(pillar_template, insert_point_array, pillar_id_array);
+	if (status != Acad::eOk) acutPrintf(_T("\nPillar insertion failed: %d"), static_cast<int>(status));
 	return pillar_id_array;
+}
+
+Acad::ErrorStatus CPolaCustomPillar::BatchInsert(const CPolaCustomPillar& pillar_template,
+	const AcGePoint3dArray& insert_points, AcDbObjectIdArray& pillar_ids)
+{
+	pillar_ids.removeAll();
+	if (!checkValue(&pillar_template) || insert_points.isEmpty()) return Acad::eInvalidInput;
+	for (int i = 0; i < insert_points.length(); ++i)
+		if (!finitePoint(insert_points[i])) return Acad::eInvalidInput;
+	AcDbObjectIdArray inserted;
+	for (int i = 0; i < insert_points.length(); ++i) {
+		AcDbObjectId id;
+		const Acad::ErrorStatus status = SingleInsert(pillar_template, insert_points[i], id);
+		if (status != Acad::eOk) {
+			// Roll back earlier appends; never hide the first append failure.
+			for (int j = 0; j < inserted.length(); ++j) {
+				AcDbEntity* entity = nullptr;
+				const Acad::ErrorStatus open_status = acdbOpenObject(entity, inserted[j], AcDb::kForWrite);
+				if (open_status == Acad::eOk) {
+					Pola::OpenedObject<AcDbEntity> opened(entity);
+					const Acad::ErrorStatus erase_status = entity->erase();
+					const Acad::ErrorStatus cleanup_status = Pola::Close(opened, erase_status);
+					if (cleanup_status != Acad::eOk) acutPrintf(_T("\nPillar insertion rollback failed: %d"), static_cast<int>(cleanup_status));
+				}
+				else acutPrintf(_T("\nPillar insertion rollback open failed: %d"), static_cast<int>(open_status));
+			}
+			return status;
+		}
+		inserted.append(id);
+	}
+	pillar_ids = inserted;
+	return Acad::eOk;
 }
 
 AcDbObjectId CPolaCustomPillar::SingleInsert(const CPolaCustomPillar & pillar_template, const AcGePoint3d & insert_point)
 {
-	AcGePoint3dArray tmp_array;
-	tmp_array.append(insert_point);
-	return BatchInsert(pillar_template, tmp_array).at(0);
+	AcDbObjectId id;
+	const Acad::ErrorStatus status = SingleInsert(pillar_template, insert_point, id);
+	if (status != Acad::eOk) acutPrintf(_T("\nPillar insertion failed: %d"), static_cast<int>(status));
+	return id;
+}
+
+Acad::ErrorStatus CPolaCustomPillar::SingleInsert(const CPolaCustomPillar& pillar_template,
+	const AcGePoint3d& insert_point, AcDbObjectId& pillar_id)
+{
+	pillar_id = AcDbObjectId::kNull;
+	if (!checkValue(&pillar_template) || !finitePoint(insert_point)) return Acad::eInvalidInput;
+	std::unique_ptr<CPolaCustomPillar> pillar(new CPolaCustomPillar(pillar_template));
+	Acad::ErrorStatus status = pillar->setCenterPoint(insert_point);
+	if (status != Acad::eOk) return status;
+	status = AddToModelSpace::AddEntityToModelSpace(pillar.get(), pillar_id, false);
+	// Inspect ownership while the handle is still open, then close exactly once.
+	if (!pillar->objectId().isNull()) {
+		if (status != Acad::eOk) {
+			const Acad::ErrorStatus rollback_status = pillar->erase();
+			if (rollback_status != Acad::eOk) acutPrintf(_T("\nPillar insertion rollback failed: %d"), static_cast<int>(rollback_status));
+		}
+		const Acad::ErrorStatus close_status = pillar.release()->close();
+		if (status == Acad::eOk) status = close_status;
+	}
+	if (status != Acad::eOk) pillar_id = AcDbObjectId::kNull;
+	return status;
 }
 
 AcDbObjectId CPolaCustomPillar::AddPillarLeader()
 {
+	AcDbObjectId id;
+	const Acad::ErrorStatus status = AddPillarLeader(id);
+	if (status != Acad::eOk) acutPrintf(_T("\nPillar leader failed: %d"), static_cast<int>(status));
+	return id;
+}
+
+Acad::ErrorStatus CPolaCustomPillar::AddPillarLeader(AcDbObjectId& leader_id)
+{
+	assertReadEnabled();
+	leader_id = AcDbObjectId::kNull;
+	if (!checkValue(this)) return Acad::eInvalidInput;
 	AcGePoint3d point_on_leader(center_point_.x + 2000, center_point_.y - 1000, center_point_.z);
 	AcGePoint3d text_point(point_on_leader.x + 2000, point_on_leader.y, point_on_leader.z);
 	std::wstring info;
 	std::wstringstream info_stream;
 	if (pillar_type_ == 1)
 	{
-		info_stream << pillar_serial_number_ << _T("\n") << static_cast<int>(pillar_d_) << _T("*") << static_cast<int>(pillar_h_);
+		info_stream << pillar_serial_number_ << _T("\n") << pillar_d_ << _T("*") << pillar_h_;
 		info = info_stream.str();
 	}
 	else if (pillar_type_ == 0)
 	{
-		info_stream << pillar_serial_number_ << _T("\n%%c") << static_cast<int>(pillar_d_);
+		info_stream << pillar_serial_number_ << _T("\n%%c") << pillar_d_;
 		info = info_stream.str();
 	}
 	else
 	{
-		throw std::invalid_argument("Invalid pillar type");
+		return Acad::eInvalidInput;
 	}
-	return DrawEntity::AddMLeader(center_point_, point_on_leader, text_point, info.c_str());
+	return DrawEntity::AddMLeader(center_point_, point_on_leader, text_point, info.c_str(), leader_id);
 }
 
 Acad::ErrorStatus CPolaCustomPillar::subGetGeomExtents(AcDbExtents & extents) const
 {
-	Acad::ErrorStatus error_status;
+	assertReadEnabled();
+	if (!checkValue(this) || (pillar_type_ == 1 && rect_pillar_vertex_.length() != 4)) return Acad::eInvalidInput;
+	Acad::ErrorStatus error_status = Acad::eInvalidInput;
 	if (pillar_type_ == 0)
 	{
-		AcDbCircle* circle = new AcDbCircle(center_point_, AcGeVector3d::kZAxis, pillar_d_ * 0.5);
-		error_status = circle->getGeomExtents(extents);
-		delete circle;
+		AcDbCircle circle(center_point_, AcGeVector3d::kZAxis, pillar_d_ * 0.5);
+		error_status = circle.getGeomExtents(extents);
 	}
 	else if (pillar_type_ == 1)
 	{
-		AcDbPolyline* pl = new AcDbPolyline();
-		for (int i = 0; i < rect_pillar_vertex_.length(); i++)
-		{
-			pl->addVertexAt(i, BasicTools::Point3dToPoint2d(rect_pillar_vertex_.at(i)));
-		}
-		pl->setDatabaseDefaults();
-		pl->setClosed(true);
-		error_status = pl->getGeomExtents(extents);
-		delete pl;
+		AcDbPolyline pl;
+		error_status = buildPillarContour(rect_pillar_vertex_, pl);
+		if (error_status != Acad::eOk) return error_status;
+		pl.setDatabaseDefaults();
+		error_status = pl.getGeomExtents(extents);
 	}
 	else
 	{
-		throw;
+		return Acad::eInvalidInput;
 	}
 	return error_status;
 }

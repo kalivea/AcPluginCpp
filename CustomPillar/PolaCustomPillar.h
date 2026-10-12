@@ -1,19 +1,19 @@
-// (C) Copyright 2002-2007 by Autodesk, Inc. 
+// (C) Copyright 2002-2007 by Autodesk, Inc.
 //
 // Permission to use, copy, modify, and distribute this software in
-// object code form for any purpose and without fee is hereby granted, 
-// provided that the above copyright notice appears in all copies and 
+// object code form for any purpose and without fee is hereby granted,
+// provided that the above copyright notice appears in all copies and
 // that both that copyright notice and the limited warranty and
-// restricted rights notice below appear in all supporting 
+// restricted rights notice below appear in all supporting
 // documentation.
 //
-// AUTODESK PROVIDES THIS PROGRAM "AS IS" AND WITH ALL FAULTS. 
+// AUTODESK PROVIDES THIS PROGRAM "AS IS" AND WITH ALL FAULTS.
 // AUTODESK SPECIFICALLY DISCLAIMS ANY IMPLIED WARRANTY OF
-// MERCHANTABILITY OR FITNESS FOR A PARTICULAR USE.  AUTODESK, INC. 
+// MERCHANTABILITY OR FITNESS FOR A PARTICULAR USE.  AUTODESK, INC.
 // DOES NOT WARRANT THAT THE OPERATION OF THE PROGRAM WILL BE
 // UNINTERRUPTED OR ERROR FREE.
 //
-// Use, duplication, or disclosure by the U.S. Government is subject to 
+// Use, duplication, or disclosure by the U.S. Government is subject to
 // restrictions set forth in FAR 52.227-19 (Commercial Computer
 // Software - Restricted Rights) and DFAR 252.227-7013(c)(1)(ii)
 // (Rights in Technical Data and Computer Software), as applicable.
@@ -46,6 +46,7 @@
 
 //-----------------------------------------------------------------------------
 #include "dbmain.h"
+#include <string>
 
 //-----------------------------------------------------------------------------
 class PILLAR_DLLIMPEXP CPolaCustomPillar : public AcDbEntity {
@@ -103,6 +104,7 @@ public:
 	//-----------------------------------------------------------------------------
 	// custom define pillar part             ------Pola
 private:
+	friend class PillarTools; // Imports commit a completely validated legacy record atomically.
 	//					save to XData
 	AcGePoint3d center_point_;					// center point: Used to define the insertion point of the entity in the drawing file.
 	AcGeVector3d direction_vector_;				// direction vercor: The angle between the center point and the x-axis, used to define the positive direction of the entity.
@@ -110,7 +112,7 @@ private:
 	//													If it is a circular pillar, d = h, represent the diameter of the circle.
 	bool viewable_;								// viewalbe: Used to control the entity line type. true mean continuous; false mean dashed.
 	Adesk::Int32 pillar_property_;				// pillar property: (int) 0 mean concrete; (int) 1 mean concrete-filled steel tube pillar.
-	TCHAR* pillar_serial_number_;				// pillar serial number.// NOW ITS STRING.
+	std::basic_string<TCHAR> pillar_serial_number_; // Owns the serial number; copies never share storage.
 	Adesk::Int32 pillar_type_;					// pillar type: (int) 0 mean round pillar; (int) 1 mean rectangular pillar.
 
 	//	               auxiliary data
@@ -119,14 +121,14 @@ private:
 
 public:
 	//					set function
-	void setCenterPoint(const AcGePoint3d& center);
-	void setDirectionVector(const AcGeVector3d& dir_vec = AcGeVector3d::kXAxis);
-	void setDiameter(const double& d, const double& h);
-	void setViewable(const bool view);
-	void setPillarProperty(const Adesk::Int32& prop);
-	void setSn(const TCHAR* sn);
-	void setPillarType(const Adesk::Int32& type);
-	void setConcreteGrade(const Adesk::Int32& grade);
+	Acad::ErrorStatus setCenterPoint(const AcGePoint3d& center);
+	Acad::ErrorStatus setDirectionVector(const AcGeVector3d& dir_vec = AcGeVector3d::kXAxis);
+	Acad::ErrorStatus setDiameter(const double& d, const double& h);
+	Acad::ErrorStatus setViewable(const bool view);
+	Acad::ErrorStatus setPillarProperty(const Adesk::Int32& prop);
+	Acad::ErrorStatus setSn(const TCHAR* sn);
+	Acad::ErrorStatus setPillarType(const Adesk::Int32& type);
+	Acad::ErrorStatus setConcreteGrade(const Adesk::Int32& grade);
 
 	//					get function
 	AcGePoint3d getCenterPoint() const;
@@ -134,12 +136,12 @@ public:
 	void getDiameter(double& d, double& h) const;
 	bool getViewable() const;
 	Adesk::Int32 getPillarProperty() const;
-	TCHAR* getPillarSn() const;
+	const TCHAR* getPillarSn() const; // Borrowed until the next serial-number change or destruction.
 	Adesk::Int32 getPillarType() const;
 	Adesk::Int32 getConcreteGrade() const;
 	AcGePoint3dArray getRectVertex() const;
 	//				   auxiliary data generation function
-	void CalculateVertex();
+	Acad::ErrorStatus CalculateVertex();
 	void UpdateEntity();			// TODO
 
 	//                  move transform
@@ -148,6 +150,9 @@ public:
 
 	//					init pillar and value check
 	static bool checkValue(const CPolaCustomPillar* pillar);
+	static Acad::ErrorStatus BatchInsert(const CPolaCustomPillar& pillar_template, const AcGePoint3dArray& insert_point_array, AcDbObjectIdArray& pillar_ids);
+	static Acad::ErrorStatus SingleInsert(const CPolaCustomPillar& pillar_template, const AcGePoint3d& insert_point, AcDbObjectId& pillar_id);
+	Acad::ErrorStatus AddPillarLeader(AcDbObjectId& leader_id);
 	static AcDbObjectIdArray BatchInsert(const CPolaCustomPillar& pillar_template, const AcGePoint3dArray& insert_point_array);
 	static AcDbObjectId SingleInsert(const CPolaCustomPillar& pillar_template, const AcGePoint3d& insert_point);
 	AcDbObjectId AddPillarLeader();

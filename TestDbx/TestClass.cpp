@@ -1,13 +1,14 @@
-#include "StdAfx.h"
+ï»¿#include "StdAfx.h"
 #include "TestClass.h"
+#include "../tests/ArxStage1Regression.h"
 #include "PolaReactor.h"
-#include "PolaIRM.h"
 #include "EditDwg.h"
 #include "PillarTools.h"
 #include "DwgFileInfo.h"
 
 void TestClass::TestClassInit()
 {
+    acedRegCmds->addCommand(_T("PolaStage1Regression"), _T("POLASTAGE1TEST"), _T("POLASTAGE1TEST"), ACRX_CMD_MODAL, RunPolaStage1Regression);
 	acedRegCmds->addCommand(_T("tmpGroupName"), _T("TestClass"), _T("TestClass"), ACRX_CMD_MODAL, Test);
 	//acedRegCmds->addCommand(_T("tmpGroupName"), _T("TestDLQ"), _T("TestDLQ"), ACRX_CMD_MODAL, DLQ);
 	//acedRegCmds->addCommand(_T("tmpGroupName"), _T("TestYHZ"), _T("TestYHZ"), ACRX_CMD_MODAL, YHZ);
@@ -15,6 +16,7 @@ void TestClass::TestClassInit()
 }
 void TestClass::TestClassUnload()
 {
+    acedRegCmds->removeGroup(_T("PolaStage1Regression"));
 	acedRegCmds->removeGroup(_T("tmpGroupName"));
 }
 
@@ -47,13 +49,14 @@ void TestClass::Test()
 			//StyleTools::CreateLayerStyle(_T("POLA_PILLAR_MARK"), 3, _T("CONTINUOUS"));
 
 			//CPolaCustomPillar* pillar = new CPolaCustomPillar;
-			//PillarTools::LoadPillarInfoFromFileBySn(_T("C:\\Users\\Polaris\\Documents\\arxini\\Drawing1.dwg.bin"), _T("Ñ½1"), pillar);
+			//PillarTools::LoadPillarInfoFromFileBySn(_T("C:\\Users\\Polaris\\Documents\\arxini\\Drawing1.dwg.bin"), _T("å‘€1"), pillar);
 
 			//AddToModelSpace::AddEntityToModelSpace(pillar);
 	AcDbObjectIdArray arc_id;
-	SelectEntitys::PickEntitys(NULL, AcDbArc::desc(), arc_id);
+	if (!SelectEntitys::PickEntitys(NULL, AcDbArc::desc(), arc_id) || arc_id.isEmpty()) return;
 	AcDbObjectPointer<AcDbArc> arc_pointer(arc_id.at(0));
 
+	if (arc_pointer.openStatus() != Acad::eOk) return;
 	DrawEntity::DrawLine(BasicTools::GetArcMidPoint(*arc_pointer), arc_pointer->center());
 }
 //
@@ -71,7 +74,7 @@ void TestClass::Test()
 //{
 //	OPENFILENAME open_file_name;
 //	TCHAR file_path[MAX_PATH] = { 0 };
-//	TCHAR* default_path = _T("C:\\Users\\Polaris\\Desktop\\7-Í¼Ö½Ä£¿é\\1µØÏÂ½á¹¹×¨Òµ\\1¸÷¹¤·¨½Úµã´óÑùÍ¼\\1-Ã÷ÍÚ\\2-µØÏÂÁ¬ĞøÇ½");
+//	TCHAR* default_path = _T("C:\\Users\\Polaris\\Desktop\\7-å›¾çº¸æ¨¡å—\\1åœ°ä¸‹ç»“æ„ä¸“ä¸š\\1å„å·¥æ³•èŠ‚ç‚¹å¤§æ ·å›¾\\1-æ˜æŒ–\\2-åœ°ä¸‹è¿ç»­å¢™");
 //	ZeroMemory(&open_file_name, sizeof(open_file_name));
 //	open_file_name.lStructSize = sizeof(open_file_name);
 //	open_file_name.hwndOwner = NULL;
@@ -106,7 +109,7 @@ void TestClass::Test()
 //				block_name = path_str;
 //		}
 //		AcGePoint3d point;
-//		SelectEntitys::PickPoint(_T("Ñ¡Ôñ²åÈëµã"), point);
+//		SelectEntitys::PickPoint(_T("é€‰æ‹©æ’å…¥ç‚¹"), point);
 //		EditBlock::InsertBlockRef(EditDwg::InsertDwgAsBlockDef(escaped_path.c_str(), block_name.c_str(), true), point, 1, 0);
 //	}
 //}
@@ -115,7 +118,7 @@ void TestClass::Test()
 //{
 //	OPENFILENAME open_file_name;
 //	TCHAR file_path[MAX_PATH] = { 0 };
-//	TCHAR* default_path = _T("C:\\Users\\Polaris\\Desktop\\7-Í¼Ö½Ä£¿é\\1µØÏÂ½á¹¹×¨Òµ\\1¸÷¹¤·¨½Úµã´óÑùÍ¼\\1-Ã÷ÍÚ\\3-Ò§ºÏ×®");
+//	TCHAR* default_path = _T("C:\\Users\\Polaris\\Desktop\\7-å›¾çº¸æ¨¡å—\\1åœ°ä¸‹ç»“æ„ä¸“ä¸š\\1å„å·¥æ³•èŠ‚ç‚¹å¤§æ ·å›¾\\1-æ˜æŒ–\\3-å’¬åˆæ¡©");
 //	ZeroMemory(&open_file_name, sizeof(open_file_name));
 //	open_file_name.lStructSize = sizeof(open_file_name);
 //	open_file_name.hwndOwner = NULL;
@@ -150,7 +153,7 @@ void TestClass::Test()
 //				block_name = path_str;
 //		}
 //		AcGePoint3d point;
-//		SelectEntitys::PickPoint(_T("Ñ¡Ôñ²åÈëµã"), point);
+//		SelectEntitys::PickPoint(_T("é€‰æ‹©æ’å…¥ç‚¹"), point);
 //		EditBlock::InsertBlockRef(EditDwg::InsertDwgAsBlockDef(escaped_path.c_str(), block_name.c_str(), true), point, 1, 0);
 //	}
 //}
@@ -159,7 +162,7 @@ void TestClass::Test()
 //{
 //	OPENFILENAME open_file_name;
 //	TCHAR file_path[MAX_PATH] = { 0 };
-//	TCHAR* default_path = _T("C:\\Users\\Polaris\\Desktop\\7-Í¼Ö½Ä£¿é\\1µØÏÂ½á¹¹×¨Òµ\\1¸÷¹¤·¨½Úµã´óÑùÍ¼\\1-Ã÷ÍÚ\\8-¸ÖÖ§³Å¼°¸ÖÎ§éİ");
+//	TCHAR* default_path = _T("C:\\Users\\Polaris\\Desktop\\7-å›¾çº¸æ¨¡å—\\1åœ°ä¸‹ç»“æ„ä¸“ä¸š\\1å„å·¥æ³•èŠ‚ç‚¹å¤§æ ·å›¾\\1-æ˜æŒ–\\8-é’¢æ”¯æ’‘åŠé’¢å›´æª©");
 //	ZeroMemory(&open_file_name, sizeof(open_file_name));
 //	open_file_name.lStructSize = sizeof(open_file_name);
 //	open_file_name.hwndOwner = NULL;
@@ -194,7 +197,7 @@ void TestClass::Test()
 //				block_name = path_str;
 //		}
 //		AcGePoint3d point;
-//		SelectEntitys::PickPoint(_T("Ñ¡Ôñ²åÈëµã"), point);
+//		SelectEntitys::PickPoint(_T("é€‰æ‹©æ’å…¥ç‚¹"), point);
 //		EditBlock::InsertBlockRef(EditDwg::InsertDwgAsBlockDef(escaped_path.c_str(), block_name.c_str(), true), point, 1, 0);
 //	}
 //}

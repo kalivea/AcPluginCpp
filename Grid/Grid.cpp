@@ -1,220 +1,197 @@
 #include "StdAfx.h"
 #include "Grid.h"
+#include "../Common/DbObjectOwner.h"
+#include <cmath>
 
-AcDbObjectId Grid::CreateVerticalAxis()
+namespace
 {
-	AcDbBlockTable* block_table = nullptr;
-	acdbHostApplicationServices()->workingDatabase()->getBlockTable(block_table, OpenMode::kForWrite);
-	AcDbBlockTableRecord* block_table_record = new AcDbBlockTableRecord();
-
-	block_table_record->setName(_T("grid_v"));
-
-	AcDbObjectId grid_vertical_id = AcDbObjectId::kNull;
-	block_table->add(grid_vertical_id, block_table_record);
-
-	AcDbCircle* grid_vertical_circle = new AcDbCircle(AcGePoint3d::kOrigin, AcGeVector3d::kZAxis, circle_radius_);
-	AcDbLine* grid_vertical_line = new AcDbLine(
-		AcGePoint3d(AcGePoint3d::kOrigin.x, AcGePoint3d::kOrigin.y + grid_vertical_circle->radius(), 0),
-		AcGePoint3d(AcGePoint3d::kOrigin.x, AcGePoint3d::kOrigin.y + grid_vertical_circle->radius() + line_length_, 0));
-
-	AcDbAttributeDefinition* grid_vertical_attribute = new AcDbAttributeDefinition(AcGePoint3d::kOrigin, _T("index_num"), _T("ID"), _T("Input axis id"), StyleTools::GetTextStyleId(_T("grid_text")));
-	grid_vertical_attribute->setHeight(750);
-	grid_vertical_attribute->setHorizontalMode(AcDb::kTextMid);
-
-	AcDbObjectId circel_id, line_id, attribute_id;
-	block_table_record->appendAcDbEntity(circel_id, grid_vertical_circle);
-	block_table_record->appendAcDbEntity(line_id, grid_vertical_line);
-	block_table_record->appendAcDbEntity(attribute_id, grid_vertical_attribute);
-
-	grid_vertical_circle->close();
-	grid_vertical_line->close();
-	grid_vertical_attribute->close();
-	block_table_record->close();
-	block_table->close();
-
-	return grid_vertical_id;
+template<class T>
+Acad::ErrorStatus CloseAxisOwner(Pola::DbObjectOwner<T>& owner, Acad::ErrorStatus status = Acad::eOk) {
+    if (!owner) return status;
+    if (owner->objectId().isNull()) { owner.reset(); return status; }
+    const Acad::ErrorStatus cleanup = owner.release()->close();
+    return status == Acad::eOk ? cleanup : status;
+}
+void ReportAxisError(Acad::ErrorStatus status) {
+    if (status != Acad::eOk) acutPrintf(_T("\nAxis operation failed: %d\n"), static_cast<int>(status));
+}
+void EraseAxis(AcDbEntity* entity) {
+    if (entity && !entity->objectId().isNull()) ReportAxisError(entity->erase());
 }
 
-AcDbObjectId Grid::CreateHorizonAxis()
+Acad::ErrorStatus CreateAxis(const TCHAR* name, bool vertical, double radius, double length, AcDbObjectId& id)
 {
-	AcDbBlockTable* block_table = nullptr;
-	acdbHostApplicationServices()->workingDatabase()->getBlockTable(block_table, OpenMode::kForWrite);
-	AcDbBlockTableRecord* block_table_record = new AcDbBlockTableRecord();
-
-	block_table_record->setName(_T("grid_h"));
-
-	AcDbObjectId gride_vertical_id = AcDbObjectId::kNull;
-	block_table->add(gride_vertical_id, block_table_record);
-
-	AcDbCircle* grid_vertical_circle = new AcDbCircle(AcGePoint3d::kOrigin, AcGeVector3d::kZAxis, circle_radius_);
-	AcDbLine* gride_vertical_line = new AcDbLine(
-		AcGePoint3d(AcGePoint3d::kOrigin.x + grid_vertical_circle->radius(), AcGePoint3d::kOrigin.y, 0),
-		AcGePoint3d(AcGePoint3d::kOrigin.x + grid_vertical_circle->radius() + line_length_, AcGePoint3d::kOrigin.y, 0));
-
-	AcDbAttributeDefinition* gride_vertical_attribute = new AcDbAttributeDefinition(AcGePoint3d::kOrigin, _T("index_num"), _T("ID"), _T("Input axis id"), StyleTools::GetTextStyleId(_T("grid_text")));
-	gride_vertical_attribute->setHeight(750);
-	gride_vertical_attribute->setHorizontalMode(AcDb::kTextMid);
-
-	AcDbObjectId circel_id, line_id, attribute_id;
-	block_table_record->appendAcDbEntity(circel_id, grid_vertical_circle);
-	block_table_record->appendAcDbEntity(line_id, gride_vertical_line);
-	block_table_record->appendAcDbEntity(attribute_id, gride_vertical_attribute);
-
-	grid_vertical_circle->close();
-	gride_vertical_line->close();
-	gride_vertical_attribute->close();
-	block_table_record->close();
-	block_table->close();
-
-	return gride_vertical_id;
+    id = AcDbObjectId::kNull;
+    if (!std::isfinite(radius) || !std::isfinite(length) || radius <= 0 || length <= 0 || !std::isfinite(radius + length)) return Acad::eInvalidInput;
+    AcDbDatabase* db = acdbHostApplicationServices()->workingDatabase();
+    if (!db) return Acad::eNoDatabase;
+    AcDbBlockTable* raw_table = nullptr;
+    Acad::ErrorStatus status = db->getBlockTable(raw_table, AcDb::kForWrite);
+    if (status != Acad::eOk) return status;
+    Pola::OpenedObject<AcDbBlockTable> table(raw_table);
+    if (table->has(name))
+    {
+        AcDbObjectId existing;
+        status = table->getAt(name, existing);
+        status = Pola::Close(table, status);
+        if (status == Acad::eOk) id = existing;
+        return status;
+    }
+    AcDbObjectId text_style;
+    status = StyleTools::GetTextStyleId(_T("grid_text"), text_style);
+    if (status != Acad::eOk) return Pola::Close(table, status);
+    Pola::DbObjectOwner<AcDbBlockTableRecord> record(new AcDbBlockTableRecord());
+    status = record->setName(name);
+    AcDbObjectId result;
+    if (status == Acad::eOk) status = table->add(result, record.get());
+    if (status != Acad::eOk) return Pola::Close(table, status);
+    AcGePoint3d start = vertical ? AcGePoint3d(0, radius, 0) : AcGePoint3d(radius, 0, 0);
+    AcGePoint3d end = vertical ? AcGePoint3d(0, radius + length, 0) : AcGePoint3d(radius + length, 0, 0);
+    Pola::DbObjectOwner<AcDbCircle> circle(new AcDbCircle(AcGePoint3d::kOrigin, AcGeVector3d::kZAxis, radius));
+    Pola::DbObjectOwner<AcDbLine> line(new AcDbLine(start, end));
+    Pola::DbObjectOwner<AcDbAttributeDefinition> attribute(new AcDbAttributeDefinition(AcGePoint3d::kOrigin, _T("index_num"), _T("ID"), _T("Input axis id"), text_style));
+    status = attribute->setHeight(750);
+    if (status == Acad::eOk) status = attribute->setHorizontalMode(AcDb::kTextMid);
+    AcDbEntity* entities[] = { circle.get(), line.get(), attribute.get() };
+    for (AcDbEntity* entity : entities)
+    {
+        if (status != Acad::eOk) break;
+        status = record->appendAcDbEntity(entity);
+    }
+    // Close successful children before their containing record.
+    status = CloseAxisOwner(circle, status);
+    status = CloseAxisOwner(line, status);
+    status = CloseAxisOwner(attribute, status);
+    if (status != Acad::eOk) ReportAxisError(record->erase());
+    status = CloseAxisOwner(record, status);
+    status = Pola::Close(table, status);
+    if (status == Acad::eOk) id = result;
+    return status;
 }
-
-void Grid::AddAttribute(AcDbBlockReference* block_reference, const AcDbAttributeDefinition* att_definition)
+Acad::ErrorStatus InsertAxis(const TCHAR* name, const AcGePoint3d& point, AcDbObjectId& id)
 {
-	AcDbAttribute* attribute = new AcDbAttribute();
-	attribute->setPropertiesFrom(att_definition);
-	attribute->setHeight(att_definition->height());
-	attribute->setHorizontalMode(att_definition->horizontalMode());
-	attribute->setTextStyle(att_definition->textStyle());
-	attribute->setPosition(att_definition->position());
-	attribute->setAttributeFromBlock(block_reference->blockTransform());
-
-	TCHAR* att_string = att_definition->tag();
-	attribute->setTag(att_string);
-	acutDelString(att_string);
-	attribute->setFieldLength(att_definition->fieldLength());
-	attribute->setTextString(att_definition->textString());
-
-	block_reference->appendAttribute(attribute);
-	attribute->close();
+    id = AcDbObjectId::kNull;
+    if (!std::isfinite(point.x) || !std::isfinite(point.y) || !std::isfinite(point.z)) return Acad::eInvalidInput;
+    AcDbObjectId block_id;
+    Acad::ErrorStatus status = EditBlock::GetBlockId(name, block_id);
+    if (status != Acad::eOk) return status;
+    AcDbBlockTableRecord* raw = nullptr;
+    status = acdbOpenObject(raw, block_id, AcDb::kForRead);
+    if (status != Acad::eOk) return status;
+    Pola::OpenedObject<AcDbBlockTableRecord> record(raw);
+    AcDbBlockTableRecordIterator* raw_iterator = nullptr;
+    status = record->newIterator(raw_iterator);
+    if (status != Acad::eOk) return Pola::Close(record, status);
+    std::unique_ptr<AcDbBlockTableRecordIterator> iterator(raw_iterator);
+    Pola::DbObjectOwner<AcDbBlockReference> reference(new AcDbBlockReference(point, block_id));
+    // Attributes become database objects only after their owner is resident.
+    status = AddToModelSpace::AddEntityToModelSpace(reference.get(), id, false);
+    if (status != Acad::eOk) {
+        EraseAxis(reference.get());
+        iterator.reset();
+        status = Pola::Close(record, status);
+        return CloseAxisOwner(reference, status);
+    }
+    for (; !iterator->done(); iterator->step())
+    {
+        AcDbEntity* raw_entity = nullptr;
+        status = iterator->getEntity(raw_entity, AcDb::kForRead);
+        if (status != Acad::eOk) break;
+        Pola::OpenedObject<AcDbEntity> entity(raw_entity);
+        const AcDbAttributeDefinition* definition = AcDbAttributeDefinition::cast(entity.get());
+        if (definition && !definition->isConstant()) status = Grid::AddAttribute(reference.get(), definition);
+        status = Pola::Close(entity, status);
+        if (status != Acad::eOk) break;
+    }
+    iterator.reset();
+    status = Pola::Close(record, status);
+    if (status != Acad::eOk) EraseAxis(reference.get());
+    status = CloseAxisOwner(reference, status);
+    if (status != Acad::eOk) id = AcDbObjectId::kNull;
+    return status;
 }
-
-void Grid::SetAttribute(AcDbBlockReference* block_reference, const TCHAR* tag, const TCHAR* att_string)
-{
-	AcDbBlockTableRecord* block_record = nullptr;
-	acdbOpenObject(block_record, block_reference->blockTableRecord());
-	if (block_record->hasAttributeDefinitions())
-	{
-		AcDbBlockTableRecordIterator* block_table_record_iterator = nullptr;
-		block_record->newIterator(block_table_record_iterator);
-		AcDbEntity* entity = nullptr;
-		for (block_table_record_iterator->start(); !block_table_record_iterator->done(); block_table_record_iterator->step())
-		{
-			block_table_record_iterator->getEntity(entity, OpenMode::kForRead);
-			AcDbAttributeDefinition* att_definiton = AcDbAttributeDefinition::cast(entity);
-
-			if (att_definiton != nullptr)
-			{
-				TCHAR* check_tag = att_definiton->tag();
-				CString tag_string = check_tag;
-				acutDelString(check_tag);
-				if (tag_string.CompareNoCase(tag) == 0)
-				{
-					bool IsfoundTag = false;
-					AcDbObjectIterator* att_iterator = block_reference->attributeIterator();
-					for (att_iterator->start(); !att_iterator->done(); att_iterator->step())
-					{
-						AcDbAttribute* attribute = nullptr;
-						Acad::ErrorStatus err_status = acdbOpenObject(attribute, att_iterator->objectId(), OpenMode::kForWrite);
-						if (err_status == Acad::eOk)
-						{
-							check_tag = attribute->tag();
-							tag_string = check_tag;
-							acutDelString(check_tag);
-							if (tag_string.CompareNoCase(tag) == 0)
-							{
-								attribute->setTextString(att_string);
-								IsfoundTag = true;
-							}
-							attribute->close();
-						}
-					}
-					delete att_iterator;
-				}
-			}
-			entity->close();
-		}
-		delete block_table_record_iterator;
-	}
-	block_record->close();
 }
+Acad::ErrorStatus Grid::CreateVerticalAxis(AcDbObjectId& id) { return CreateAxis(_T("grid_v"), true, circle_radius_, line_length_, id); }
+Acad::ErrorStatus Grid::CreateHorizonAxis(AcDbObjectId& id) { return CreateAxis(_T("grid_h"), false, circle_radius_, line_length_, id); }
+AcDbObjectId Grid::CreateVerticalAxis() { AcDbObjectId id; ReportAxisError(CreateVerticalAxis(id)); return id; }
+AcDbObjectId Grid::CreateHorizonAxis() { AcDbObjectId id; ReportAxisError(CreateHorizonAxis(id)); return id; }
+Acad::ErrorStatus Grid::InsertVerticalAxis(const AcGePoint3d& p, AcDbObjectId& id) { return InsertAxis(_T("grid_v"), p, id); }
+Acad::ErrorStatus Grid::InsertHorizonAxis(const AcGePoint3d& p, AcDbObjectId& id) { return InsertAxis(_T("grid_h"), p, id); }
+AcDbObjectId Grid::InsertVerticalAxis(const AcGePoint3d& p) { AcDbObjectId id; ReportAxisError(InsertVerticalAxis(p, id)); return id; }
+AcDbObjectId Grid::InsertHorizonAxis(const AcGePoint3d& p) { AcDbObjectId id; ReportAxisError(InsertHorizonAxis(p, id)); return id; }
 
-AcDbObjectId Grid::InsertVerticalAxis(const AcGePoint3d& insert_point)
+Acad::ErrorStatus Grid::AddAttribute(AcDbBlockReference* reference, const AcDbAttributeDefinition* definition)
 {
-	AcDbBlockReference* block_reference = new AcDbBlockReference(insert_point, EditBlock::GetBlockId(_T("grid_v")));
-	AcDbBlockTableRecord* block_table_record = nullptr;
-	acdbOpenObject(block_table_record, block_reference->blockTableRecord());
-	if (block_table_record->hasAttributeDefinitions())
-	{
-		AcDbBlockTableRecordIterator* block_table_record_iterator = nullptr;
-		block_table_record->newIterator(block_table_record_iterator);
-		for (block_table_record_iterator->start(); !block_table_record_iterator->done(); block_table_record_iterator->step())
-		{
-			AcDbEntity* entity = nullptr;
-			if (block_table_record_iterator->getEntity(entity) == Acad::eOk)
-			{
-				AcDbAttributeDefinition* attribute_definition = AcDbAttributeDefinition::cast(entity);
-				if (attribute_definition != nullptr)
-				{
-					AddAttribute(block_reference, attribute_definition);
-				}
-				entity->close();
-			}
-		}
-		delete block_table_record_iterator;
-	}
-	block_table_record->close();
-	return AddToModelSpace::AddEntityToModelSpace(block_reference);
+    if (!reference || !definition || reference->objectId().isNull()) return Acad::eInvalidInput;
+    Pola::DbObjectOwner<AcDbAttribute> attribute(new AcDbAttribute());
+    Acad::ErrorStatus status = attribute->setAttributeFromBlock(definition, reference->blockTransform());
+    if (status != Acad::eOk) return status;
+    AcDbObjectId id;
+    status = reference->appendAttribute(id, attribute.get());
+    return CloseAxisOwner(attribute, status);
 }
-
-AcDbObjectId Grid::InsertHorizonAxis(const AcGePoint3d& insert_point)
+Acad::ErrorStatus Grid::SetAttribute(AcDbBlockReference* reference, const TCHAR* tag, const TCHAR* value)
 {
-	AcDbBlockReference* block_reference = new AcDbBlockReference(insert_point, EditBlock::GetBlockId(_T("grid_h")));
-	AcDbBlockTableRecord* block_table_record = nullptr;
-	acdbOpenObject(block_table_record, block_reference->blockTableRecord());
-	if (block_table_record->hasAttributeDefinitions())
-	{
-		AcDbBlockTableRecordIterator* block_table_record_iterator = nullptr;
-		block_table_record->newIterator(block_table_record_iterator);
-		for (block_table_record_iterator->start(); !block_table_record_iterator->done(); block_table_record_iterator->step())
-		{
-			AcDbEntity* entity = nullptr;
-			if (block_table_record_iterator->getEntity(entity) == Acad::eOk)
-			{
-				AcDbAttributeDefinition* attribute_definition = AcDbAttributeDefinition::cast(entity);
-				if (attribute_definition != nullptr)
-				{
-					AddAttribute(block_reference, attribute_definition);
-				}
-				entity->close();
-			}
-		}
-		delete block_table_record_iterator;
-	}
-	block_table_record->close();
-	return AddToModelSpace::AddEntityToModelSpace(block_reference);
+    if (!reference || !tag || !value) return Acad::eInvalidInput;
+    std::unique_ptr<AcDbObjectIterator> iterator(reference->attributeIterator());
+    if (!iterator) return Acad::eInvalidInput;
+    for (; !iterator->done(); iterator->step())
+    {
+        AcDbAttribute* raw = nullptr;
+        Acad::ErrorStatus status = acdbOpenObject(raw, iterator->objectId(), AcDb::kForWrite);
+        if (status != Acad::eOk) return status;
+        Pola::OpenedObject<AcDbAttribute> attribute(raw);
+        const TCHAR* stored_tag = attribute->tagConst();
+        const bool matches = stored_tag && _tcsicmp(stored_tag, tag) == 0;
+        if (matches) status = attribute->setTextString(value);
+        status = Pola::Close(attribute, status);
+        if (status != Acad::eOk || matches) return status;
+    }
+    return Acad::eKeyNotFound;
 }
-
-void Grid::DrawVerticalAxis(const AcGePoint3dArray& insert_point, const TCHAR* insert_att[])
+Acad::ErrorStatus Grid::DrawVerticalAxis(const AcGePoint3dArray& points, const TCHAR* values[])
 {
-	for (int i = 0; i < insert_point.length(); i++)
-	{
-		AcDbBlockReference* temp_reference = nullptr;
-		AcDbObjectId grid_id = Grid::InsertVerticalAxis(insert_point[i]);
-		acdbOpenObject(temp_reference, grid_id, OpenMode::kForWrite);
-		Grid::SetAttribute(temp_reference, _T("ID"), insert_att[i]);
-		temp_reference->close();
-	}
+    if (!values) return Acad::eInvalidInput;
+    for (int i = 0; i < points.length(); ++i)
+        if (!values[i] || !std::isfinite(points[i].x) || !std::isfinite(points[i].y) || !std::isfinite(points[i].z))
+            return Acad::eInvalidInput;
+    for (int i = 0; i < points.length(); ++i)
+    {
+        if (!values[i]) return Acad::eInvalidInput;
+        AcDbObjectId id;
+        Acad::ErrorStatus status = InsertVerticalAxis(points[i], id);
+        if (status != Acad::eOk) return status;
+        AcDbBlockReference* raw = nullptr;
+        status = acdbOpenObject(raw, id, AcDb::kForWrite);
+        if (status != Acad::eOk) return status;
+        Pola::OpenedObject<AcDbBlockReference> reference(raw);
+        status = SetAttribute(reference.get(), _T("ID"), values[i]);
+        if (status != Acad::eOk) EraseAxis(reference.get());
+        status = Pola::Close(reference, status);
+        if (status != Acad::eOk) return status;
+    }
+    return Acad::eOk;
 }
-
-void Grid::DrawHorizonAxis(const AcGePoint3dArray& insert_point, const TCHAR* insert_att[])
+Acad::ErrorStatus Grid::DrawHorizonAxis(const AcGePoint3dArray& points, const TCHAR* values[])
 {
-	for (int i = 0; i < insert_point.length(); i++)
-	{
-		AcDbBlockReference* temp_reference = nullptr;
-		AcDbObjectId grid_id = Grid::InsertHorizonAxis(insert_point[i]);
-		acdbOpenObject(temp_reference, grid_id, OpenMode::kForWrite);
-		Grid::SetAttribute(temp_reference, _T("ID"), insert_att[i]);
-		temp_reference->close();
-	}
+    if (!values) return Acad::eInvalidInput;
+    for (int i = 0; i < points.length(); ++i)
+        if (!values[i] || !std::isfinite(points[i].x) || !std::isfinite(points[i].y) || !std::isfinite(points[i].z))
+            return Acad::eInvalidInput;
+    for (int i = 0; i < points.length(); ++i)
+    {
+        if (!values[i]) return Acad::eInvalidInput;
+        AcDbObjectId id;
+        Acad::ErrorStatus status = InsertHorizonAxis(points[i], id);
+        if (status != Acad::eOk) return status;
+        AcDbBlockReference* raw = nullptr;
+        status = acdbOpenObject(raw, id, AcDb::kForWrite);
+        if (status != Acad::eOk) return status;
+        Pola::OpenedObject<AcDbBlockReference> reference(raw);
+        status = SetAttribute(reference.get(), _T("ID"), values[i]);
+        if (status != Acad::eOk) EraseAxis(reference.get());
+        status = Pola::Close(reference, status);
+        if (status != Acad::eOk) return status;
+    }
+    return Acad::eOk;
 }

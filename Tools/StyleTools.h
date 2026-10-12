@@ -1,9 +1,23 @@
 #pragma once
-#include "StdAfx.h"
+#include "dbxHeaders.h"
+#include "ToolsDef.h"
+#include <tchar.h>
 
 class POLADLL_TOOLS_API StyleTools
 {
 public:
+    static Acad::ErrorStatus GetTextStyleId(const TCHAR* name, AcDbObjectId& id);
+    static Acad::ErrorStatus GetDimensionStyleId(const TCHAR* name, AcDbObjectId& id);
+    static Acad::ErrorStatus GetLayerId(const TCHAR* name, AcDbObjectId& id);
+    static Acad::ErrorStatus GetLineStyleId(const TCHAR* name, AcDbObjectId& id);
+    static Acad::ErrorStatus GetMLeaderStyleId(const TCHAR* name, AcDbObjectId& id);
+    static Acad::ErrorStatus CreateTextStyle(const TCHAR* name, const TCHAR* big_font, const TCHAR* font, const double& scale, AcDbObjectId& id);
+    static Acad::ErrorStatus CreateLayerStyle(const TCHAR* name, const int& color, const TCHAR* type, AcDbObjectId& id);
+	static Acad::ErrorStatus InitTextStyle(AcDbObjectId& id);
+    static Acad::ErrorStatus InitDimStyle(AcDbObjectId& id);
+    static Acad::ErrorStatus InitMLeaderStyle(AcDbObjectId& id);
+    static Acad::ErrorStatus CreateDimensionStyle(const TCHAR* name, AcDbObjectId& id);
+    static Acad::ErrorStatus LoadLineType(const TCHAR* name, const TCHAR* file, AcDbObjectId& id);
 	static AcDbObjectId InitTextStyle();
 	static AcDbObjectId InitDimStyle();
 	static AcDbObjectId InitMLeaderStyle();

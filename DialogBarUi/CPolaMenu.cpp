@@ -6,6 +6,7 @@ void AnalyzeData(CStringArray& saDatas, CString csString, CString csDivideStr)
 	saDatas.RemoveAll();
 	//	csString.Remove(' ');
 	if (csString.GetLength() == 0) return;
+	if (csDivideStr.IsEmpty()) { saDatas.Add(csString); return; }
 
 	int nPos = 0, nLastPos = 0;
 	while ((nPos = csString.Find(csDivideStr, nLastPos)) != -1)
@@ -30,7 +31,10 @@ CPolaMenu::~CPolaMenu()
 void CPolaMenu::Set(CStringArray& saMenu, int& nID)
 {
 	bool isNewMenu = false;
-	m_menu.CreateMenu();
+	if (m_menu.GetSafeHmenu() != nullptr) m_menu.DestroyMenu();
+	m_saCommand.RemoveAll();
+	m_saID.removeAll();
+	if (!m_menu.CreateMenu()) return;
 	while (saMenu.GetSize() > 0)
 	{
 		CString csStr = saMenu[0];
@@ -50,15 +54,15 @@ void CPolaMenu::Set(CStringArray& saMenu, int& nID)
 			csStr.Replace(_T("["), _T(""));
 			csStr.Replace(_T("]"), _T(""));
 			CMenu subMenu;
-			if (CreatePOP(saMenu, nID, subMenu))
-				m_menu.AppendMenu(MF_POPUP, (UINT)subMenu.m_hMenu, csStr);
+			if (CreatePOP(saMenu, nID, subMenu) && m_menu.AppendMenu(MF_POPUP, reinterpret_cast<UINT_PTR>(subMenu.GetSafeHmenu()), csStr))
+				subMenu.Detach(); // The parent menu now owns this native submenu.
 		}
 	}
 }
 
 bool CPolaMenu::CreatePOP(CStringArray& saMenu, int& nID, CMenu& subMenu)
 {
-	subMenu.CreatePopupMenu();
+	if (!subMenu.CreatePopupMenu()) return false;
 	while (saMenu.GetSize() > 0)
 	{
 		CString csStr = saMenu[0];
@@ -86,8 +90,8 @@ bool CPolaMenu::CreatePOP(CStringArray& saMenu, int& nID, CMenu& subMenu)
 			csStr.Replace(_T("[->"), _T(""));
 			csStr.Replace(_T("]"), _T(""));
 			CMenu subMenu2;
-			if (CreateSUB(saMenu, nID, subMenu2))
-				subMenu.AppendMenu(MF_POPUP, (UINT)subMenu2.m_hMenu, csStr);
+			if (CreateSUB(saMenu, nID, subMenu2) && subMenu.AppendMenu(MF_POPUP, reinterpret_cast<UINT_PTR>(subMenu2.GetSafeHmenu()), csStr))
+				subMenu2.Detach();
 		}
 		else
 		{
@@ -112,7 +116,7 @@ bool CPolaMenu::CreatePOP(CStringArray& saMenu, int& nID, CMenu& subMenu)
 
 bool CPolaMenu::CreateSUB(CStringArray& saMenu, int& nID, CMenu& subMenu)
 {
-	subMenu.CreatePopupMenu();
+	if (!subMenu.CreatePopupMenu()) return false;
 	while (saMenu.GetSize() > 0)
 	{
 		CString csStr = saMenu[0];
@@ -149,8 +153,8 @@ bool CPolaMenu::CreateSUB(CStringArray& saMenu, int& nID, CMenu& subMenu)
 			csStr.Replace(_T("[->"), _T(""));
 			csStr.Replace(_T("]"), _T(""));
 			CMenu subMenu2;
-			if (CreateSUB(saMenu, nID, subMenu2))
-				subMenu.AppendMenu(MF_POPUP, (UINT)subMenu2.m_hMenu, csStr);
+			if (CreateSUB(saMenu, nID, subMenu2) && subMenu.AppendMenu(MF_POPUP, reinterpret_cast<UINT_PTR>(subMenu2.GetSafeHmenu()), csStr))
+				subMenu2.Detach();
 		}
 		else
 		{
@@ -173,22 +177,29 @@ bool CPolaMenu::CreateSUB(CStringArray& saMenu, int& nID, CMenu& subMenu)
 
 bool CPolaMenu::ReadMenuConfigFromFile(const CString& filePath, CStringArray& saMenu)
 {
+	saMenu.RemoveAll();
 	CStdioFile file;
 	CFileException ex;
 
 	if (!file.Open(filePath, CFile::modeRead | CFile::typeText, &ex))
 		return false;
 
-	saMenu.RemoveAll();
-
-	CString csLine;
-
-	while (file.ReadString(csLine))
+	CStringArray loaded;
+	try
 	{
-		csLine.Trim();
-		if (!csLine.IsEmpty())
-			saMenu.Add(csLine);
+		CString csLine;
+		while (file.ReadString(csLine))
+		{
+			csLine.Trim();
+			if (!csLine.IsEmpty()) loaded.Add(csLine);
+		}
+		file.Close();
 	}
-	file.Close();
+	catch (CFileException* error)
+	{
+		error->Delete();
+		return false;
+	}
+	saMenu.Copy(loaded);
 	return true;
 }

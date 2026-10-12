@@ -4,86 +4,132 @@
 #include "DwgFileInfo.h"
 #include <fstream>
 #include <string>
+#include <cmath>
+#include <memory>
+#include "../Common/DbObjectOwner.h"
+#include "PillarDwgFields.h"
 
 bool PillarTools::detectPillar(const AcGePoint3d& point, AcDbObjectId& pillar_id, double& pillar_diameter)
 {
+	bool found = false;
+	const Acad::ErrorStatus status = DetectPillar(point, pillar_id, pillar_diameter, found);
+	if (status != Acad::eOk) acutPrintf(_T("\nPillar lookup failed: %d"), static_cast<int>(status));
+	return status == Acad::eOk && found;
+}
+
+Acad::ErrorStatus PillarTools::DetectPillar(const AcGePoint3d& point, AcDbObjectId& pillar_id, double& pillar_diameter, bool& found)
+{
+	pillar_id = AcDbObjectId::kNull;
+	pillar_diameter = 0.0;
+	found = false;
+	if (!std::isfinite(point.x) || !std::isfinite(point.y) || !std::isfinite(point.z)) return Acad::eInvalidInput;
 	AcDbObjectIdArray all_pillar_ids;
-	SelectEntitys::GetAllEntitysByType(CPolaCustomPillar::desc(), all_pillar_ids);
+	Acad::ErrorStatus status = GetAllPillarChecked(all_pillar_ids);
+	if (status != Acad::eOk) return status;
 	AcDbExtents extents;
-	for (const auto& pillar : all_pillar_ids)
+	for (const auto& id : all_pillar_ids)
 	{
-		AcDbEntity* entity = nullptr;
-		Acad::ErrorStatus error_status = acdbOpenObject(entity, pillar, OpenMode::kForRead);
-		if (error_status != Acad::eOk)
-			return false;
-		CPolaCustomPillar* pillar = CPolaCustomPillar::cast(entity);
-		pillar->getGeomExtents(extents);
+		CPolaCustomPillar* raw = nullptr;
+		status = acdbOpenObject(raw, id, AcDb::kForRead);
+		if (status != Acad::eOk) return status;
+		Pola::OpenedObject<CPolaCustomPillar> pillar(raw);
+		status = pillar->getGeomExtents(extents);
+		if (status != Acad::eOk) return Pola::Close(pillar, status);
 		if (BasicTools::IsPointInRectangle(point, extents))
 		{
-			pillar_id = entity->objectId();
 			double temp_d, temp_h;
 			pillar->getDiameter(temp_d, temp_h);
+			status = Pola::Close(pillar);
+			if (status != Acad::eOk) return status;
+			pillar_id = id;
 			pillar_diameter = temp_d;
-			pillar->close();
-			return true;
+			found = true;
+			return Acad::eOk;
 		}
-		entity->close();
+		status = Pola::Close(pillar);
+		if (status != Acad::eOk) return status;
 	}
 	pillar_id = AcDbObjectId::kNull;
 	pillar_diameter = 0;
-	return false;
+	return Acad::eOk;
 }
 
 bool PillarTools::detectRoundPillar(const AcGePoint3d& point, AcDbObjectId& pillar_id, double& pillar_diameter)
 {
+	bool found = false;
+	const Acad::ErrorStatus status = DetectRoundPillar(point, pillar_id, pillar_diameter, found);
+	if (status != Acad::eOk) acutPrintf(_T("\nRound pillar lookup failed: %d"), static_cast<int>(status));
+	return status == Acad::eOk && found;
+}
+
+Acad::ErrorStatus PillarTools::DetectRoundPillar(const AcGePoint3d& point, AcDbObjectId& pillar_id, double& pillar_diameter, bool& found)
+{
+	pillar_id = AcDbObjectId::kNull;
+	pillar_diameter = 0.0;
+	found = false;
 	AcDbObjectId pillar;
-	double diameter;
-	double height = 0;
-	if (detectPillar(point, pillar, diameter))
+	double diameter = 0.0;
+	bool detected = false;
+	Acad::ErrorStatus status = DetectPillar(point, pillar, diameter, detected);
+	if (status != Acad::eOk) return status;
+	if (detected)
 	{
-		AcDbEntity* entity = nullptr;
-		Acad::ErrorStatus error_status = acdbOpenObject(entity, pillar, OpenMode::kForRead);
-		if (error_status != Acad::eOk)
-			return false;
-		CPolaCustomPillar* pillar_entity = CPolaCustomPillar::cast(entity);
-		if (pillar_entity->getPillarType() == 0)
+		CPolaCustomPillar* raw = nullptr;
+		status = acdbOpenObject(raw, pillar, AcDb::kForRead);
+		if (status != Acad::eOk) return status;
+		Pola::OpenedObject<CPolaCustomPillar> opened(raw);
+		const bool round = opened->getPillarType() == 0;
+		status = Pola::Close(opened);
+		if (status != Acad::eOk) return status;
+		if (round)
 		{
-			pillar_entity->close();
-			pillar_id = pillar_entity->objectId();
+			pillar_id = pillar;
 			pillar_diameter = diameter;
-			return true;
+			found = true;
 		}
-		pillar_entity->close();
 	}
-	return false;
+	return Acad::eOk;
 }
 
 bool PillarTools::GetAllPillar(AcDbObjectIdArray& all_pillar_ids)
 {
-	return SelectEntitys::GetAllEntitysByType(CPolaCustomPillar::desc(), all_pillar_ids);
+	const Acad::ErrorStatus status = GetAllPillarChecked(all_pillar_ids);
+	if (status != Acad::eOk) acutPrintf(_T("\nPillar enumeration failed: %d"), static_cast<int>(status));
+	return status == Acad::eOk && !all_pillar_ids.isEmpty();
+}
+
+Acad::ErrorStatus PillarTools::GetAllPillarChecked(AcDbObjectIdArray& all_pillar_ids)
+{
+	return SelectEntitys::GetAllEntitysByTypeChecked(CPolaCustomPillar::desc(), all_pillar_ids);
 }
 
 bool PillarTools::SaveAllPillarInfoToFile(const std::wstring& filePath)
 {
+	const Acad::ErrorStatus status = SaveAllPillarInfoToFileChecked(filePath);
+	if (status != Acad::eOk) acutPrintf(_T("\nPillar export failed: %d"), static_cast<int>(status));
+	return status == Acad::eOk;
+}
+
+Acad::ErrorStatus PillarTools::SaveAllPillarInfoToFileChecked(const std::wstring& filePath)
+{
+	AcDbObjectIdArray all_pillar_id;
+	Acad::ErrorStatus status = GetAllPillarChecked(all_pillar_id);
+	if (status != Acad::eOk) return status;
 	std::ofstream outFile(filePath, std::ios::out | std::ios::binary | std::ios::trunc);
 	if (!outFile.is_open())
-		return false;
-
-	AcDbObjectIdArray all_pillar_id;
-	GetAllPillar(all_pillar_id);
+		return Acad::eFileAccessErr;
 
 	// Write the number of pillars
 	Adesk::Int32 pillarCount = all_pillar_id.length();
 	outFile.write(reinterpret_cast<const char*>(&pillarCount), sizeof(Adesk::Int32));
 
-	AcDbObjectPointer<CPolaCustomPillar> pillar;
 	for (const auto& id : all_pillar_id)
 	{
-		if (pillar.open(id, AcDb::kForRead) != Acad::eOk)
-		{
-			outFile.close();
-			return false; // Failed to open pillar
-		}
+		CPolaCustomPillar* raw = nullptr;
+		status = acdbOpenObject(raw, id, AcDb::kForRead);
+		if (status != Acad::eOk) return status;
+		Pola::OpenedObject<CPolaCustomPillar> pillar(raw);
+		if (!CPolaCustomPillar::checkValue(pillar.get())) return Pola::Close(pillar, Acad::eInvalidInput);
 
 		AcGePoint3d center_point = pillar->getCenterPoint();
 		AcGeVector3d direction_vector = pillar->getDirectionVector();
@@ -91,10 +137,25 @@ bool PillarTools::SaveAllPillarInfoToFile(const std::wstring& filePath)
 		pillar->getDiameter(pillar_d, pillar_h);
 		bool viewable = pillar->getViewable();
 		Adesk::Int32 pillar_property = pillar->getPillarProperty();
-		TCHAR* pillar_serial_number = pillar->getPillarSn();
+		const TCHAR* pillar_serial_number = pillar->getPillarSn();
 		Adesk::Int32 pillar_type = pillar->getPillarType();
 		AcGePoint3dArray rect_pillar_vertex = pillar->getRectVertex();
+		if ((pillar_type == 0 && !rect_pillar_vertex.isEmpty()) || (pillar_type == 1 && rect_pillar_vertex.length() != 4))
+			return Pola::Close(pillar, Acad::eInvalidInput);
 		Adesk::Int32 concrete_grade = pillar->getConcreteGrade();
+		Pola::PillarDwgFields fields;
+		fields.type = pillar_type;
+		fields.center = center_point;
+		fields.direction = direction_vector;
+		fields.diameter = pillar_d;
+		fields.height = pillar_h;
+		fields.visible = viewable;
+		fields.property = pillar_property;
+		fields.serial = pillar_serial_number;
+		fields.vertices = rect_pillar_vertex;
+		fields.grade = concrete_grade;
+		status = Pola::ValidatePillarFields(fields);
+		if (status != Acad::eOk) return Pola::Close(pillar, status);
 
 		// Write center_point_
 		outFile.write(reinterpret_cast<const char*>(&center_point.x), sizeof(double));
@@ -141,132 +202,52 @@ bool PillarTools::SaveAllPillarInfoToFile(const std::wstring& filePath)
 		// Check file state
 		if (!outFile.good())
 		{
-			outFile.close();
-			return false;
+			return Pola::Close(pillar, Acad::eFileAccessErr);
 		}
-		pillar.close(); // Explicitly close the pillar object
+		status = Pola::Close(pillar);
+		if (status != Acad::eOk) return status;
 	}
 
 	outFile.close();
-	return true;
+	return outFile.fail() ? Acad::eFileAccessErr : Acad::eOk;
 }
 
-// if return false dnt forget [delete pillar_t]!!
+// The caller owns pillar_t on both success and failure.
 
-bool PillarTools::LoadPillarInfoFromFileBySn(const std::wstring& filePath, TCHAR* sn, CPolaCustomPillar* pillar_t)
+bool PillarTools::LoadPillarInfoFromFileBySn(const std::wstring& filePath, const TCHAR* sn, CPolaCustomPillar* pillar_t)
 {
-	bool result = false;
-
-	std::ifstream inFile(filePath, std::ios::in | std::ios::binary);
-	if (!inFile.is_open())
-		return false;
-
-	// Read pillar count
-	Adesk::Int32 pillar_count = 0;
-	inFile.read(reinterpret_cast<char*>(&pillar_count), sizeof(Adesk::Int32));
-	if (!inFile.good() || pillar_count <= 0)
-	{
-		inFile.close();
-		return false;
-	}
-
-	for (Adesk::Int32 i = 0; i < pillar_count; ++i)
-	{
-		// Read center point
-		AcGePoint3d center_point;
-		inFile.read(reinterpret_cast<char*>(&center_point.x), sizeof(double));
-		inFile.read(reinterpret_cast<char*>(&center_point.y), sizeof(double));
-		inFile.read(reinterpret_cast<char*>(&center_point.z), sizeof(double));
-
-		// Read direction vector
-		AcGeVector3d direction_vector;
-		inFile.read(reinterpret_cast<char*>(&direction_vector.x), sizeof(double));
-		inFile.read(reinterpret_cast<char*>(&direction_vector.y), sizeof(double));
-		inFile.read(reinterpret_cast<char*>(&direction_vector.z), sizeof(double));
-
-		// Read pillar dimensions
-		double pillar_d = 0.0, pillar_h = 0.0;
-		inFile.read(reinterpret_cast<char*>(&pillar_d), sizeof(double));
-		inFile.read(reinterpret_cast<char*>(&pillar_h), sizeof(double));
-
-		// Read viewable status
-		bool viewable = false;
-		inFile.read(reinterpret_cast<char*>(&viewable), sizeof(bool));
-
-		// Read pillar property
-		Adesk::Int32 pillar_property = 0;
-		inFile.read(reinterpret_cast<char*>(&pillar_property), sizeof(Adesk::Int32));
-
-		// Read serial number
-		size_t serialLen = 0;
-		inFile.read(reinterpret_cast<char*>(&serialLen), sizeof(size_t));
-		std::wstring pillar_serial_number;
-		if (serialLen > 0)
-		{
-			std::vector<wchar_t> buffer(serialLen);
-			inFile.read(reinterpret_cast<char*>(buffer.data()), serialLen * sizeof(wchar_t));
-			pillar_serial_number.assign(buffer.data(), serialLen);
-		}
-
-		// Read pillar type
-		Adesk::Int32 pillar_type = 0;
-		inFile.read(reinterpret_cast<char*>(&pillar_type), sizeof(Adesk::Int32));
-
-		// Read rectangle vertices
-		Adesk::Int32 vertexCount = 0;
-		inFile.read(reinterpret_cast<char*>(&vertexCount), sizeof(Adesk::Int32));
-		AcGePoint3dArray rect_pillar_vertex;
-		for (int j = 0; j < vertexCount; ++j)
-		{
-			AcGePoint3d vertex;
-			inFile.read(reinterpret_cast<char*>(&vertex.x), sizeof(double));
-			inFile.read(reinterpret_cast<char*>(&vertex.y), sizeof(double));
-			inFile.read(reinterpret_cast<char*>(&vertex.z), sizeof(double));
-			rect_pillar_vertex.append(vertex);
-		}
-
-		// Read concrete grade
-		Adesk::Int32 concrete_grade = 0;
-		inFile.read(reinterpret_cast<char*>(&concrete_grade), sizeof(Adesk::Int32));
-
-		// Validate stream state
-		if (!inFile.good())
-		{
-			inFile.close();
-			return false;
-		}
-
-		if (pillar_serial_number.compare(sn) == 0)
-		{
-			pillar_t->setSn(pillar_serial_number.c_str());
-			pillar_t->setConcreteGrade(concrete_grade);
-			pillar_t->setDiameter(pillar_d, pillar_h);
-			pillar_t->setViewable(viewable);
-			pillar_t->setPillarType(pillar_type);
-			pillar_t->setPillarProperty(pillar_property);
-			pillar_t->setCenterPoint(center_point);
-			pillar_t->CalculateVertex();
-			result = true;
-			break;
-		}
-	}
-	inFile.close();
-	return result;
+	bool found = false;
+	const Acad::ErrorStatus status = LoadPillarInfoFromFileBySnChecked(filePath, sn, pillar_t, found);
+	if (status != Acad::eOk) acutPrintf(_T("\nPillar import failed: %d"), static_cast<int>(status));
+	return status == Acad::eOk && found;
 }
 
-bool PillarTools::IsPillarInfoInFile(const std::wstring& filePath, TCHAR* sn)
+Acad::ErrorStatus PillarTools::LoadPillarInfoFromFileBySnChecked(const std::wstring& filePath, const TCHAR* sn, CPolaCustomPillar* pillar_t, bool& found)
 {
-	CPolaCustomPillar* pillar = new CPolaCustomPillar;
-	if (LoadPillarInfoFromFileBySn(filePath, sn, pillar))
-	{
-		delete pillar;
-		return true;
-	}
-	else
-	{
-		delete pillar;
-		return false;
-	}
+	found = false;
+	if (!pillar_t || !sn) return Acad::eInvalidInput;
+	std::ifstream stream(filePath, std::ios::in | std::ios::binary);
+	if (!stream.is_open()) return Acad::eFileAccessErr;
+	Pola::PillarDwgFields fields;
+	const Acad::ErrorStatus status = Pola::ReadPillarBinaryBySerial(stream, sn, fields, found);
+	if (status != Acad::eOk || !found) return status;
+	pillar_t->assertWriteEnabled();
+	pillar_t->center_point_ = fields.center;
+	pillar_t->direction_vector_ = fields.direction;
+	pillar_t->pillar_d_ = fields.diameter;
+	pillar_t->pillar_h_ = fields.height;
+	pillar_t->viewable_ = fields.visible;
+	pillar_t->pillar_type_ = fields.type;
+	pillar_t->pillar_property_ = fields.property;
+	pillar_t->pillar_serial_number_.swap(fields.serial);
+	pillar_t->concrete_grade_ = fields.grade;
+	pillar_t->rect_pillar_vertex_ = fields.vertices;
+	return Acad::eOk;
+}
+bool PillarTools::IsPillarInfoInFile(const std::wstring& filePath, const TCHAR* sn)
+{
+	CPolaCustomPillar pillar;
+	return LoadPillarInfoFromFileBySn(filePath, sn, &pillar);
 }
 
 bool PillarTools::GetPillarBinPath(CString& binPath)
@@ -280,4 +261,3 @@ bool PillarTools::GetPillarBinPath(CString& binPath)
 		return false;
 	return true;
 }
-

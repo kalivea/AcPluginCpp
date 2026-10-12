@@ -1,19 +1,19 @@
-// (C) Copyright 2002-2007 by Autodesk, Inc. 
+ï»¿// (C) Copyright 2002-2007 by Autodesk, Inc.
 //
 // Permission to use, copy, modify, and distribute this software in
-// object code form for any purpose and without fee is hereby granted, 
-// provided that the above copyright notice appears in all copies and 
+// object code form for any purpose and without fee is hereby granted,
+// provided that the above copyright notice appears in all copies and
 // that both that copyright notice and the limited warranty and
-// restricted rights notice below appear in all supporting 
+// restricted rights notice below appear in all supporting
 // documentation.
 //
-// AUTODESK PROVIDES THIS PROGRAM "AS IS" AND WITH ALL FAULTS. 
+// AUTODESK PROVIDES THIS PROGRAM "AS IS" AND WITH ALL FAULTS.
 // AUTODESK SPECIFICALLY DISCLAIMS ANY IMPLIED WARRANTY OF
-// MERCHANTABILITY OR FITNESS FOR A PARTICULAR USE.  AUTODESK, INC. 
+// MERCHANTABILITY OR FITNESS FOR A PARTICULAR USE.  AUTODESK, INC.
 // DOES NOT WARRANT THAT THE OPERATION OF THE PROGRAM WILL BE
 // UNINTERRUPTED OR ERROR FREE.
 //
-// Use, duplication, or disclosure by the U.S. Government is subject to 
+// Use, duplication, or disclosure by the U.S. Government is subject to
 // restrictions set forth in FAR 52.227-19 (Commercial Computer
 // Software - Restricted Rights) and DFAR 252.227-7013(c)(1)(ii)
 // (Rights in Technical Data and Computer Software), as applicable.
@@ -25,7 +25,21 @@
 #include "StdAfx.h"
 #include "resource.h"
 #include "PolaPaletteChild.h"
-#include "DrawEntity.h"
+#include "../Common/DrawEntity.h"
+namespace
+{
+struct DocumentLockCleanup
+{
+	AcApDocument* document;
+	~DocumentLockCleanup() { if (document != nullptr) acDocManager->unlockDocument(document); }
+	Acad::ErrorStatus close()
+	{
+		AcApDocument* locked = document;
+		document = nullptr;
+		return acDocManager->unlockDocument(locked);
+	}
+};
+}
 //-----------------------------------------------------------------------------
 IMPLEMENT_DYNAMIC (CPolaPaletteChild, CAdUiBaseDialog)
 
@@ -53,17 +67,27 @@ LRESULT CPolaPaletteChild::OnAcadKeepFocus (WPARAM, LPARAM) {
 
 void CPolaPaletteChild::OnBnClickedPrintHello()
 {
-	acDocManager->lockDocument(acDocManager->curDocument());
-	// TODO: ÔÚ´ËÌí¼Ó¿Ø¼şÍ¨Öª´¦Àí³ÌĞò´úÂë
-	DrawEntity::DrawCircle(AcGePoint3d(0, 0, 0), 100);
-	acDocManager->unlockDocument(acDocManager->curDocument());
+	AcApDocument* document = acDocManager->curDocument();
+	if (document == nullptr) return;
+	Acad::ErrorStatus status = acDocManager->lockDocument(document);
+	if (status != Acad::eOk)
+	{
+		acutPrintf(_T("\nFailed to lock document: %d"), static_cast<int>(status));
+		return;
+	}
+	DocumentLockCleanup lock{ document };
+	AcDbObjectId id;
+	status = DrawEntity::DrawCircle(AcGePoint3d(0, 0, 0), 100, id);
+	const Acad::ErrorStatus cleanup = lock.close();
+	if (status == Acad::eOk) status = cleanup;
+	if (status != Acad::eOk) acutPrintf(_T("\nPalette drawing failed: %d"), static_cast<int>(status));
 }
 
 void CPolaPaletteChild::OnPaint()
 {
 	CPaintDC dc(this); // device context for painting
-	// TODO: ÔÚ´Ë´¦Ìí¼ÓÏûÏ¢´¦Àí³ÌĞò´úÂë
-	// ²»Îª»æÍ¼ÏûÏ¢µ÷ÓÃ CAdUiBaseDialog::OnPaint()
+	// TODO: åœ¨æ­¤å¤„æ·»åŠ æ¶ˆæ¯å¤„ç†ç¨‹åºä»£ç 
+	// ä¸ä¸ºç»˜å›¾æ¶ˆæ¯è°ƒç”¨ CAdUiBaseDialog::OnPaint()
 	CRect rect;
 	GetClientRect(rect);
 	dc.FillSolidRect(rect, RGB(59, 68, 83));		// cad dark mode background color

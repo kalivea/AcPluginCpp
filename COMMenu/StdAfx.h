@@ -82,7 +82,7 @@
     extern AcApDataManager<CDocData> DocVars;
 
             //-----------------------------------------------------------------------------
-#import "acax24enu.tlb" raw_interfaces_only no_namespace
+#import "acax24enu.tlb" raw_interfaces_only no_namespace rename("GetObject", "AcadGetObject")
 
         #pragma pack(pop)
 

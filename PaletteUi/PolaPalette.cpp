@@ -28,7 +28,7 @@
 
 //-----------------------------------------------------------------------------
 //- Import the MSXML functionality
-#import "msxml6.dll" named_guids
+#import "msxml6.dll" named_guids exclude("ISequentialStream", "_FILETIME")
 #define MSXML MSXML2
 //using namespace MSXML ;
 

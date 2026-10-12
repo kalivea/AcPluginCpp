@@ -71,8 +71,8 @@
       <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PolaTools.lib;PolaInteractiveTools.lib;PolaCustomPillar.lib;PolaCommon.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Link>
-      <AdditionalLibraryDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)CustomPillar\x64\Release;$(SolutionDir)InteractiveTools\x64\Release;$(SolutionDir)Tools\x64\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PolaCustomPillar.lib;PolaInteractiveTools.lib;PolaTools.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)CustomPillar\x64\Release;$(SolutionDir)InteractiveTools\x64\Release;$(SolutionDir)Tools\x64\Release;$(SolutionDir)Common\x64\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PolaCustomPillar.lib;PolaInteractiveTools.lib;PolaTools.lib;PolaCommon.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Bscmake>
       <PreserveSbr Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</PreserveSbr>

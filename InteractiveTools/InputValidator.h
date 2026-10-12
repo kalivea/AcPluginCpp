@@ -1,13 +1,15 @@
 #pragma once
-#include "StdAfx.h"
+#include <afxwin.h>
+#include "InteractiveDef.h"
 #include <type_traits>
 #include <string>
 #include <limits>
 #include <stdexcept>
 #include <vector>
 #include <algorithm>
+#include <cmath>
 
-class POLADLL_INTERACTIVE_API RebarDiameter
+class RebarDiameter
 {
 public:
 	using ValueType = int;
@@ -33,7 +35,7 @@ inline bool RebarDiameter::IsValidDiameter(ValueType diameter)
 }
 
 template <typename T>
-class POLADLL_INTERACTIVE_API InputValidator
+class InputValidator
 {
 public:
 	static bool Validate(CEdit& editControl, T& targetVariable, const CString& fieldName,
@@ -92,7 +94,7 @@ inline bool InputValidator<T>::Validate(CEdit& editControl, T& targetVariable, c
 			errno = 0;
 			double value = wcstod(temp, &end_ptr);
 
-			if (errno == ERANGE || end_ptr == temp || *end_ptr != L'\0')
+			if (errno == ERANGE || end_ptr == temp || *end_ptr != L'\0' || !std::isfinite(value) || value > (std::numeric_limits<T>::max)() || value < (std::numeric_limits<T>::lowest)())
 			{
 				throw std::invalid_argument("Invalid floating point number");
 			}

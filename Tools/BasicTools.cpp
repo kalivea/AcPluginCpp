@@ -2,6 +2,9 @@
 #include "BasicTools.h"
 #include "StyleTools.h"
 #include <cmath>
+#include <limits>
+#include <new>
+#include "../Common/DbObjectOwner.h"
 
 /// <summary>
 /// Converts the angle to the target angle type.
@@ -16,7 +19,7 @@ double BasicTools::ConvertAngle(const double& angle, const int& target_angle_typ
 	else if (target_angle_type == 0)
 		return angle * (180.0 / M_PI);
 	else
-		throw;
+		return std::numeric_limits<double>::quiet_NaN();
 }
 /// <summary>
 /// Calculate the midpoint coordinates by passing in the coordinates of the start point and end point.
@@ -73,7 +76,7 @@ double BasicTools::GetAngleToXaxis(const AcGePoint3d& start_point, const AcGePoi
 	else if (target_angle_type == 1)
 		return angle;
 	else
-		throw;
+		return std::numeric_limits<double>::quiet_NaN();
 }
 /// <summary>
 /// Calculate the angle between the vector and the x-axis.
@@ -91,7 +94,7 @@ double BasicTools::GetAngleToXaxis(const AcGeVector3d& vector, const int& target
 	else if (target_angle_type == 1)
 		return angle;
 	else
-		throw;
+		return std::numeric_limits<double>::quiet_NaN();
 }
 /// <summary>
 /// Calculate the distance between the two points.
@@ -122,7 +125,7 @@ double BasicTools::GetAngleByThreePoint(const AcGePoint3d& start_point1, const A
 	else if (target_angle_type == 1)
 		return angle;
 	else
-		throw;
+		return std::numeric_limits<double>::quiet_NaN();
 }
 /// <summary>
 /// Convert ads_point type to AcGePoint3d.
@@ -184,7 +187,7 @@ bool BasicTools::CanDrawRect(const AcGePoint3d& vertex_point1, const AcGePoint3d
 		return false;
 }
 /// <summary>
-/// Get the maximum of two numbers. 
+/// Get the maximum of two numbers.
 /// </summary>
 /// <param name="num1"></param>
 /// <param name="num2"></param>
@@ -227,77 +230,90 @@ AcGePoint3d BasicTools::OffsetMidPoint(const AcGePoint3d& start_point, const AcG
 	return BasicTools::GetMidPoint(offseted_start_point, offseted_end_point);
 }
 
-bool BasicTools::OffsetPolyLine(const AcDbPolyline& center_line, const double& distance, AcGePoint3dArray& offset_vertex_array)
+// TOOLS_OFFSET_TEST_BEGIN
+namespace {
+struct OffsetCurveCleanup {
+    AcDbVoidPtrArray& curves;
+    ~OffsetCurveCleanup() {
+        for (int i = 0; i < curves.length(); ++i) {
+            // The SDK outputs transient entities; a cast remains a borrowed alias.
+            delete static_cast<AcDbEntity*>(curves[i]);
+        }
+    }
+};
+bool ToolsFinitePoint(const AcGePoint3d& point) {
+    return std::isfinite(point.x) && std::isfinite(point.y) && std::isfinite(point.z);
+}
+bool ToolsValidLineEndpoints(const AcGePoint3d& start, const AcGePoint3d& end) {
+    return ToolsFinitePoint(start) && ToolsFinitePoint(end) && !start.isEqualTo(end) &&
+        std::isfinite(end.x - start.x) && std::isfinite(end.y - start.y) && std::isfinite(end.z - start.z);
+}
+}
+Acad::ErrorStatus BasicTools::OffsetPolyLineChecked(const AcDbPolyline& center_line, const double& distance, AcGePoint3dArray& output)
 {
-	offset_vertex_array.removeAll();
-	AcDbVoidPtrArray offset_curves;
-
-	if (distance == 0.0 || center_line.numVerts() < 2)
-		return false;
-
-	Acad::ErrorStatus error_status = center_line.getOffsetCurves(distance, offset_curves);
-	if (error_status != Acad::eOk)
-		return false;
-
-	std::vector<std::unique_ptr<AcDbEntity>> entities;
-	entities.reserve(offset_curves.length());
-
-	bool has_valid_offset = false;
-	const int curve_count = offset_curves.length();
-
-	for (int i = 0; i < curve_count; ++i)
-	{
-		auto* entity = static_cast<AcDbEntity*>(offset_curves[i]);
-		if (!entity || !entity->isKindOf(AcDbPolyline::desc()))
-		{
-			delete entity;
-			continue;
-		}
-
-		auto offset_polyline = std::unique_ptr<AcDbPolyline>(AcDbPolyline::cast(entity));
-		if (!offset_polyline)
-			continue;
-
-		const bool is_closed = offset_polyline->isClosed();
-		const int vertex_count = offset_polyline->numVerts();
-		AcGePoint3dArray temp_array;
-		temp_array.setLogicalLength(vertex_count + (is_closed ? 1 : 0));
-
-		int valid_points = 0;
-		for (int j = 0; j < vertex_count; ++j)
-		{
-			AcGePoint2d point;
-			if (offset_polyline->getPointAt(j, point) == Acad::eOk)
-				temp_array[valid_points++] = Point2dToPoint3d(point);
-		}
-		temp_array.setLogicalLength(valid_points);
-
-		if (is_closed && valid_points > 1)
-		{
-			const AcGePoint3d& first = temp_array[0];
-			const AcGePoint3d& last = temp_array[valid_points - 1];
-			if (!first.isEqualTo(last))
-				temp_array.append(first);
-		}
-
-		if (valid_points > 0)
-		{
-			offset_vertex_array.append(temp_array);
-			has_valid_offset = true;
-		}
-		entities.push_back(std::move(offset_polyline));
-	}
-	return has_valid_offset;
+    try {
+        output.removeAll();
+        if (!std::isfinite(distance) || distance == 0.0 || center_line.numVerts() < 2)
+            return Acad::eInvalidInput;
+        AcDbVoidPtrArray curves;
+        // This guard requires no allocation, and also covers partial SDK outputs
+        // and failures allocating the copied point array.
+        OffsetCurveCleanup cleanup{curves};
+        Acad::ErrorStatus status = center_line.getOffsetCurves(distance, curves);
+        if (status != Acad::eOk) return status;
+        // A flattened collection of disconnected curves cannot represent one beam.
+        if (curves.length() != 1) return Acad::eInvalidInput;
+        const AcDbPolyline* offset = AcDbPolyline::cast(static_cast<AcDbEntity*>(curves[0]));
+        if (!offset || offset->numVerts() < 2) return Acad::eInvalidInput;
+        AcGePoint3dArray points;
+        for (unsigned int i = 0; i < offset->numVerts(); ++i)
+        {
+            AcGePoint3d point;
+            status = offset->getPointAt(i, point);
+            if (status != Acad::eOk) return status;
+            if (!ToolsFinitePoint(point)) return Acad::eInvalidInput;
+            points.append(point);
+        }
+        if (offset->isClosed() && !points.first().isEqualTo(points.last()))
+            points.append(points.first());
+        output = points;
+        return Acad::eOk;
+    } catch (const std::bad_alloc&) {
+        output.removeAll();
+        return Acad::eOutOfMemory;
+    }
 }
 
-bool BasicTools::OffsetPolyLine(const AcGePoint3dArray& center_array, const double& distance, AcGePoint3dArray& offset_vertex_array)
+Acad::ErrorStatus BasicTools::OffsetPolyLineChecked(const AcGePoint3dArray& center, const double& distance, AcGePoint3dArray& output)
 {
-	AcDbPolyline* poly_line = new AcDbPolyline();
-	for (int i = 0;i < center_array.length();i++)
-	{
-		poly_line->addVertexAt(i, BasicTools::Point3dToPoint2d(center_array.at(i)));
-	}
-	return OffsetPolyLine(*poly_line, distance, offset_vertex_array);
+    try {
+        // Snapshot aliased input before clearing the required output parameter.
+        AcGePoint3dArray points = center;
+        output.removeAll();
+        if (!std::isfinite(distance) || distance == 0.0 || points.length() < 2) return Acad::eInvalidInput;
+        AcDbPolyline line;
+        for (int i = 0; i < points.length(); ++i)
+        {
+            if (!ToolsFinitePoint(points[i])) return Acad::eInvalidInput;
+            if (i > 0 && !ToolsValidLineEndpoints(points[i - 1], points[i])) return Acad::eInvalidInput;
+            Acad::ErrorStatus status = line.addVertexAt(i, Point3dToPoint2d(points[i]));
+            if (status != Acad::eOk) return status;
+        }
+        return OffsetPolyLineChecked(line, distance, output);
+    } catch (const std::bad_alloc&) {
+        output.removeAll();
+        return Acad::eOutOfMemory;
+    }
+}
+// TOOLS_OFFSET_TEST_END
+
+bool BasicTools::OffsetPolyLine(const AcDbPolyline& line, const double& distance, AcGePoint3dArray& output)
+{
+    return OffsetPolyLineChecked(line, distance, output) == Acad::eOk;
+}
+bool BasicTools::OffsetPolyLine(const AcGePoint3dArray& points, const double& distance, AcGePoint3dArray& output)
+{
+    return OffsetPolyLineChecked(points, distance, output) == Acad::eOk;
 }
 
 bool BasicTools::OffsetLineSegment(const AcGePoint3d& start_point, const AcGePoint3d& end_point, const double& distance, AcGePoint3d out_point[2])
@@ -308,7 +324,7 @@ bool BasicTools::OffsetLineSegment(const AcGePoint3d& start_point, const AcGePoi
 	temp_center_array.append(start_point);
 	temp_center_array.append(end_point);
 
-	if (OffsetPolyLine(temp_center_array, distance, temp_offset_array))
+	if (out_point && OffsetPolyLine(temp_center_array, distance, temp_offset_array) && temp_offset_array.length() == 2)
 	{
 		out_point[0] = temp_offset_array.at(0);
 		out_point[1] = temp_offset_array.at(1);
@@ -316,7 +332,7 @@ bool BasicTools::OffsetLineSegment(const AcGePoint3d& start_point, const AcGePoi
 	}
 	else
 	{
-		throw;
+		return false;
 	}
 	return false;
 }
@@ -333,22 +349,16 @@ bool BasicTools::IsLeftPoint(const AcGePoint3d& point1, const AcGePoint3d& point
 
 bool BasicTools::SortPointFromLeftToRight(const AcGePoint3dArray& source_point_array, AcGePoint3dArray& target_point_array)
 {
-	if (source_point_array.isEmpty())
-	{
-		return false;
-	}
-
-	std::vector<AcGePoint3d> temp_vector;
-	for (int i = 0;i < source_point_array.length();i++)
-	{
-		temp_vector.push_back(source_point_array.at(i));
-	}
-	std::sort(temp_vector.begin(), temp_vector.end(), &BasicTools::IsLeftPoint);
-	for (int i = 0;i < temp_vector.size();i++)
-	{
-		target_point_array.append(temp_vector.at(i));
-	}
-	return true;
+    std::vector<AcGePoint3d> points;
+    for (int i = 0; i < source_point_array.length(); ++i) {
+        if (!ToolsFinitePoint(source_point_array[i])) { target_point_array.removeAll(); return false; }
+        points.push_back(source_point_array[i]);
+    }
+    target_point_array.removeAll();
+    if (points.empty()) return false;
+    std::sort(points.begin(), points.end(), &BasicTools::IsLeftPoint);
+    for (const AcGePoint3d& point : points) target_point_array.append(point);
+    return true;
 }
 
 bool BasicTools::IsBottomPoint(const AcGePoint3d& point1, const AcGePoint3d& point2)
@@ -358,22 +368,16 @@ bool BasicTools::IsBottomPoint(const AcGePoint3d& point1, const AcGePoint3d& poi
 
 bool BasicTools::SortPointFromBottomToTop(const AcGePoint3dArray& source_point_array, AcGePoint3dArray& target_point_array)
 {
-	if (source_point_array.isEmpty())
-	{
-		return false;
-	}
-
-	std::vector<AcGePoint3d> temp_vector;
-	for (int i = 0;i < source_point_array.length();i++)
-	{
-		temp_vector.push_back(source_point_array.at(i));
-	}
-	std::sort(temp_vector.begin(), temp_vector.end(), &BasicTools::IsBottomPoint);
-	for (int i = 0;i < temp_vector.size();i++)
-	{
-		target_point_array.append(temp_vector.at(i));
-	}
-	return true;
+    std::vector<AcGePoint3d> points;
+    for (int i = 0; i < source_point_array.length(); ++i) {
+        if (!ToolsFinitePoint(source_point_array[i])) { target_point_array.removeAll(); return false; }
+        points.push_back(source_point_array[i]);
+    }
+    target_point_array.removeAll();
+    if (points.empty()) return false;
+    std::sort(points.begin(), points.end(), &BasicTools::IsBottomPoint);
+    for (const AcGePoint3d& point : points) target_point_array.append(point);
+    return true;
 }
 
 bool BasicTools::IsIntersectRectangle(const AcGePoint3d& vertex_point1, const AcGePoint3d& vertex_point2, const AcGePoint3d& vertex_point3, const AcGePoint3d& vertex_point4)
@@ -412,7 +416,7 @@ bool BasicTools::IsLineThroughRectangle(const AcGePoint3d& line_point1, const Ac
 {
 	if (!CanDrawRect(vertex_point1, vertex_point2))
 	{
-		throw;
+		return false;
 	}
 
 	AcGePoint3dArray rectangle_vertex;
@@ -442,7 +446,7 @@ bool BasicTools::IsLineThroughRectangle(const AcGePoint3d& line_point1, const Ac
 bool BasicTools::IsPointInRectangle(const AcGePoint3d& point, const AcGePoint3d& vertex_1, const AcGePoint3d& vertex_2)
 {
 	double min_X = BasicTools::Min(vertex_1.x, vertex_2.x);
-	double max_X = BasicTools::Max(vertex_1.x, vertex_1.x);
+	double max_X = BasicTools::Max(vertex_1.x, vertex_2.x);
 	double min_Y = BasicTools::Min(vertex_1.y, vertex_2.y);
 	double max_Y = BasicTools::Max(vertex_1.y, vertex_2.y);
 
@@ -454,57 +458,56 @@ bool BasicTools::IsPointInRectangle(const AcGePoint3d& point, const AcDbExtents&
 	return IsPointInRectangle(point, extents.maxPoint(), extents.minPoint());
 }
 
+Acad::ErrorStatus BasicTools::GetAllEntityIdsInDatabase(AcDbObjectIdArray& ids, const TCHAR* layer_name, AcDbDatabase* database)
+{
+    ids.removeAll();
+    if (!database) return Acad::eNoDatabase;
+    AcDbObjectId layer_id;
+    if (layer_name)
+    {
+        AcDbLayerTable* raw = nullptr;
+        Acad::ErrorStatus status = database->getLayerTable(raw, AcDb::kForRead);
+        if (status != Acad::eOk) return status;
+        Pola::OpenedObject<AcDbLayerTable> layers(raw);
+        status = layers->getAt(layer_name, layer_id);
+        status = Pola::Close(layers, status);
+        if (status != Acad::eOk) return status;
+    }
+    AcDbBlockTable* raw_table = nullptr;
+    Acad::ErrorStatus status = database->getBlockTable(raw_table, AcDb::kForRead);
+    if (status != Acad::eOk) return status;
+    Pola::OpenedObject<AcDbBlockTable> table(raw_table);
+    AcDbBlockTableRecord* raw_record = nullptr;
+    status = table->getAt(ACDB_MODEL_SPACE, raw_record, AcDb::kForRead);
+    if (status != Acad::eOk) return status;
+    Pola::OpenedObject<AcDbBlockTableRecord> record(raw_record);
+    AcDbBlockTableRecordIterator* raw_iterator = nullptr;
+    status = record->newIterator(raw_iterator);
+    if (status != Acad::eOk) return status;
+    std::unique_ptr<AcDbBlockTableRecordIterator> iterator(raw_iterator);
+    AcDbObjectIdArray result;
+    for (; !iterator->done(); iterator->step())
+    {
+        AcDbEntity* raw_entity = nullptr;
+        status = iterator->getEntity(raw_entity, AcDb::kForRead);
+        if (status != Acad::eOk) return status;
+        Pola::OpenedObject<AcDbEntity> entity(raw_entity);
+        if (!layer_name || entity->layerId() == layer_id) result.append(entity->objectId());
+        status = Pola::Close(entity);
+        if (status != Acad::eOk) return status;
+    }
+    iterator.reset();
+    status = Pola::Close(record);
+    status = Pola::Close(table, status);
+    if (status == Acad::eOk) ids = result;
+    return status;
+}
+
 AcDbObjectIdArray BasicTools::GetAllEntityIdsInDatabase(const TCHAR* layer_name, AcDbDatabase* database)
 {
-	AcDbObjectIdArray all_entity_ids;
-	bool needFilterLayer;
-	if ((layer_name != NULL ? true : false) && (StyleTools::IsLayerExist(layer_name)))
-	{
-		needFilterLayer = true;
-	}
-	else
-	{
-		needFilterLayer = false;
-	}
-	AcDbObjectId layer_id = AcDbObjectId::kNull;
-
-	AcDbBlockTable* block_table = nullptr;
-	database->getBlockTable(block_table, OpenMode::kForRead);
-	AcDbBlockTableRecord* block_table_record = nullptr;
-	block_table->getAt(ACDB_MODEL_SPACE, block_table_record, OpenMode::kForRead);
-
-	AcDbBlockTableRecordIterator* block_table_record_iterator = nullptr;
-	block_table_record->newIterator(block_table_record_iterator);
-	for (block_table_record_iterator->start(); !block_table_record_iterator->done(); block_table_record_iterator->step())
-	{
-		AcDbEntity* entity = nullptr;
-		Acad::ErrorStatus error_status;
-		error_status = block_table_record_iterator->getEntity(entity, AcDb::kForRead);
-		if (error_status == Acad::eOk)
-		{
-			if (needFilterLayer)
-			{
-				if (entity->layerId() == layer_id)
-				{
-					all_entity_ids.append(entity->objectId());
-				}
-			}
-			else
-			{
-				all_entity_ids.append(entity->objectId());
-			}
-			entity->close();
-		}
-		else
-		{
-			throw;
-		}
-	}
-	delete block_table_record_iterator;
-	block_table_record->close();
-	block_table->close();
-
-	return all_entity_ids;
+    AcDbObjectIdArray ids;
+    GetAllEntityIdsInDatabase(ids, layer_name, database);
+    return ids;
 }
 
 std::vector<int> BasicTools::CalculateReinforcement(int beam_width, int bar_diameter, int bars_num, int cover_thickness, int stirrup_diameter)
@@ -560,6 +563,7 @@ int BasicTools::CalculateMaxBars(int beam_width, int bar_diameter, int cover_thi
 std::basic_string<TCHAR> BasicTools::EscapeBackslashes(const TCHAR* path)
 {
 	std::basic_string<TCHAR> escaped;
+	if (!path) return escaped;
 	for (size_t i = 0; path[i] != _T('\0'); i++)
 	{
 		if (path[i] == _T('\\'))
@@ -629,39 +633,37 @@ AcGePoint3d BasicTools::GetIntersect(const AcGePoint3d& line1_point1, const AcGe
 	return GetIntersect(line1, line2);
 }
 
+// TOOLS_BORROWED_LINE_TEST_BEGIN
+Acad::ErrorStatus BasicTools::EntityToLineSegment(const AcDbEntity* entity, AcGeLineSeg3d& segment)
+{
+    segment = AcGeLineSeg3d();
+    const AcDbLine* line = entity ? AcDbLine::cast(entity) : nullptr;
+    if (!line || !ToolsValidLineEndpoints(line->startPoint(), line->endPoint())) return Acad::eInvalidInput;
+    segment.set(line->startPoint(), line->endPoint());
+    return Acad::eOk;
+}
+Acad::ErrorStatus BasicTools::EntityToLine(const AcDbEntity* entity, AcGeLine3d& result)
+{
+    result = AcGeLine3d();
+    const AcDbLine* line = entity ? AcDbLine::cast(entity) : nullptr;
+    if (!line || !ToolsValidLineEndpoints(line->startPoint(), line->endPoint())) return Acad::eInvalidInput;
+    result.set(line->startPoint(), line->endPoint());
+    return Acad::eOk;
+}
 AcGeLineSeg3d BasicTools::EntityToLineSegment(const AcDbEntity* entity)
 {
-	if (entity->isKindOf(AcDbLine::desc()))
-	{
-		AcDbLine* line = AcDbLine::cast(entity);
-		AcGePoint3d start_point = line->startPoint();
-		AcGePoint3d end_point = line->endPoint();
-
-		delete line;
-		return AcGeLineSeg3d(start_point, end_point);
-	}
-	else
-	{
-		throw;
-	}
+    AcGeLineSeg3d segment;
+    EntityToLineSegment(entity, segment);
+    return segment;
 }
-
 AcGeLine3d BasicTools::EntityToLine(const AcDbEntity* entity)
 {
-	if (entity->isKindOf(AcDbLine::desc()))
-	{
-		AcDbLine* line = AcDbLine::cast(entity);
-		AcGePoint3d start_point = line->startPoint();
-		AcGePoint3d end_point = line->endPoint();
-
-		delete line;
-		return AcGeLine3d(start_point, end_point);
-	}
-	else
-	{
-		throw;
-	}
+    AcGeLine3d line;
+    EntityToLine(entity, line);
+    return line;
 }
+
+// TOOLS_BORROWED_LINE_TEST_END
 
 AcGePoint3d BasicTools::ProjectPointToLineSegment(const AcGePoint3d& point, const AcGeLineSeg3d& line_segment, const AcGeVector3d& project_dirction, const AcGeTol& tol)
 {
@@ -782,7 +784,7 @@ AcGePoint3d BasicTools::GetArcMidPoint(AcGeCircArc3d& arc)
 
 	if (std::abs(start_angle - end_angle) < AcGeContext::gTol.equalPoint())
 		delta_theta = 2 * M_PI;
-	else 
+	else
 	{
 		if (isClockwise)
 			delta_theta = std::fmod(start_angle - end_angle + 2 * M_PI, 2 * M_PI);
@@ -791,12 +793,12 @@ AcGePoint3d BasicTools::GetArcMidPoint(AcGeCircArc3d& arc)
 	}
 
 	double mid_angle;
-	if (isClockwise) 
+	if (isClockwise)
 		mid_angle = start_angle - delta_theta / 2.0;
-	else 
+	else
 		mid_angle = start_angle + delta_theta / 2.0;
 
-	mid_angle = std::fmod(mid_angle + 2 * M_PI, 2 * M_PI); 
+	mid_angle = std::fmod(mid_angle + 2 * M_PI, 2 * M_PI);
 
 	double x = center.x + radius * std::cos(mid_angle);
 	double y = center.y + radius * std::sin(mid_angle);

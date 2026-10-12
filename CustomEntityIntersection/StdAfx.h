@@ -1,4 +1,4 @@
-// (C) Copyright 2002-2012 by Autodesk, Inc.
+﻿// (C) Copyright 2002-2012 by Autodesk, Inc.
 //
 // Permission to use, copy, modify, and distribute this software in
 // object code form for any purpose and without fee is hereby granted,
@@ -51,7 +51,7 @@
 #define _WIN32_WINNT 0x0601
 #endif
 
-    
+
         //- ObjectARX and OMF headers needs this
 #include <map>
 
@@ -68,7 +68,5 @@
     //#define _AMODELER_SUPPORT_				//- Support for the AModeler API
     #include "dbxHeaders.h"
     #include "AcExtensionModule.h" //- Needed for AutoCAD MFC extension even if not present in the RealDWG SDK
-#include "BasicTools.h"
+#include "../Tools/BasicTools.h"
                         #pragma pack(pop)
-
-    

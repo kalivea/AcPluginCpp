@@ -1,19 +1,19 @@
-// (C) Copyright 2002-2012 by Autodesk, Inc. 
+ï»¿// (C) Copyright 2002-2012 by Autodesk, Inc.
 //
 // Permission to use, copy, modify, and distribute this software in
-// object code form for any purpose and without fee is hereby granted, 
-// provided that the above copyright notice appears in all copies and 
+// object code form for any purpose and without fee is hereby granted,
+// provided that the above copyright notice appears in all copies and
 // that both that copyright notice and the limited warranty and
-// restricted rights notice below appear in all supporting 
+// restricted rights notice below appear in all supporting
 // documentation.
 //
-// AUTODESK PROVIDES THIS PROGRAM "AS IS" AND WITH ALL FAULTS. 
+// AUTODESK PROVIDES THIS PROGRAM "AS IS" AND WITH ALL FAULTS.
 // AUTODESK SPECIFICALLY DISCLAIMS ANY IMPLIED WARRANTY OF
-// MERCHANTABILITY OR FITNESS FOR A PARTICULAR USE.  AUTODESK, INC. 
+// MERCHANTABILITY OR FITNESS FOR A PARTICULAR USE.  AUTODESK, INC.
 // DOES NOT WARRANT THAT THE OPERATION OF THE PROGRAM WILL BE
 // UNINTERRUPTED OR ERROR FREE.
 //
-// Use, duplication, or disclosure by the U.S. Government is subject to 
+// Use, duplication, or disclosure by the U.S. Government is subject to
 // restrictions set forth in FAR 52.227-19 (Commercial Computer
 // Software - Restricted Rights) and DFAR 252.227-7013(c)(1)(ii)
 // (Rights in Technical Data and Computer Software), as applicable.
@@ -25,6 +25,7 @@
 #include "StdAfx.h"
 #include "resource.h"
 #include "PolaDockCtrlBar.h"
+#include <memory>
 //-----------------------------------------------------------------------------
 #define szRDS _RXST("Pola")
 
@@ -41,18 +42,24 @@ public:
 
 		// You *must* call On_kInitAppMsg here
 		AcRx::AppRetCode retCode = AcRxArxApp::On_kInitAppMsg(pkt);
+		if (retCode != AcRx::kRetOK) return retCode;
 
 		// TODO: Add your initialization code here
 				// show dock bar
 		CAcModuleResourceOverride res;
 		if (dock_ctrl_bar == nullptr)
 		{
-			dock_ctrl_bar = new CPolaDockCtrlBar();
-			dock_ctrl_bar->Create(acedGetAcadFrame(), (LPCSTR)_T("dock bar"));
+			std::unique_ptr<CPolaDockCtrlBar> candidate(new CPolaDockCtrlBar());
+			if (!candidate->Create(acedGetAcadFrame(), _T("dock bar")))
+			{
+				acutPrintf(_T("\nFailed to create dock control bar."));
+				return AcRx::kRetError;
+			}
+			dock_ctrl_bar = candidate.release();
 			dock_ctrl_bar->SetWindowTextW(_T("Pola dock bar"));
 			dock_ctrl_bar->EnableDocking(CBRS_ALIGN_ANY);
 		}
-		acedGetAcadFrame()->FloatControlBar(dock_ctrl_bar, CPoint(50, 100), CBRS_ALIGN_TOP); //³õÊ¼Î»ÖÃ//CBRS_ALIGN_TOP   Orients the control bar vertically.
+		acedGetAcadFrame()->FloatControlBar(dock_ctrl_bar, CPoint(50, 100), CBRS_ALIGN_TOP); //åˆå§‹ä½ç½®//CBRS_ALIGN_TOP   Orients the control bar vertically.
 		acedGetAcadFrame()->ShowControlBar(dock_ctrl_bar, TRUE, TRUE);//void ShowControlBar( C
 
 		return (retCode);
@@ -62,22 +69,25 @@ public:
 		// TODO: Add your code here
 
 		// You *must* call On_kUnloadAppMsg here
-		AcRx::AppRetCode retCode = AcRxArxApp::On_kUnloadAppMsg(pkt);
 
 		// TODO: Unload dependencies here
 		if (dock_ctrl_bar != nullptr)
 		{
-			dock_ctrl_bar->DestroyWindow();
+			if (::IsWindow(dock_ctrl_bar->GetSafeHwnd()) && !dock_ctrl_bar->DestroyWindow())
+			{
+				acutPrintf(_T("\nFailed to destroy dock control bar."));
+				return AcRx::kRetError;
+			}
 			delete dock_ctrl_bar;
 			dock_ctrl_bar = nullptr;
 		}
-		return (retCode);
+		return AcRxArxApp::On_kUnloadAppMsg(pkt);
 	}
 
 	virtual void RegisterServerComponents() {
 	}
 
-	// The ACED_ARXCOMMAND_ENTRY_AUTO macro can be applied to any static member 
+	// The ACED_ARXCOMMAND_ENTRY_AUTO macro can be applied to any static member
 	// function of the CDockControlBarUiApp class.
 	// The function should take no arguments and return nothing.
 	//
@@ -119,7 +129,7 @@ public:
 		// Put your command code here
 	}
 
-	// The ACED_ADSFUNCTION_ENTRY_AUTO / ACED_ADSCOMMAND_ENTRY_AUTO macros can be applied to any static member 
+	// The ACED_ADSFUNCTION_ENTRY_AUTO / ACED_ADSCOMMAND_ENTRY_AUTO macros can be applied to any static member
 	// function of the CDockControlBarUiApp class.
 	// The function may or may not take arguments and have to return RTNORM, RTERROR, RTCAN, RTFAIL, RTREJ to AutoCAD, but use
 	// acedRetNil, acedRetT, acedRetVoid, acedRetInt, acedRetReal, acedRetStr, acedRetPoint, acedRetName, acedRetList, acedRetVal to return
@@ -132,7 +142,7 @@ public:
 	//- ACED_ADSCOMMAND_ENTRY_AUTO(classname, name, regFunc) - a Lisp command (prefix C:)
 	//- ACED_ADSCOMMAND_ENTRYBYID_AUTO(classname, name, nameId, regFunc) - only differs that it creates a localized name using a string in the resource file
 
-	// Lisp Function is similar to ARX Command but it creates a lisp 
+	// Lisp Function is similar to ARX Command but it creates a lisp
 	// callable function. Many return types are supported not just string
 	// or integer.
 	// ACED_ADSFUNCTION_ENTRY_AUTO(CDockControlBarUiApp, MyLispFunction, false)
@@ -158,4 +168,3 @@ ACED_ARXCOMMAND_ENTRY_AUTO(CDockControlBarUiApp, PolaMyGroup, MyCommand, MyComma
 ACED_ARXCOMMAND_ENTRY_AUTO(CDockControlBarUiApp, PolaMyGroup, MyPickFirst, MyPickFirstLocal, ACRX_CMD_MODAL | ACRX_CMD_USEPICKSET, NULL)
 ACED_ARXCOMMAND_ENTRY_AUTO(CDockControlBarUiApp, PolaMyGroup, MySessionCmd, MySessionCmdLocal, ACRX_CMD_MODAL | ACRX_CMD_SESSION, NULL)
 ACED_ADSSYMBOL_ENTRY_AUTO(CDockControlBarUiApp, MyLispFunction, false)
-

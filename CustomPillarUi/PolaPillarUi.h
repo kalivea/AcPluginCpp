@@ -1,19 +1,19 @@
-// (C) Copyright 2002-2007 by Autodesk, Inc. 
+﻿// (C) Copyright 2002-2007 by Autodesk, Inc.
 //
 // Permission to use, copy, modify, and distribute this software in
-// object code form for any purpose and without fee is hereby granted, 
-// provided that the above copyright notice appears in all copies and 
+// object code form for any purpose and without fee is hereby granted,
+// provided that the above copyright notice appears in all copies and
 // that both that copyright notice and the limited warranty and
-// restricted rights notice below appear in all supporting 
+// restricted rights notice below appear in all supporting
 // documentation.
 //
-// AUTODESK PROVIDES THIS PROGRAM "AS IS" AND WITH ALL FAULTS. 
+// AUTODESK PROVIDES THIS PROGRAM "AS IS" AND WITH ALL FAULTS.
 // AUTODESK SPECIFICALLY DISCLAIMS ANY IMPLIED WARRANTY OF
-// MERCHANTABILITY OR FITNESS FOR A PARTICULAR USE.  AUTODESK, INC. 
+// MERCHANTABILITY OR FITNESS FOR A PARTICULAR USE.  AUTODESK, INC.
 // DOES NOT WARRANT THAT THE OPERATION OF THE PROGRAM WILL BE
 // UNINTERRUPTED OR ERROR FREE.
 //
-// Use, duplication, or disclosure by the U.S. Government is subject to 
+// Use, duplication, or disclosure by the U.S. Government is subject to
 // restrictions set forth in FAR 52.227-19 (Commercial Computer
 // Software - Restricted Rights) and DFAR 252.227-7013(c)(1)(ii)
 // (Rights in Technical Data and Computer Software), as applicable.
@@ -52,7 +52,7 @@ public:
 	afx_msg void OnBnClickedRadioCirc();
 
 	CEdit Edit_Sn_;
-	TCHAR* pillar_sn = _T("6496");
+	CString pillar_sn = _T("6496");
 	CEdit Edit_Grade;
 	int pillar_conc_grade = 6496;
 	CEdit Edit_Pipe_D_;
@@ -64,7 +64,7 @@ public:
 	CEdit Edit_Pillar_H_;
 	double pillar_h = 6496;
 
-	CRect rc_draw_rect;
+	CRect rc_draw_rect{ 0, 0, 0, 0 };
 	ShapeType shape_type = RECTANGLE;
 	LineStyle line_style = SOLID;
 	BOOL isDataReady = false;
@@ -88,7 +88,7 @@ public:
 	afx_msg void OnBnClickedOk();
 	afx_msg void OnBnClickedCancel();
 
-	void load(TCHAR* sn);
+	void load(const TCHAR* sn);
 	void SimulateRadioClicked(UINT radio_id);
 	afx_msg void OnEnChangeEditSn();
 };

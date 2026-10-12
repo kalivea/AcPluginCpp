@@ -1,19 +1,19 @@
-// (C) Copyright 2002-2007 by Autodesk, Inc. 
+// (C) Copyright 2002-2007 by Autodesk, Inc.
 //
 // Permission to use, copy, modify, and distribute this software in
-// object code form for any purpose and without fee is hereby granted, 
-// provided that the above copyright notice appears in all copies and 
+// object code form for any purpose and without fee is hereby granted,
+// provided that the above copyright notice appears in all copies and
 // that both that copyright notice and the limited warranty and
-// restricted rights notice below appear in all supporting 
+// restricted rights notice below appear in all supporting
 // documentation.
 //
-// AUTODESK PROVIDES THIS PROGRAM "AS IS" AND WITH ALL FAULTS. 
+// AUTODESK PROVIDES THIS PROGRAM "AS IS" AND WITH ALL FAULTS.
 // AUTODESK SPECIFICALLY DISCLAIMS ANY IMPLIED WARRANTY OF
-// MERCHANTABILITY OR FITNESS FOR A PARTICULAR USE.  AUTODESK, INC. 
+// MERCHANTABILITY OR FITNESS FOR A PARTICULAR USE.  AUTODESK, INC.
 // DOES NOT WARRANT THAT THE OPERATION OF THE PROGRAM WILL BE
 // UNINTERRUPTED OR ERROR FREE.
 //
-// Use, duplication, or disclosure by the U.S. Government is subject to 
+// Use, duplication, or disclosure by the U.S. Government is subject to
 // restrictions set forth in FAR 52.227-19 (Commercial Computer
 // Software - Restricted Rights) and DFAR 252.227-7013(c)(1)(ii)
 // (Rights in Technical Data and Computer Software), as applicable.
@@ -24,6 +24,21 @@
 //-----------------------------------------------------------------------------
 #include "StdAfx.h"
 #include "PolaLine.h"
+#include <cmath>
+
+namespace {
+bool validVertex(const AcGePoint3d& point) {
+	return std::isfinite(point.x) && std::isfinite(point.y) && std::isfinite(point.z);
+}
+bool validVertices(const AcGePoint3dArray& points) {
+	if (points.length() == 1 || points.length() > 1000000) return false;
+	for (int i = 0; i < points.length(); ++i) {
+		if (!validVertex(points[i])) return false;
+		if (i > 0 && points[i].isEqualTo(points[i - 1])) return false;
+	}
+	return true;
+}
+}
 
 //-----------------------------------------------------------------------------
 Adesk::UInt32 CPolaLine::kCurrentVersionNumber = 1;
@@ -51,6 +66,8 @@ CPolaLine::~CPolaLine() {
 //- Dwg Filing protocol
 Acad::ErrorStatus CPolaLine::dwgOutFields(AcDbDwgFiler * pFiler) const {
 	assertReadEnabled();
+	if (!pFiler || !validVertices(center_vertex_) || center_num_ != center_vertex_.length()
+		|| !std::isfinite(line_width_) || line_width_ < 0.0) return Acad::eInvalidInput;
 	//----- Save parent class information first.
 	Acad::ErrorStatus es = AcDbEntity::dwgOutFields(pFiler);
 	if (es != Acad::eOk)
@@ -62,11 +79,14 @@ Acad::ErrorStatus CPolaLine::dwgOutFields(AcDbDwgFiler * pFiler) const {
 	//.....
 
 	es = pFiler->writeItem(center_num_);
+	if (es != Acad::eOk) return es;
 	es = pFiler->writeItem(line_width_);
+	if (es != Acad::eOk) return es;
 
 	for (int i = 0;i < center_num_;i++)
 	{
 		es = pFiler->writeItem(center_vertex_.at(i));
+		if (es != Acad::eOk) return es;
 	}
 
 	return (pFiler->filerStatus());
@@ -74,6 +94,7 @@ Acad::ErrorStatus CPolaLine::dwgOutFields(AcDbDwgFiler * pFiler) const {
 
 Acad::ErrorStatus CPolaLine::dwgInFields(AcDbDwgFiler * pFiler) {
 	assertWriteEnabled();
+	if (!pFiler) return Acad::eInvalidInput;
 	//----- Read parent class information first.
 	Acad::ErrorStatus es = AcDbEntity::dwgInFields(pFiler);
 	if (es != Acad::eOk)
@@ -82,7 +103,7 @@ Acad::ErrorStatus CPolaLine::dwgInFields(AcDbDwgFiler * pFiler) {
 	Adesk::UInt32 version = 0;
 	if ((es = pFiler->readUInt32(&version)) != Acad::eOk)
 		return (es);
-	if (version > CPolaLine::kCurrentVersionNumber)
+	if (version != CPolaLine::kCurrentVersionNumber)
 		return (Acad::eMakeMeProxy);
 	//- Uncomment the 2 following lines if your current object implementation cannot
 	//- support previous version of that object.
@@ -90,14 +111,30 @@ Acad::ErrorStatus CPolaLine::dwgInFields(AcDbDwgFiler * pFiler) {
 	//	return (Acad::eMakeMeProxy) ;
 	//----- Read params
 	//.....
-	es = pFiler->readItem(&center_num_);
-	es = pFiler->readItem(&line_width_);
+	Adesk::Int32 next_count = 0;
+	double next_width = 0.0;
+	AcGePoint3dArray next_vertices;
+	es = pFiler->readItem(&next_count);
+	if (es != Acad::eOk) return es;
+	if (next_count < 0 || next_count == 1 || next_count > 1000000) return Acad::eInvalidInput;
+	es = pFiler->readItem(&next_width);
+	if (es != Acad::eOk) return es;
+	if (!std::isfinite(next_width) || next_width < 0.0) return Acad::eInvalidInput;
 
-	for (int i = 0;i < center_num_;i++)
+	for (int i = 0;i < next_count;i++)
 	{
-		es = pFiler->readItem(&center_vertex_.at(i));
+		AcGePoint3d vertex;
+		es = pFiler->readItem(&vertex);
+		if (es != Acad::eOk) return es;
+		next_vertices.append(vertex);
 	}
-	return (pFiler->filerStatus());
+	if ((es = pFiler->filerStatus()) != Acad::eOk) return es;
+	if (!validVertices(next_vertices)) return Acad::eInvalidInput;
+	center_num_ = next_count;
+	line_width_ = next_width;
+	center_vertex_ = next_vertices;
+	line_seg.clear();
+	return Acad::eOk;
 }
 
 //-----------------------------------------------------------------------------
@@ -149,7 +186,7 @@ Acad::ErrorStatus CPolaLine::subGetGripPoints(
 	AcGePoint3dArray & gripPoints, AcDbIntArray & osnapModes, AcDbIntArray & geomIds
 ) const {
 	assertReadEnabled();
-	//----- This method is never called unless you return eNotImplemented 
+	//----- This method is never called unless you return eNotImplemented
 	//----- from the new getGripPoints() method below (which is the default implementation)
 
 	return (AcDbEntity::subGetGripPoints(gripPoints, osnapModes, geomIds));
@@ -157,7 +194,7 @@ Acad::ErrorStatus CPolaLine::subGetGripPoints(
 
 Acad::ErrorStatus CPolaLine::subMoveGripPointsAt(const AcDbIntArray & indices, const AcGeVector3d & offset) {
 	assertWriteEnabled();
-	//----- This method is never called unless you return eNotImplemented 
+	//----- This method is never called unless you return eNotImplemented
 	//----- from the new moveGripPointsAt() method below (which is the default implementation)
 
 	return (AcDbEntity::subMoveGripPointsAt(indices, offset));
@@ -189,25 +226,37 @@ Acad::ErrorStatus CPolaLine::subMoveGripPointsAt(
 
 void CPolaLine::SetCenterVertex(const AcGePoint3dArray & center_vertex)
 {
+	const Acad::ErrorStatus status = SetCenterVertexChecked(center_vertex);
+	if (status != Acad::eOk) acutPrintf(_T("\nLine vertices invalid: %d"), static_cast<int>(status));
+}
+
+Acad::ErrorStatus CPolaLine::SetCenterVertexChecked(const AcGePoint3dArray& center_vertex)
+{
 	assertWriteEnabled();
-	if (!center_vertex.isEmpty())
-	{
-		int cnt = center_vertex.length();
-		for (int i = 0; i < cnt; i++)
-		{
-			center_vertex_.append(center_vertex.at(i));
-		}
-	}
+	if (!validVertices(center_vertex)) return Acad::eInvalidInput;
+	center_vertex_ = center_vertex;
 	center_num_ = center_vertex_.length();
+	line_seg.clear();
+	return Acad::eOk;
 }
 
 void CPolaLine::GenerateOffsetLine(AcGePoint3dArray & top_line, AcGePoint3dArray & bottom_line)
 {
+	const Acad::ErrorStatus status = GenerateOffsetLineChecked(top_line, bottom_line);
+	if (status != Acad::eOk) acutPrintf(_T("\nLine offset failed: %d"), static_cast<int>(status));
+}
+
+Acad::ErrorStatus CPolaLine::GenerateOffsetLineChecked(AcGePoint3dArray& top_line, AcGePoint3dArray& bottom_line)
+{
+	assertReadEnabled();
 	top_line.removeAll();
 	bottom_line.removeAll();
-
+	if (center_vertex_.length() < 2 || !validVertices(center_vertex_) || !std::isfinite(line_width_) || line_width_ < 0.0)
+		return Acad::eInvalidInput;
+	AcGePoint3dArray top, bottom;
 	for (int i = 0; i < center_vertex_.length(); ++i)
 	{
+		AcGeVector3d offset;
 		if (i == 0 || i == center_vertex_.length() - 1)
 		{
 			AcGeVector3d dir;
@@ -216,23 +265,34 @@ void CPolaLine::GenerateOffsetLine(AcGePoint3dArray & top_line, AcGePoint3dArray
 			else
 				dir = center_vertex_[i] - center_vertex_[i - 1];
 
-			AcGeVector3d perp = dir.perpVector().normal() * (line_width_ / 2);
-			top_line.append(center_vertex_[i] + perp);
-			bottom_line.append(center_vertex_[i] - perp);
+			const double length = std::hypot(dir.x, dir.y);
+			if (!std::isfinite(length) || length <= AcGeContext::gTol.equalPoint()) return Acad::eInvalidInput;
+			offset = AcGeVector3d(-dir.y / length, dir.x / length, 0.0) * (line_width_ / 2);
 		}
 		else
 		{
-			AcGeVector3d dirPrev = (center_vertex_[i] - center_vertex_[i - 1]).normalize();
-			AcGeVector3d dirNext = (center_vertex_[i + 1] - center_vertex_[i]).normalize();
-			AcGeVector3d bisector = (dirPrev + dirNext).normalize();
-			double angleFactor = 1.0 / sin(dirPrev.angleTo(bisector));
-			AcGeVector3d offset = bisector.perpVector().normal() * (line_width_ / 2 * angleFactor);
-
-			top_line.append(center_vertex_[i] + offset);
-			bottom_line.append(center_vertex_[i] - offset);
+			const AcGeVector3d prev = center_vertex_[i] - center_vertex_[i - 1];
+			const AcGeVector3d next = center_vertex_[i + 1] - center_vertex_[i];
+			const double prev_length = std::hypot(prev.x, prev.y), next_length = std::hypot(next.x, next.y);
+			if (!std::isfinite(prev_length) || !std::isfinite(next_length)
+				|| prev_length <= AcGeContext::gTol.equalPoint() || next_length <= AcGeContext::gTol.equalPoint()) return Acad::eInvalidInput;
+			const AcGeVector3d prev_normal(-prev.y / prev_length, prev.x / prev_length, 0.0);
+			const AcGeVector3d next_normal(-next.y / next_length, next.x / next_length, 0.0);
+			const AcGeVector3d bisector = prev_normal + next_normal;
+			if (bisector.length() <= AcGeContext::gTol.equalVector()) return Acad::eInvalidInput;
+			const AcGeVector3d unit = bisector.normal();
+			const double denominator = unit.dotProduct(prev_normal);
+			if (std::abs(denominator) <= AcGeContext::gTol.equalVector()) return Acad::eInvalidInput;
+			offset = unit * (line_width_ / 2 / denominator);
 		}
+		const AcGePoint3d top_point = center_vertex_[i] + offset, bottom_point = center_vertex_[i] - offset;
+		if (!validVertex(top_point) || !validVertex(bottom_point)) return Acad::eInvalidInput;
+		top.append(top_point);
+		bottom.append(bottom_point);
 	}
-
+	top_line = top;
+	bottom_line = bottom;
+	return Acad::eOk;
 }
 
 void CPolaLine::GenerateOriginalDrawSegment()
@@ -240,7 +300,7 @@ void CPolaLine::GenerateOriginalDrawSegment()
 	line_seg.clear();
 	int cnt = center_vertex_.length();
 	AcGePoint3dArray top, bot;
-	GenerateOffsetLine(top, bot);
+	if (GenerateOffsetLineChecked(top, bot) != Acad::eOk) return;
 	for (int i = 0;i < cnt - 1;i++)
 	{
 		DrawSegment seg;
@@ -250,11 +310,14 @@ void CPolaLine::GenerateOriginalDrawSegment()
 		seg.bottom_end_point = bot.at(i + 1);
 
 		seg.type = LineType::SOLID;
+		line_seg.push_back(seg);
 	}
 }
 
 bool CPolaLine::ModifyDrawSegmentAt(int index, CPolaLine::LineType type)
 {
+	assertWriteEnabled();
+	if (type != SOLID && type != DASHED && type != HIDDEN) return false;
 	if (index < 0 || index >= line_seg.size())
 		return false;
 
@@ -289,7 +352,8 @@ void CPolaLine::CheckCollision(CPolaLine & other)
 
 int CPolaLine::GetSegmentIndex(const AcGePoint3d point)
 {
-	if (center_vertex_.length() < 2)
+	assertReadEnabled();
+	if (!validVertex(point) || center_vertex_.length() < 2 || !validVertices(center_vertex_))
 		return -1;
 	double min_distance = DBL_MAX;
 	int closest_segment_index = -1;
@@ -328,4 +392,3 @@ int CPolaLine::GetSegmentIndex(const AcGePoint3d point)
 	}
 	return closest_segment_index;
 }
-

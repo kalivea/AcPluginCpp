@@ -1,19 +1,19 @@
-// (C) Copyright 2002-2007 by Autodesk, Inc. 
+﻿// (C) Copyright 2002-2007 by Autodesk, Inc.
 //
 // Permission to use, copy, modify, and distribute this software in
-// object code form for any purpose and without fee is hereby granted, 
-// provided that the above copyright notice appears in all copies and 
+// object code form for any purpose and without fee is hereby granted,
+// provided that the above copyright notice appears in all copies and
 // that both that copyright notice and the limited warranty and
-// restricted rights notice below appear in all supporting 
+// restricted rights notice below appear in all supporting
 // documentation.
 //
-// AUTODESK PROVIDES THIS PROGRAM "AS IS" AND WITH ALL FAULTS. 
+// AUTODESK PROVIDES THIS PROGRAM "AS IS" AND WITH ALL FAULTS.
 // AUTODESK SPECIFICALLY DISCLAIMS ANY IMPLIED WARRANTY OF
-// MERCHANTABILITY OR FITNESS FOR A PARTICULAR USE.  AUTODESK, INC. 
+// MERCHANTABILITY OR FITNESS FOR A PARTICULAR USE.  AUTODESK, INC.
 // DOES NOT WARRANT THAT THE OPERATION OF THE PROGRAM WILL BE
 // UNINTERRUPTED OR ERROR FREE.
 //
-// Use, duplication, or disclosure by the U.S. Government is subject to 
+// Use, duplication, or disclosure by the U.S. Government is subject to
 // restrictions set forth in FAR 52.227-19 (Commercial Computer
 // Software - Restricted Rights) and DFAR 252.227-7013(c)(1)(ii)
 // (Rights in Technical Data and Computer Software), as applicable.
@@ -26,8 +26,29 @@
 #include "resource.h"
 #include "PolaBeamUi.h"
 #include <SelectEntitys.h>
-#include "EditEntity.h"
+#include "../Common/EditEntity.h"
+#include "../Tools/StyleTools.h"
+namespace {
+Acad::ErrorStatus finishBeamHandle(AcDbObjectPointer<CPolaCustomBeam>& owner, Acad::ErrorStatus status) {
+	if (owner.openStatus() != Acad::eOk) return status;
+	CPolaCustomBeam* raw = nullptr;
+	const Acad::ErrorStatus release_status = owner.release(raw);
+	if (release_status != Acad::eOk) return status == Acad::eOk ? release_status : status;
+	Acad::ErrorStatus cleanup = Acad::eOk;
+	if (raw->objectId().isNull()) delete raw;
+	else cleanup = raw->close();
+	return status == Acad::eOk ? cleanup : status;
+}
+}
 //-----------------------------------------------------------------------------
+namespace {
+Acad::ErrorStatus SetBeamStructureLayer(CPolaCustomBeam* beam) {
+    AcDbObjectId layer;
+    Acad::ErrorStatus status = StyleTools::CreateLayerStyle(_T("POLA_BEAM_STRUCTURE"), 7, _T("CONTINUOUS"), layer);
+    if (status == Acad::eOk) status = beam->setLayer(layer);
+    return status;
+}
+}
 IMPLEMENT_DYNAMIC(CPolaBeamUi, CAdUiBaseDialog)
 
 BEGIN_MESSAGE_MAP(CPolaBeamUi, CAdUiBaseDialog)
@@ -81,17 +102,21 @@ void CPolaBeamUi::OnBnClickedButtonPickpillar()
 	beam.create();
 	if (beam.openStatus() != Acad::eOk)
 	{
+		acutPrintf(_T("\n%s"), acadErrorStatusText(beam.openStatus()));
 		return;
 	}
-	beam->setBeamProperty(beam_Sn);
-	beam->setBeamWidth(beam_b);
-	beam->setBeamHeight(beam_h);
+	Acad::ErrorStatus status = beam->setBeamProperty(beam_Sn);
+    if (status == Acad::eOk) status = beam->setBeamWidth(beam_b);
+    if (status == Acad::eOk) status = beam->setBeamHeight(beam_h);
+    if (status != Acad::eOk) { acutPrintf(_T("\n%s"), acadErrorStatusText(status)); return; }
 
 	BeginEditorCommand();
-	AcDbObjectId beam_id = CPolaCustomBeam::SelectPillarDrawBeam(beam);
+	AcDbObjectId beam_id;
+	status = CPolaCustomBeam::SelectPillarDrawBeam(beam, beam_id);
+	if (status == Acad::eOk) status = SetBeamStructureLayer(beam);
+	status = finishBeamHandle(beam, status);
 	CompleteEditorCommand();
-	if (beam_id != AcDbObjectId::kNull)
-		EditEntity::SetLayer(beam_id, _T("POLA_BEAM_STRUCTURE"));
+    if (status != Acad::eOk && status != Acad::eUserBreak) acutPrintf(_T("\n%s"), acadErrorStatusText(status));
 }
 
 void CPolaBeamUi::OnBnClickedButtonPickoffset()
@@ -109,37 +134,42 @@ void CPolaBeamUi::OnBnClickedButtonPickoffset()
 	beam.create();
 	if (beam.openStatus() != Acad::eOk)
 	{
+		acutPrintf(_T("\n%s"), acadErrorStatusText(beam.openStatus()));
 		return;
 	}
 	int selected_radio_id = -1;
 	selected_radio_id = GetCheckedRadioButton(IDC_RADIO_TOP, IDC_RADIO_BOT);
 
-	beam->setBeamProperty(beam_Sn);
-	beam->setBeamWidth(beam_b);
-	beam->setBeamHeight(beam_h);
+	Acad::ErrorStatus status = beam->setBeamProperty(beam_Sn);
+    if (status == Acad::eOk) status = beam->setBeamWidth(beam_b);
+    if (status == Acad::eOk) status = beam->setBeamHeight(beam_h);
+    if (status != Acad::eOk) { acutPrintf(_T("\n%s"), acadErrorStatusText(status)); return; }
 	AcDbObjectId beam_id = AcDbObjectId::kNull;
+	if (selected_radio_id != IDC_RADIO_TOP && selected_radio_id != IDC_RADIO_CEN && selected_radio_id != IDC_RADIO_BOT) {
+		MessageBox(_T("No mode select!"));
+		return;
+	}
+	BeginEditorCommand();
 	switch (selected_radio_id)
 	{
 	case IDC_RADIO_TOP:
-		BeginEditorCommand();
-		beam_id = CPolaCustomBeam::PickTopPointDrawBeam(beam);
-		EditEntity::SetLayer(beam_id, _T("POLA_BEAM_STRUCTURE"));
+		status = CPolaCustomBeam::PickTopPointDrawBeam(beam, beam_id);
+		if (status == Acad::eOk) status = SetBeamStructureLayer(beam);
 		break;
 	case IDC_RADIO_CEN:
-		BeginEditorCommand();
-		beam_id = CPolaCustomBeam::PickCenterPointDrawBeam(beam);
-		EditEntity::SetLayer(beam_id, _T("POLA_BEAM_STRUCTURE"));
+		status = CPolaCustomBeam::PickCenterPointDrawBeam(beam, beam_id);
+		if (status == Acad::eOk) status = SetBeamStructureLayer(beam);
 		break;
 	case IDC_RADIO_BOT:
-		BeginEditorCommand();
-		beam_id = CPolaCustomBeam::PickBottomPointDrawBeam(beam);
-		EditEntity::SetLayer(beam_id, _T("POLA_BEAM_STRUCTURE"));
+		status = CPolaCustomBeam::PickBottomPointDrawBeam(beam, beam_id);
+		if (status == Acad::eOk) status = SetBeamStructureLayer(beam);
 		break;
 	default:
-		MessageBox(_T("No mode select!"));
 		break;
 	}
+	status = finishBeamHandle(beam, status);
 	CompleteEditorCommand();
+	if (status != Acad::eOk && status != Acad::eUserBreak) acutPrintf(_T("\n%s"), acadErrorStatusText(status));
 }
 
 
@@ -177,8 +207,12 @@ void CPolaBeamUi::OnBnClickedButtonEditviewable()
 			acutPrintf(_T("Point selection canceled. Returning to dialog.\n"));
 			break;
 		}
-		beam.open(beam_id.at(0), OpenMode::kForWrite);
-		CPolaCustomBeam::ModifyViewable(beam, beam->GetSegmentIndex(point) + 1);
+		Acad::ErrorStatus status = beam.open(beam_id.at(0), OpenMode::kForWrite);
+        if (status == Acad::eOk) {
+            status = CPolaCustomBeam::ModifyViewableChecked(beam, beam->GetSegmentIndex(point) + 1);
+            status = finishBeamHandle(beam, status);
+        }
+        if (status != Acad::eOk) { acutPrintf(_T("\n%s"), acadErrorStatusText(status)); break; }
 	}
 	CompleteEditorCommand();
 }
@@ -209,9 +243,11 @@ void CPolaBeamUi::OnBnClickedButtonAddvertex()
 	AcGePoint3d point;
 	if (SelectEntitys::PickPoint(_T("Select point: \n"), point))
 	{
+		Acad::ErrorStatus status = beam.open(beam_id.at(0), OpenMode::kForWrite);
+        if (status == Acad::eOk) status = beam->InsertVertex(point);
+		status = finishBeamHandle(beam, status);
 		CompleteEditorCommand();
-		beam.open(beam_id.at(0), OpenMode::kForWrite);
-		beam->InsertVertex(point);
+        if (status != Acad::eOk) acutPrintf(_T("\n%s"), acadErrorStatusText(status));
 	}
 	else
 	{
@@ -249,10 +285,14 @@ void CPolaBeamUi::OnBnClickedButtonAddjoint()
 			return;
 		}
 	}
-	CompleteEditorCommand();
 	AcDbObjectPointer<CPolaCustomBeam> beam;
-	beam.open(beam_id.at(0), OpenMode::kForWrite);
-	EditEntity::SetLayer(beam->addJoint(slab_thickness, offset_length), _T("POLA_BEAM_JOINT"));
+	Acad::ErrorStatus status = beam.open(beam_id.at(0), OpenMode::kForWrite);
+    AcDbObjectIdArray ids;
+    if (status == Acad::eOk) status = beam->addJoint(slab_thickness, offset_length, ids);
+    if (status == Acad::eOk) status = EditEntity::SetLayer(ids, _T("POLA_BEAM_JOINT"));
+	status = finishBeamHandle(beam, status);
+	CompleteEditorCommand();
+    if (status != Acad::eOk) acutPrintf(_T("\n%s"), acadErrorStatusText(status));
 }
 
 void CPolaBeamUi::OnEnKillfocusEditBeamSn()
@@ -305,8 +345,12 @@ void CPolaBeamUi::OnBnClickedButtonAddinfo()
 			return;
 		}
 	}
-	CompleteEditorCommand();
 	AcDbObjectPointer<CPolaCustomBeam> beam;
-	beam.open(beam_id.at(0), OpenMode::kForWrite);
-	EditEntity::SetLayer(beam->addBeamSnInfo(), _T("POLA_BEAM_MARK"));
+	Acad::ErrorStatus status = beam.open(beam_id.at(0), OpenMode::kForWrite);
+    AcDbObjectId id;
+    if (status == Acad::eOk) status = beam->addBeamSnInfo(id);
+    if (status == Acad::eOk) status = EditEntity::SetLayer(id, _T("POLA_BEAM_MARK"));
+	status = finishBeamHandle(beam, status);
+	CompleteEditorCommand();
+    if (status != Acad::eOk) acutPrintf(_T("\n%s"), acadErrorStatusText(status));
 }

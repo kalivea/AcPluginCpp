@@ -1,5 +1,7 @@
 #pragma once
-#include "StdAfx.h"
+#include "dbxHeaders.h"
+#include "GridDef.h"
+#include <tchar.h>
 class POLADLL_GRID_API Grid
 {
 private:
@@ -16,20 +18,23 @@ public:
 	}
 
 	AcDbObjectId CreateVerticalAxis();
+    Acad::ErrorStatus CreateVerticalAxis(AcDbObjectId& id);
 	AcDbObjectId CreateHorizonAxis();
+    Acad::ErrorStatus CreateHorizonAxis(AcDbObjectId& id);
 
 	//static AcDbObjectId GetAttributeId(TCHAR* att_name);
 
-	static void AddAttribute(AcDbBlockReference* block_reference, const AcDbAttributeDefinition* att_definition);
-	static void SetAttribute(AcDbBlockReference* block_reference, const TCHAR* tag, const TCHAR* att_string);
+	static Acad::ErrorStatus AddAttribute(AcDbBlockReference* block_reference, const AcDbAttributeDefinition* att_definition);
+	static Acad::ErrorStatus SetAttribute(AcDbBlockReference* block_reference, const TCHAR* tag, const TCHAR* att_string);
 
+	static Acad::ErrorStatus InsertVerticalAxis(const AcGePoint3d& point, AcDbObjectId& id);
 	static AcDbObjectId InsertVerticalAxis(const AcGePoint3d& insert_point);
+	static Acad::ErrorStatus InsertHorizonAxis(const AcGePoint3d& point, AcDbObjectId& id);
 	static AcDbObjectId InsertHorizonAxis(const AcGePoint3d& insert_point);
 
-	static void DrawVerticalAxis(const AcGePoint3dArray& insert_point, const TCHAR* insert_att[]);
-	static void DrawHorizonAxis(const AcGePoint3dArray& insert_point, const TCHAR* insert_att[]);
+	static Acad::ErrorStatus DrawVerticalAxis(const AcGePoint3dArray& insert_point, const TCHAR* insert_att[]);
+	static Acad::ErrorStatus DrawHorizonAxis(const AcGePoint3dArray& insert_point, const TCHAR* insert_att[]);
 	//AcDbObjectId CreateHorizonAxis();
 
 	//void DrawLogic();
 };
-

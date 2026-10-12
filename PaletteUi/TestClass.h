@@ -3,7 +3,6 @@ class TestClass
 {
 public:
 	static void TestClassInit();
-	static void TestClassUnload();
+	static bool TestClassUnload();
 	static void Test();
 };
-

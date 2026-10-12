@@ -1,318 +1,297 @@
 #include "StdAfx.h"
 #include "DrawEntity.h"
+#include "DbObjectOwner.h"
+#include "dbmleader.h"
+#include "dbmleaderstyle.h"
+#include <cmath>
+#include <cstring>
 
-AcDbObjectId DrawEntity::DrawLine(const AcGePoint3d& start_point, const AcGePoint3d& end_point)
+namespace
 {
-	AcDbLine* line_pointer = new AcDbLine(start_point, end_point);
-	return AddToModelSpace::AddEntityToModelSpace(line_pointer);
+constexpr double pi = 3.14159265358979323846;
+bool finitePoint(const AcGePoint3d& p) { return std::isfinite(p.x) && std::isfinite(p.y) && std::isfinite(p.z); }
+bool finitePoint(const AcGePoint2d& p) { return std::isfinite(p.x) && std::isfinite(p.y); }
+Acad::ErrorStatus angleInRadians(double angle, int type, double& radians)
+{
+    if (!std::isfinite(angle) || (type != 0 && type != 1)) return Acad::eInvalidInput;
+    radians = type == 0 ? BasicTools::ConvertAngle(angle, 1) : angle;
+    return std::isfinite(radians) ? Acad::eOk : Acad::eInvalidInput;
+}
+template<class T> Acad::ErrorStatus post(Pola::DbObjectOwner<T>& entity, AcDbObjectId& id)
+{
+    Acad::ErrorStatus status = AddToModelSpace::AddEntityToModelSpace(entity.get(), id, false);
+    if (!entity->objectId().isNull())
+    {
+        const Acad::ErrorStatus cleanup = entity.release()->close();
+        if (status == Acad::eOk) status = cleanup;
+    }
+    if (status != Acad::eOk) id = AcDbObjectId::kNull;
+    return status;
+}
+void report(Acad::ErrorStatus status)
+{
+    if (status != Acad::eOk) acutPrintf(_T("\nDrawing entity failed: %d"), static_cast<int>(status));
+}
 }
 
-AcDbObjectId DrawEntity::DrawLine(const AcGePoint3d& start_point, const double& length, const double& angle, const int& angle_type)
+Acad::ErrorStatus DrawEntity::DrawLine(const AcGePoint3d& p1, const AcGePoint3d& p2, AcDbObjectId& id)
 {
-	double temp_angle;
-	if (angle_type == 0)
-		temp_angle = BasicTools::ConvertAngle(angle, 1);
-	else if (angle_type == 1)
-		temp_angle = angle;
-	else
-		throw;								// 0 mean DEG, 1 mean RAD
-
-	AcGePoint3d end_point(start_point.x + length * cos(temp_angle), start_point.y + length * sin(temp_angle), 0);
-	return DrawLine(start_point, end_point);
+    id = AcDbObjectId::kNull;
+    if (!finitePoint(p1) || !finitePoint(p2) || p1.isEqualTo(p2)) return Acad::eInvalidInput;
+    Pola::DbObjectOwner<AcDbLine> line(new AcDbLine(p1, p2));
+    return post(line, id);
+}
+Acad::ErrorStatus DrawEntity::DrawLine(const AcGePoint3d& point, const double& length, const double& angle, const int& type, AcDbObjectId& id)
+{
+    id = AcDbObjectId::kNull;
+    double radians = 0;
+    Acad::ErrorStatus status = angleInRadians(angle, type, radians);
+    if (status != Acad::eOk || !finitePoint(point) || !std::isfinite(length) || length <= 0) return Acad::eInvalidInput;
+    return DrawLine(point, AcGePoint3d(point.x + length * cos(radians), point.y + length * sin(radians), point.z), id);
+}
+Acad::ErrorStatus DrawEntity::DrawCircle(const AcGePoint3d& center, const double& radius, AcDbObjectId& id)
+{
+    id = AcDbObjectId::kNull;
+    if (!finitePoint(center) || !std::isfinite(radius) || radius <= 0) return Acad::eInvalidInput;
+    Pola::DbObjectOwner<AcDbCircle> circle(new AcDbCircle());
+    Acad::ErrorStatus status = circle->setCenter(center);
+    if (status == Acad::eOk) status = circle->setRadius(radius);
+    return status == Acad::eOk ? post(circle, id) : status;
+}
+Acad::ErrorStatus DrawEntity::DrawCircle(const AcGePoint3d& p1, const AcGePoint3d& p2, AcDbObjectId& id)
+{
+    id = AcDbObjectId::kNull;
+    if (!finitePoint(p1) || !finitePoint(p2)) return Acad::eInvalidInput;
+    return DrawCircle(BasicTools::GetMidPoint(p1, p2), p1.distanceTo(p2) / 2.0, id);
+}
+Acad::ErrorStatus DrawEntity::DrawCircle(const AcGePoint3d& p1, const AcGePoint3d& p2, const AcGePoint3d& p3, AcDbObjectId& id)
+{
+    id = AcDbObjectId::kNull;
+    if (!finitePoint(p1) || !finitePoint(p2) || !finitePoint(p3) || BasicTools::IsCollinearPoint(p1, p2, p3)) return Acad::eInvalidInput;
+    const AcGeCircArc3d geometry(p1, p2, p3);
+    Pola::DbObjectOwner<AcDbCircle> circle(new AcDbCircle());
+    Acad::ErrorStatus status = circle->setCenter(geometry.center());
+    if (status == Acad::eOk) status = circle->setNormal(geometry.normal());
+    if (status == Acad::eOk) status = circle->setRadius(geometry.radius());
+    return status == Acad::eOk ? post(circle, id) : status;
+}
+Acad::ErrorStatus DrawEntity::DrawArc(const AcGePoint3d& p1, const AcGePoint3d& p2, const AcGePoint3d& p3, AcDbObjectId& id)
+{
+    id = AcDbObjectId::kNull;
+    if (!finitePoint(p1) || !finitePoint(p2) || !finitePoint(p3) || BasicTools::IsCollinearPoint(p1, p2, p3)) return Acad::eInvalidInput;
+    const AcGeCircArc3d geometry(p1, p2, p3);
+    Pola::DbObjectOwner<AcDbArc> arc(new AcDbArc());
+    Acad::ErrorStatus status = arc->setFromAcGeCurve(geometry);
+    return status == Acad::eOk ? post(arc, id) : status;
+}
+Acad::ErrorStatus DrawEntity::DrawArc(const AcGePoint3d& center, const AcGePoint3d& start, const double& angle, const int type, AcDbObjectId& id)
+{
+    id = AcDbObjectId::kNull;
+    double radians = 0;
+    Acad::ErrorStatus status = angleInRadians(angle, type, radians);
+    if (status != Acad::eOk || !finitePoint(center) || !finitePoint(start) || center.isEqualTo(start) || radians <= 0 || radians > 2 * pi) return Acad::eInvalidInput;
+    Pola::DbObjectOwner<AcDbArc> arc(new AcDbArc());
+    status = arc->setCenter(center);
+    if (status == Acad::eOk) status = arc->setRadius(center.distanceTo(start));
+    const double start_angle = BasicTools::GetAngleToXaxis(start - center, 1);
+    if (status == Acad::eOk) status = arc->setStartAngle(start_angle);
+    if (status == Acad::eOk) status = arc->setEndAngle(start_angle + radians);
+    return status == Acad::eOk ? post(arc, id) : status;
+}
+Acad::ErrorStatus DrawEntity::DrawArc(const AcGePoint3d& center, const AcGePoint3d& start, const AcGePoint3d& end, int n, AcDbObjectId& id)
+{
+    (void)n; // retained legacy disambiguation argument
+    id = AcDbObjectId::kNull;
+    if (!finitePoint(center) || !finitePoint(start) || !finitePoint(end) || center.isEqualTo(start) || start.isEqualTo(end)) return Acad::eInvalidInput;
+    const double radius = center.distanceTo(start);
+    if (std::abs(radius - center.distanceTo(end)) > AcGeContext::gTol.equalPoint()) return Acad::eInvalidInput;
+    Pola::DbObjectOwner<AcDbArc> arc(new AcDbArc());
+    Acad::ErrorStatus status = arc->setCenter(center);
+    if (status == Acad::eOk) status = arc->setRadius(radius);
+    if (status == Acad::eOk) status = arc->setStartAngle(BasicTools::GetAngleToXaxis(start - center, 1));
+    if (status == Acad::eOk) status = arc->setEndAngle(BasicTools::GetAngleToXaxis(end - center, 1));
+    return status == Acad::eOk ? post(arc, id) : status;
+}
+Acad::ErrorStatus DrawEntity::DrawPolyLine(const AcGePoint2dArray& points, const double& width, bool closed, AcDbObjectId& id)
+{
+    id = AcDbObjectId::kNull;
+    if (points.length() < 2 || !std::isfinite(width) || width < 0) return Acad::eInvalidInput;
+    for (int i = 0; i < points.length(); ++i) if (!finitePoint(points.at(i))) return Acad::eInvalidInput;
+    Pola::DbObjectOwner<AcDbPolyline> polyline(new AcDbPolyline());
+    for (int i = 0; i < points.length(); ++i)
+    {
+        const Acad::ErrorStatus status = polyline->addVertexAt(i, points.at(i));
+        if (status != Acad::eOk) return status;
+    }
+    polyline->setClosed(closed);
+    const Acad::ErrorStatus status = polyline->setConstantWidth(width);
+    return status == Acad::eOk ? post(polyline, id) : status;
+}
+Acad::ErrorStatus DrawEntity::DrawRectangle(const AcGePoint3d& p1, const AcGePoint3d& p2, const double& width, AcDbObjectId& id)
+{
+    id = AcDbObjectId::kNull;
+    if (!finitePoint(p1) || !finitePoint(p2) || !BasicTools::CanDrawRect(p1, p2)) return Acad::eInvalidInput;
+    AcGePoint2dArray points;
+    points.append(AcGePoint2d(BasicTools::Min(p1.x, p2.x), BasicTools::Min(p1.y, p2.y)));
+    points.append(AcGePoint2d(BasicTools::Max(p1.x, p2.x), BasicTools::Min(p1.y, p2.y)));
+    points.append(AcGePoint2d(BasicTools::Max(p1.x, p2.x), BasicTools::Max(p1.y, p2.y)));
+    points.append(AcGePoint2d(BasicTools::Min(p1.x, p2.x), BasicTools::Max(p1.y, p2.y)));
+    return DrawPolyLine(points, width, true, id);
+}
+Acad::ErrorStatus DrawEntity::HatchPattern(const TCHAR* name, const double& scale, const double& angle, const int& type, bool associative, const AcDbObjectIdArray& boundaries, AcDbObjectId& id)
+{
+    id = AcDbObjectId::kNull;
+    double radians = 0;
+    Acad::ErrorStatus status = angleInRadians(angle, type, radians);
+    if (status != Acad::eOk || name == nullptr || *name == 0 || !std::isfinite(scale) || scale <= 0 || boundaries.isEmpty()) return Acad::eInvalidInput;
+    std::vector<Pola::OpenedObject<AcDbEntity>> boundary_objects;
+    for (int i = 0; i < boundaries.length(); ++i)
+    {
+        if (boundaries.at(i).isNull()) return Acad::eInvalidInput;
+        AcDbEntity* pointer = nullptr;
+        status = acdbOpenObject(pointer, boundaries.at(i), associative ? AcDb::kForWrite : AcDb::kForRead);
+        if (status != Acad::eOk) return status;
+        boundary_objects.emplace_back(pointer);
+    }
+    Pola::DbObjectOwner<AcDbHatch> hatch(new AcDbHatch());
+    status = hatch->setNormal(AcGeVector3d::kZAxis);
+    if (status == Acad::eOk) status = hatch->setElevation(0);
+    if (status == Acad::eOk) status = hatch->setAssociative(associative);
+    if (status == Acad::eOk) status = hatch->setPatternAngle(radians);
+    if (status == Acad::eOk) status = hatch->setPatternScale(scale);
+    if (status == Acad::eOk) status = hatch->setPattern(AcDbHatch::kPreDefined, name);
+    if (status == Acad::eOk) status = hatch->appendLoop(AcDbHatch::kExternal, boundaries);
+    if (status == Acad::eOk) status = hatch->evaluateHatch();
+    AcDbObjectId inserted;
+    if (status == Acad::eOk) status = AddToModelSpace::AddEntityToModelSpace(hatch.get(), inserted, false);
+    size_t reactors_added = 0;
+    if (status == Acad::eOk && associative)
+    {
+        for (; reactors_added < boundary_objects.size(); ++reactors_added)
+        {
+            status = boundary_objects[reactors_added]->addPersistentReactor(inserted);
+            if (status != Acad::eOk) break;
+        }
+    }
+    if (status != Acad::eOk && !hatch->objectId().isNull())
+    {
+        while (reactors_added > 0)
+        {
+            const Acad::ErrorStatus cleanup = boundary_objects[--reactors_added]->removePersistentReactor(hatch->objectId());
+            if (cleanup != Acad::eOk) report(cleanup);
+        }
+        const Acad::ErrorStatus cleanup = hatch->erase();
+        if (cleanup != Acad::eOk) report(cleanup);
+    }
+    for (auto& boundary : boundary_objects) status = Pola::Close(boundary, status);
+    if (!hatch->objectId().isNull())
+    {
+        const Acad::ErrorStatus cleanup = hatch.release()->close();
+        if (status == Acad::eOk) status = cleanup;
+    }
+    if (status == Acad::eOk) id = inserted;
+    return status;
+}
+Acad::ErrorStatus DrawEntity::AddText(const AcGePoint3d& point, const TCHAR* content, const AcDbObjectId style, const double& height, const double& rotation, const double& factor, AcDbObjectId& id)
+{
+    id = AcDbObjectId::kNull;
+    if (!finitePoint(point) || content == nullptr || !std::isfinite(height) || height <= 0 || !std::isfinite(rotation) || !std::isfinite(factor) || factor <= 0) return Acad::eInvalidInput;
+    Pola::DbObjectOwner<AcDbText> text(new AcDbText());
+    text->setDatabaseDefaults();
+    Acad::ErrorStatus status = text->setPosition(point);
+    if (status == Acad::eOk) status = text->setTextString(content);
+    if (status == Acad::eOk && !style.isNull()) status = text->setTextStyle(style);
+    if (status == Acad::eOk) status = text->setHeight(height);
+    if (status == Acad::eOk) status = text->setRotation(rotation);
+    if (status == Acad::eOk) status = text->setWidthFactor(factor);
+    return status == Acad::eOk ? post(text, id) : status;
+}
+Acad::ErrorStatus DrawEntity::AlignedDimension(const AcGePoint3d& start, const AcGePoint3d& end, const AcGePoint3d& line, const AcDbObjectId style, const TCHAR* content, AcDbObjectId& id)
+{
+    id = AcDbObjectId::kNull;
+    if (!finitePoint(start) || !finitePoint(end) || !finitePoint(line) || start.isEqualTo(end)) return Acad::eInvalidInput;
+    Pola::DbObjectOwner<AcDbAlignedDimension> dimension(new AcDbAlignedDimension());
+    dimension->setDatabaseDefaults();
+    Acad::ErrorStatus status = dimension->setXLine1Point(start);
+    if (status == Acad::eOk) status = dimension->setXLine2Point(end);
+    if (status == Acad::eOk) status = dimension->setDimLinePoint(line);
+    if (status == Acad::eOk && content != nullptr) status = dimension->setDimensionText(content);
+    if (status == Acad::eOk && !style.isNull()) status = dimension->setDimstyleData(style);
+    return status == Acad::eOk ? post(dimension, id) : status;
+}
+Acad::ErrorStatus DrawEntity::DrawFrame(char* size, const AcGePoint3d& point, const double& scale)
+{
+    if (size == nullptr || !finitePoint(point) || !std::isfinite(scale) || scale <= 0) return Acad::eInvalidInput;
+    double width = 0;
+    if (strcmp(size, "A2") == 0) width = 594;
+    else if (strcmp(size, "A2+1/4") == 0) width = 743;
+    else if (strcmp(size, "A2+1/2") == 0) width = 891;
+    else if (strcmp(size, "A2+3/4") == 0) width = 1040;
+    else return Acad::eInvalidInput;
+    AcDbObjectId outside;
+    Acad::ErrorStatus status = DrawRectangle(point, AcGePoint3d(point.x + width * scale, point.y + 420 * scale, point.z), 0, outside);
+    if (status != Acad::eOk) return status;
+    AcDbObjectId inside;
+    status = DrawRectangle(AcGePoint3d(point.x + 25 * scale, point.y + 10 * scale, point.z), AcGePoint3d(point.x + (width - 10) * scale, point.y + 410 * scale, point.z), 0.35 * scale, inside);
+    if (status != Acad::eOk)
+    {
+        const Acad::ErrorStatus cleanup = EditEntity::DeleteEntity(outside);
+        if (cleanup != Acad::eOk) report(cleanup);
+    }
+    return status;
+}
+Acad::ErrorStatus DrawEntity::AddMLeader(const AcGePoint3d& point, const AcGePoint3d& leader_point, const AcGePoint3d& text_point, const TCHAR* content, AcDbObjectId& id)
+{
+    id = AcDbObjectId::kNull;
+    if (!finitePoint(point) || !finitePoint(leader_point) || !finitePoint(text_point) || content == nullptr) return Acad::eInvalidInput;
+    AcDbObjectId text_style;
+    Acad::ErrorStatus status = StyleTools::CreateTextStyle(_T("default_txt"), _T("gbcbig.shx"), _T("gbenor.shx"), 0.75, text_style);
+    if (status != Acad::eOk) return status;
+    AcDbObjectId leader_style;
+    status = StyleTools::GetMLeaderStyleId(_T("NONE_ARROW"), leader_style);
+    if (status == Acad::eKeyNotFound)
+    {
+        Pola::DbObjectOwner<AcDbMLeaderStyle> style(new AcDbMLeaderStyle());
+        status = style->setName(_T("NONE_ARROW"));
+        if (status == Acad::eOk) status = style->setArrowSymbolId(_T("_NONE"));
+        if (status == Acad::eOk) status = style->postMLeaderStyleToDb(acdbHostApplicationServices()->workingDatabase(), _T("NONE_ARROW"), leader_style);
+        if (status == Acad::eOk) status = style.release()->close();
+    }
+    if (status != Acad::eOk) return status;
+    Pola::DbObjectOwner<AcDbMText> text(new AcDbMText());
+    text->setContents(content); // returns content length, not ErrorStatus
+    status = text->setAttachment(AcDbMText::kMiddleCenter);
+    if (status == Acad::eOk) status = text->setLocation(text_point);
+    if (status == Acad::eOk) status = text->setTextHeight(350);
+    if (status == Acad::eOk) status = text->setTextStyle(text_style);
+    Pola::DbObjectOwner<AcDbMLeader> leader(new AcDbMLeader());
+    int index = -1;
+    if (status == Acad::eOk) status = leader->setMLeaderStyle(leader_style);
+    if (status == Acad::eOk) status = leader->addLeaderLine(point, index);
+    if (status == Acad::eOk) status = leader->addFirstVertex(index, point);
+    if (status == Acad::eOk) status = leader->setTextAttachmentType(AcDbMLeaderStyle::kAttachmentBottomOfTopLine);
+    if (status == Acad::eOk) status = leader->setLastVertex(index, leader_point);
+    if (status == Acad::eOk) status = leader->setMText(text.get()); // SDK copies input; text stays transient
+    if (status == Acad::eOk) status = leader->setContentType(AcDbMLeaderStyle::kMTextContent);
+    if (status == Acad::eOk) status = leader->setDoglegDirection(index, AcGeVector3d::kXAxis);
+    if (status == Acad::eOk) status = leader->setEnableDogleg(true);
+    return status == Acad::eOk ? post(leader, id) : status;
 }
 
-AcDbObjectId DrawEntity::DrawCircle(const AcGePoint3d& center_point, const double& radius)
-{
-	AcDbCircle* circle_pointer = new AcDbCircle(center_point, AcGeVector3d::kZAxis, radius);
-	return AddToModelSpace::AddEntityToModelSpace(circle_pointer);
-}
-
-AcDbObjectId DrawEntity::DrawCircle(const AcGePoint3d& point1, const AcGePoint3d& point2)
-{
-	AcGePoint3d circle_center = BasicTools::GetMidPoint(point1, point2);
-	double radius = BasicTools::GetDistanceBetweenTwoPoint(point1, point2);
-	AcDbCircle* circle_pointer = new AcDbCircle(circle_center, AcGeVector3d::kZAxis, radius);
-	return AddToModelSpace::AddEntityToModelSpace(circle_pointer);
-}
-
-AcDbObjectId DrawEntity::DrawCircle(const AcGePoint3d& on_circle_point1, const AcGePoint3d& on_circle_point2, const AcGePoint3d& on_circle_point3)
-{
-	if (BasicTools::IsCollinearPoint(on_circle_point1, on_circle_point2, on_circle_point3));
-	{
-		throw;								// These three points are collinear points, a(n) arc cannot be drawn.
-	}
-	AcGeCircArc3d arc = AcGeCircArc3d(on_circle_point1, on_circle_point2, on_circle_point3);
-
-	AcGePoint3d circle_center = arc.center();
-	double radius = arc.radius();
-	AcDbCircle* circle_pointer = new AcDbCircle(circle_center, AcGeVector3d::kZAxis, radius);
-	return AddToModelSpace::AddEntityToModelSpace(circle_pointer);
-}
-
-AcDbObjectId DrawEntity::DrawArc(const AcGePoint3d& start_point, const AcGePoint3d& point_on_arc, const AcGePoint3d& end_point)
-{
-	if (BasicTools::IsCollinearPoint(start_point, point_on_arc, end_point))
-	{
-		throw;								// These three points are collinear points, a(n) arc cannot be drawn.
-	}
-
-	AcDbArc* arc_pointer = new AcDbArc();
-	AcGeCircArc3d calc_arc(start_point, point_on_arc, end_point);
-
-	AcGeVector3d center_to_start = BasicTools::GetVectorBetweenTwoPoint(calc_arc.center(), start_point);
-	AcGeVector3d center_to_end = BasicTools::GetVectorBetweenTwoPoint(calc_arc.center(), end_point);
-
-	arc_pointer->setCenter(calc_arc.center());
-	arc_pointer->setRadius(calc_arc.radius());
-	arc_pointer->setStartAngle(BasicTools::GetAngleToXaxis(center_to_start, 1));
-	arc_pointer->setEndAngle(BasicTools::GetAngleToXaxis(center_to_end, 1));
-
-	return AddToModelSpace::AddEntityToModelSpace(arc_pointer);
-}
-
-AcDbObjectId DrawEntity::DrawArc(const AcGePoint3d& center_point, const AcGePoint3d& start_point, const double& angle, const int angle_type)
-{
-	double temp_angle;
-	if (angle_type == 0)
-		temp_angle = BasicTools::ConvertAngle(angle, 1);
-	else if (angle_type == 1)
-		temp_angle = angle;
-	else
-		throw;								// 0 mean DEG, 1 mean RAD
-
-	if (temp_angle > M_PI)
-		throw;								// If the input angle is greater than 2*Pi, arc cannot be drawn.
-
-	AcDbArc* arc_pointer = new AcDbArc();
-
-	arc_pointer->setCenter(center_point);
-	arc_pointer->setRadius(BasicTools::GetDistanceBetweenTwoPoint(center_point, start_point));
-
-	AcGeVector3d center_to_start = BasicTools::GetVectorBetweenTwoPoint(center_point, start_point);
-	arc_pointer->setStartAngle(BasicTools::GetAngleToXaxis(center_to_start, 1));
-	arc_pointer->setEndAngle(arc_pointer->startAngle() + temp_angle);
-
-	return AddToModelSpace::AddEntityToModelSpace(arc_pointer);
-}
-
-AcDbObjectId DrawEntity::DrawArc(const AcGePoint3d& center_point, const AcGePoint3d& start_point, const AcGePoint3d& end_point, int n)
-{
-	if (BasicTools::GetDistanceBetweenTwoPoint(center_point, start_point) != BasicTools::GetDistanceBetweenTwoPoint(center_point, end_point))
-	{
-		throw;										// The distances from the center point to the start and end points are different.
-	}
-	double radius = BasicTools::GetDistanceBetweenTwoPoint(start_point, center_point);
-	double start_angle = BasicTools::GetAngleToXaxis(BasicTools::GetVectorBetweenTwoPoint(center_point, start_point), 1);
-	double end_angle = BasicTools::GetAngleToXaxis(BasicTools::GetVectorBetweenTwoPoint(center_point, end_point), 1);
-	AcDbArc* arc = new AcDbArc();
-	arc->setRadius(radius);
-	arc->setStartAngle(start_angle);
-	arc->setEndAngle(end_angle);
-	return AddToModelSpace::AddEntityToModelSpace(arc);
-}
-
-AcDbObjectId DrawEntity::DrawPolyLine(const AcGePoint2dArray& vertices_list, const double& contant_width, bool needClose)
-{
-	AcDbPolyline* poly_line = new AcDbPolyline();
-	if (vertices_list.length() < 2)
-	{
-		throw;										// A polyline must consist of at least two vertices.
-	}
-	else
-	{
-		for (int i = 0; i < vertices_list.length(); i++)
-		{
-			poly_line->addVertexAt(i, vertices_list.at(i));
-		}
-		if (needClose)
-			poly_line->setClosed(true);
-		else
-			poly_line->setClosed(false);
-		poly_line->setConstantWidth(contant_width);
-	}
-	return AddToModelSpace::AddEntityToModelSpace(poly_line);
-}
-
-AcDbObjectId DrawEntity::DrawRectangle(const AcGePoint3d& vertex_point1, const AcGePoint3d& vertex_point2, const double& width)
-{
-	if (BasicTools::CanDrawRect(vertex_point1, vertex_point2))
-	{
-		AcGePoint2dArray rectangle_vertex;
-		AcGePoint2d p1(BasicTools::Min(vertex_point1.x, vertex_point2.x), BasicTools::Min(vertex_point1.y, vertex_point2.y));
-		AcGePoint2d p2(BasicTools::Max(vertex_point1.x, vertex_point2.x), BasicTools::Min(vertex_point1.y, vertex_point2.y));
-		AcGePoint2d p3(BasicTools::Max(vertex_point1.x, vertex_point2.x), BasicTools::Max(vertex_point1.y, vertex_point2.y));
-		AcGePoint2d p4(BasicTools::Min(vertex_point1.x, vertex_point2.x), BasicTools::Max(vertex_point1.y, vertex_point2.y));
-
-		rectangle_vertex.append(p1);
-		rectangle_vertex.append(p2);
-		rectangle_vertex.append(p3);
-		rectangle_vertex.append(p4);
-
-		return DrawEntity::DrawPolyLine(rectangle_vertex, width, true);
-	}
-	else
-	{
-		return AcDbObjectId::kNull;
-	}
-
-}
-
-AcDbObjectId DrawEntity::HatchPattern(const TCHAR* hatch_pattern_name, const double& pattern_scale, const double& pattern_angle, const int& angle_type, bool needAssociative, const AcDbObjectIdArray& entity_id_array)
-{
-	AcDbHatch* hatch_pointer = new AcDbHatch();
-	AcDbObjectId hatch_id = AcDbObjectId::kNull;
-	Acad::ErrorStatus error_status;
-	double temp_angle;
-	if (angle_type == 0)
-		temp_angle = BasicTools::ConvertAngle(pattern_angle, 1);
-	else if (angle_type == 1)
-		temp_angle = pattern_angle;
-	else
-		throw;
-	hatch_pointer->setNormal(AcGeVector3d::kZAxis);
-	hatch_pointer->setElevation(0);
-	if (needAssociative)
-		hatch_pointer->setAssociative(true);
-	else
-		hatch_pointer->setAssociative(false);
-	hatch_pointer->setPatternAngle(temp_angle);
-	hatch_pointer->setPatternScale(pattern_scale);
-	hatch_pointer->setPattern(AcDbHatch::kPreDefined, hatch_pattern_name);
-
-	error_status = hatch_pointer->appendLoop(AcDbHatch::kExternal, entity_id_array);
-	error_status = hatch_pointer->evaluateHatch();
-	hatch_id = AddToModelSpace::AddEntityToModelSpace(hatch_pointer);
-
-	if (acdbOpenObject(hatch_pointer, hatch_id, OpenMode::kForRead) == Acad::eOk)
-	{
-		AcDbObjectIdArray associative_entity_id;
-		hatch_pointer->getAssocObjIds(associative_entity_id);
-		for (int i = 0; i < associative_entity_id.length(); i++)
-		{
-			AcDbEntity* entity_pointer = nullptr;
-			if (acdbOpenObject(entity_pointer, associative_entity_id.at(i), OpenMode::kForWrite) == Acad::eOk)
-			{
-				entity_pointer->addPersistentReactor(hatch_id);
-				entity_pointer->close();
-			}
-		}
-		hatch_pointer->close();
-	}
-	else
-	{
-		throw;
-	}
-	return hatch_id;
-}
-
-AcDbObjectId DrawEntity::AddText(const AcGePoint3d& insert_position, const TCHAR* insert_text, const AcDbObjectId text_style, const double& text_height, const double& text_rotation, const double& width_factor)
-{
-	AcDbText* text_pointer = new AcDbText(insert_position, insert_text, text_style, text_height, text_rotation);
-	text_pointer->setWidthFactor(width_factor);
-	return AddToModelSpace::AddEntityToModelSpace(text_pointer);
-}
-
-AcDbObjectId DrawEntity::AddMtext()
-{
-	return AcDbObjectId();
-}
-
-AcDbObjectId DrawEntity::AlignedDimension(const AcGePoint3d& start_point, const AcGePoint3d& end_point, const AcGePoint3d& on_dimension_line_point, const AcDbObjectId dimension_style, const TCHAR* dimension_text)
-{
-	AcDbAlignedDimension* aligned_dimension_pointer = new AcDbAlignedDimension(start_point, end_point, on_dimension_line_point, dimension_text, dimension_style);
-	return AddToModelSpace::AddEntityToModelSpace(aligned_dimension_pointer);
-}
-
-AcDbObjectId DrawEntity::RotatedDimension()
-{
-	return AcDbObjectId();
-}
-
-void DrawEntity::DrawFrame(char* frame_size, const AcGePoint3d& insert_point, const double& scale)
-{
-	AcDbObjectId frame_outside_id = AcDbObjectId::kNull;
-	AcDbObjectId frame_inside_id = AcDbObjectId::kNull;
-
-	AcGePoint3d outside_point1;
-	AcGePoint3d outside_point2;
-	AcGePoint3d inside_point1;
-	AcGePoint3d inside_point2;
-
-	if (frame_size == "A2")
-	{
-		outside_point1 = insert_point;
-		outside_point2 = AcGePoint3d(insert_point.x + 594, insert_point.y + 420, 0);
-		inside_point1 = AcGePoint3d(outside_point1.x + 25, outside_point1.y + 10, 0);
-		inside_point2 = AcGePoint3d(outside_point2.x - 10, outside_point2.y - 10, 0);
-
-		frame_outside_id = DrawEntity::DrawRectangle(outside_point1, outside_point2, 0);
-		frame_inside_id = DrawEntity::DrawRectangle(inside_point1, inside_point2, 0.35);
-		EditEntity::ScaleEntity(frame_outside_id, insert_point, scale);
-		EditEntity::ScaleEntity(frame_inside_id, insert_point, scale);
-		//EditEntity::SetLayer(frame_outside_id, _T("Frame"));
-	}
-	else if (frame_size == "A2+1/4")
-	{
-		outside_point1 = insert_point;
-		outside_point2 = AcGePoint3d(insert_point.x + 743, insert_point.y + 420, 0);
-		inside_point1 = AcGePoint3d(outside_point1.x + 25, outside_point1.y + 10, 0);
-		inside_point2 = AcGePoint3d(outside_point2.x - 10, outside_point2.y - 10, 0);
-
-		frame_outside_id = DrawEntity::DrawRectangle(outside_point1, outside_point2, 0);
-		frame_inside_id = DrawEntity::DrawRectangle(inside_point1, inside_point2, 0.35);
-		EditEntity::ScaleEntity(frame_outside_id, insert_point, scale);
-		EditEntity::ScaleEntity(frame_inside_id, insert_point, scale);
-	}
-	else if (frame_size == "A2+1/2")
-	{
-		outside_point1 = insert_point;
-		outside_point2 = AcGePoint3d(insert_point.x + 891, insert_point.y + 420, 0);
-		inside_point1 = AcGePoint3d(outside_point1.x + 25, outside_point1.y + 10, 0);
-		inside_point2 = AcGePoint3d(outside_point2.x - 10, outside_point2.y - 10, 0);
-
-		frame_outside_id = DrawEntity::DrawRectangle(outside_point1, outside_point2, 0);
-		frame_inside_id = DrawEntity::DrawRectangle(inside_point1, inside_point2, 0.35);
-		EditEntity::ScaleEntity(frame_outside_id, insert_point, scale);
-		EditEntity::ScaleEntity(frame_inside_id, insert_point, scale);
-	}
-	else if (frame_size == "A2+3/4")
-	{
-		outside_point1 = insert_point;
-		outside_point2 = AcGePoint3d(insert_point.x + 1040, insert_point.y + 420, 0);
-		inside_point1 = AcGePoint3d(outside_point1.x + 25, outside_point1.y + 10, 0);
-		inside_point2 = AcGePoint3d(outside_point2.x - 10, outside_point2.y - 10, 0);
-
-		frame_outside_id = DrawEntity::DrawRectangle(outside_point1, outside_point2, 0);
-		frame_inside_id = DrawEntity::DrawRectangle(inside_point1, inside_point2, 0.35);
-		EditEntity::ScaleEntity(frame_outside_id, insert_point, scale);
-		EditEntity::ScaleEntity(frame_inside_id, insert_point, scale);
-	}
-	else
-	{
-		acutPrintf(_T("Didn't finished yet T_T\n"));
-	}
-}
-
-AcDbObjectId DrawEntity::AddMLeader(const AcGePoint3d& insert_point, const AcGePoint3d& point_on_leader, const AcGePoint3d& text_point, const TCHAR* leader_text)
-{
-	AcDbMText* mtext = new AcDbMText();
-	mtext->setContents(leader_text);
-	mtext->setAttachment(AcDbMText::kMiddleCenter);
-	mtext->setLocation(text_point);
-	mtext->setTextHeight(350);
-	mtext->setTextStyle(StyleTools::InitTextStyle());
-	int leader_index;
-	AcDbMLeader* mleader = new AcDbMLeader();
-	mleader->setMLeaderStyle(StyleTools::InitMLeaderStyle());
-	mleader->addLeaderLine(insert_point, leader_index);
-	mleader->addFirstVertex(leader_index, insert_point);
-	mleader->setTextAttachmentType(AcDbMLeaderStyle::TextAttachmentType::kAttachmentBottomOfTopLine);
-	mleader->setLastVertex(leader_index, point_on_leader);
-	mleader->setMText(mtext);
-	mleader->setContentType(AcDbMLeaderStyle::kMTextContent);
-
-	mleader->setDoglegDirection(leader_index, AcGeVector3d(1, 0, 0));
-	mleader->setEnableDogleg(true);
-	mtext->close();
-	return AddToModelSpace::AddEntityToModelSpace(mleader);
-}
+// The legacy ID wrappers retain source compatibility and report checked errors.
+AcDbObjectId DrawEntity::DrawLine(const AcGePoint3d& a, const AcGePoint3d& b) { AcDbObjectId id; report(DrawLine(a,b,id)); return id; }
+AcDbObjectId DrawEntity::DrawLine(const AcGePoint3d& p, const double& l, const double& a, const int& t) { AcDbObjectId id; report(DrawLine(p,l,a,t,id)); return id; }
+AcDbObjectId DrawEntity::DrawCircle(const AcGePoint3d& p, const double& r) { AcDbObjectId id; report(DrawCircle(p,r,id)); return id; }
+AcDbObjectId DrawEntity::DrawCircle(const AcGePoint3d& a, const AcGePoint3d& b) { AcDbObjectId id; report(DrawCircle(a,b,id)); return id; }
+AcDbObjectId DrawEntity::DrawCircle(const AcGePoint3d& a, const AcGePoint3d& b, const AcGePoint3d& c) { AcDbObjectId id; report(DrawCircle(a,b,c,id)); return id; }
+AcDbObjectId DrawEntity::DrawArc(const AcGePoint3d& a, const AcGePoint3d& b, const AcGePoint3d& c) { AcDbObjectId id; report(DrawArc(a,b,c,id)); return id; }
+AcDbObjectId DrawEntity::DrawArc(const AcGePoint3d& c, const AcGePoint3d& s, const double& a, const int t) { AcDbObjectId id; report(DrawArc(c,s,a,t,id)); return id; }
+AcDbObjectId DrawEntity::DrawArc(const AcGePoint3d& c, const AcGePoint3d& s, const AcGePoint3d& e, int n) { AcDbObjectId id; report(DrawArc(c,s,e,n,id)); return id; }
+AcDbObjectId DrawEntity::DrawPolyLine(const AcGePoint2dArray& p, const double& w, bool c) { AcDbObjectId id; report(DrawPolyLine(p,w,c,id)); return id; }
+AcDbObjectId DrawEntity::DrawRectangle(const AcGePoint3d& a, const AcGePoint3d& b, const double& w) { AcDbObjectId id; report(DrawRectangle(a,b,w,id)); return id; }
+AcDbObjectId DrawEntity::HatchPattern(const TCHAR* n, const double& s, const double& a, const int& t, bool associative, const AcDbObjectIdArray& boundaries) { AcDbObjectId id; report(HatchPattern(n,s,a,t,associative,boundaries,id)); return id; }
+AcDbObjectId DrawEntity::AddText(const AcGePoint3d& p, const TCHAR* c, const AcDbObjectId s, const double& h, const double& r, const double& w) { AcDbObjectId id; report(AddText(p,c,s,h,r,w,id)); return id; }
+AcDbObjectId DrawEntity::AlignedDimension(const AcGePoint3d& a, const AcGePoint3d& b, const AcGePoint3d& c, const AcDbObjectId s, const TCHAR* t) { AcDbObjectId id; report(AlignedDimension(a,b,c,s,t,id)); return id; }
+AcDbObjectId DrawEntity::AddMLeader(const AcGePoint3d& p, const AcGePoint3d& l, const AcGePoint3d& t, const TCHAR* c) { AcDbObjectId id; report(AddMLeader(p,l,t,c,id)); return id; }
+AcDbObjectId DrawEntity::AddMtext() { report(Acad::eNotImplementedYet); return AcDbObjectId::kNull; }
+AcDbObjectId DrawEntity::RotatedDimension() { report(Acad::eNotImplementedYet); return AcDbObjectId::kNull; }

@@ -1,5 +1,7 @@
 **readme文档观看顺序：按时间顺序从下往上看**
 
+当前改进路线见 [需求与验收](docs/requirements.md)，开发约定见 [AGENTS.md](AGENTS.md)，第一阶段的实施和验证记录见 [稳定性验证](docs/stage1-validation.md)。
+
 # 2025.05.16 更新
 
 1. 添加使用COM接口向菜单栏添加菜单的相关代码。

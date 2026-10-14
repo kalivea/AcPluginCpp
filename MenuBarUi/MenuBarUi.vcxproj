@@ -64,7 +64,7 @@
     <Link>
     </Link>
     <Link>
-      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">AdApplicationFrame.lib;acui24.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>AdApplicationFrame.lib;acui24.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

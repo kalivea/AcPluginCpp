@@ -2,7 +2,7 @@
 #include "afxwin.h"
 #include "afxdisp.h"
 
-#import "C:\\Program Files\\Common Files\\Autodesk Shared\\acax24enu.tlb" no_namespace
+#import "C:\\Program Files\\Common Files\\Autodesk Shared\\acax24enu.tlb" no_namespace rename("GetObject", "AcadGetObject")
 // CAcadApplication 包装类
 
 class CAcadApplication : public COleDispatchDriver

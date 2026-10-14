@@ -28,10 +28,7 @@
 
 //-----------------------------------------------------------------------------
 //- Import the MSXML functionality
-#pragma warning(push)
-#pragma warning(disable : 4192) // SDK XML interface import duplicates system IStream.
-#import "msxml6.dll" named_guids
-#pragma warning(pop)
+#import "msxml6.dll" named_guids exclude("ISequentialStream", "_FILETIME")
 #define MSXML MSXML2
 //using namespace MSXML ;
 

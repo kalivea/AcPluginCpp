@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "PolaIRM.h"
+#include "BasicTools.h"
+#include "StyleTools.h"
 
 void PolaIRM::setBeamInfo(int beam_sn, int beam_segment_num, double beam_b, double beam_h)
 {
